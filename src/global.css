@@ -355,7 +355,8 @@ textarea {
 .editable-badge {
     position: relative;
     display: grid;
-    min-height: calc(var(--space-40) * 8);
+    aspect-ratio: 90 / 28;
+    width: 100%;
     overflow: hidden;
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
@@ -384,17 +385,20 @@ textarea {
 .editable-badge__content {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(calc(var(--space-24) * 4), 1fr) minmax(0, 3fr);
-    gap: var(--space-24);
-    align-items: center;
-    padding: var(--space-32);
+    grid-template-columns: minmax(calc(var(--space-24) * 4), max-content) minmax(0, 1fr);
+    gap: var(--space-16);
+    align-items: stretch;
+    min-height: 0;
+    height: 100%;
+    padding: var(--space-16);
     pointer-events: none;
 }
 
 .editable-badge__logo,
 .editable-badge__text {
     display: grid;
-    min-height: calc(var(--space-32) * 7);
+    min-height: 0;
+    height: 100%;
     place-items: center;
     border-radius: var(--space-8);
     pointer-events: auto;
@@ -411,12 +415,13 @@ textarea {
 
 .editable-badge__logo img {
     width: min(100%, calc(var(--space-32) * 4 + var(--space-8)));
-    max-height: calc(var(--space-32) * 4 + var(--space-8));
+    max-height: 100%;
     object-fit: contain;
 }
 
 .editable-badge__text {
     min-width: 0;
+    padding: 0 var(--space-16);
     overflow-wrap: anywhere;
     font: var(--font-display);
     font-size: clamp(
@@ -699,11 +704,11 @@ textarea {
     }
 
     .editable-badge {
-        min-height: calc(var(--space-40) * 9);
+        aspect-ratio: 90 / 28;
     }
 
     .editable-badge__logo,
     .editable-badge__text {
-        min-height: calc(var(--space-32) * 4 + var(--space-8));
+        min-height: 0;
     }
 }
