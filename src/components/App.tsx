@@ -7,6 +7,7 @@ import {
     FolderOpen,
     Plus,
     Search,
+    X,
 } from 'lucide-react';
 
 interface BadgeState {
@@ -47,6 +48,9 @@ const emptyDraft: EditorDraft = {
     name: 'Frame',
     source: '',
 };
+
+const defaultFrameSource =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="#1f2328" stroke-width="1.75" stroke-linecap="round"/></svg>';
 
 const badgeHeight = 28;
 const logoSize = 16;
@@ -141,16 +145,22 @@ const getReadableInk = (color: string): string => {
     return luminance > 150 ? '#1f2328' : '#fff';
 };
 
+const materializeState = (state: BadgeState, index: number): BadgeState => ({
+    ...state,
+    color: state.color.trim() === '' ? emptyDraft.color : state.color.trim(),
+    name:
+        state.name.trim() === '' || /^frame$/iu.test(state.name.trim())
+            ? `Frame ${index + 1}`
+            : state.name.trim(),
+    source:
+        state.source.trim() === '' ? defaultFrameSource : state.source.trim(),
+});
+
 const normalizeStates = (
     states: readonly BadgeState[]
 ): readonly BadgeState[] =>
     states
-        .map((state) => ({
-            ...state,
-            color: state.color.trim(),
-            name: state.name.trim(),
-            source: state.source.trim(),
-        }))
+        .map((state, index) => materializeState(state, index))
         .filter(
             (state) =>
                 state.name !== '' && state.color !== '' && state.source !== ''
@@ -236,6 +246,9 @@ const buildBadgeSvg = (states: readonly BadgeState[]): string => {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${badgeHeight}" viewBox="0 0 ${width} ${badgeHeight}">${style}${body}</svg>`;
 };
 
+const buildSingleBadgeSvg = (state: BadgeState, index: number): string =>
+    buildBadgeSvg([materializeState(state, index)]);
+
 const getSvglRoute = (route: string | SvglRouteOptions): string =>
     typeof route === 'string' ? route : route.light;
 
@@ -255,6 +268,15 @@ const getSvglSourceUrl = (route: string | SvglRouteOptions): string => {
 const formatKilobytes = (bytes: number): string =>
     `${(bytes / 1024).toFixed(1)} KB`;
 
+const getPrimarySvgColor = (source: string): string | undefined => {
+    const colors = source.match(/#[\dA-Fa-f]{3}(?:[\dA-Fa-f]{3})?\b/gu) ?? [];
+    const primaryColor = colors.find(
+        (color) => !/^#(?:fff|ffffff|000|000000)$/iu.test(color)
+    );
+
+    return primaryColor;
+};
+
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);
     const [selectedFrameId, setSelectedFrameId] = useState(defaultStates[0].id);
@@ -263,6 +285,9 @@ export function App(): JSX.Element {
     const [svglResults, setSvglResults] = useState<readonly SvglResult[]>([]);
     const [selectedSvglResult, setSelectedSvglResult] = useState<
         SvglResult | undefined
+    >(undefined);
+    const [deleteCandidateId, setDeleteCandidateId] = useState<
+        string | undefined
     >(undefined);
     const fileInputReference = useRef<HTMLInputElement | undefined>(undefined);
     const badgeSvg = useMemo(() => buildBadgeSvg(states), [states]);
@@ -390,6 +415,39 @@ export function App(): JSX.Element {
         setCopyState('idle');
     };
 
+    const confirmDeleteState = (): void => {
+        if (deleteCandidateId === undefined || states.length <= 1) {
+            setDeleteCandidateId(undefined);
+            return;
+        }
+
+        const stateId = deleteCandidateId;
+        if (states.length <= 1) {
+            return;
+        }
+
+        const removedIndex = states.findIndex((state) => state.id === stateId);
+        const remainingStates = states.filter((state) => state.id !== stateId);
+
+        setStates(remainingStates);
+
+        if (stateId === selectedFrame.id) {
+            const nextIndex = Math.min(
+                Math.max(removedIndex, 0),
+                remainingStates.length - 1
+            );
+            const nextState = remainingStates[nextIndex];
+
+            setSelectedFrameId(nextState.id);
+            setSvglQuery(nextState.name);
+            setSvglResults([]);
+            setSelectedSvglResult(undefined);
+        }
+
+        setCopyState('idle');
+        setDeleteCandidateId(undefined);
+    };
+
     const pasteSource = (): void => {
         navigator.clipboard
             .readText()
@@ -461,6 +519,8 @@ export function App(): JSX.Element {
                         state.id === selectedFrame.id
                             ? {
                                   ...state,
+                                  color:
+                                      getPrimarySvgColor(source) ?? state.color,
                                   name:
                                       state.name === '' ||
                                       /^frame$/iu.test(state.name)
@@ -545,7 +605,7 @@ export function App(): JSX.Element {
                     <section className='tool-panel'>
                         <section
                             aria-labelledby='frames-title'
-                            className='frame-workbench'
+                            className='frame-rail'
                         >
                             <section
                                 aria-labelledby='frames-title'
@@ -560,13 +620,16 @@ export function App(): JSX.Element {
 
                                 <div className='frame-list'>
                                     {states.map((state, index) => {
-                                        const frameLabel =
-                                            state.name === ''
-                                                ? `Frame ${index + 1}`
-                                                : state.name;
+                                        const frameBadge = toDataUri(
+                                            buildSingleBadgeSvg(state, index)
+                                        );
+                                        const frameLabel = materializeState(
+                                            state,
+                                            index
+                                        ).name;
 
                                         return (
-                                            <button
+                                            <div
                                                 aria-current={
                                                     state.id ===
                                                     selectedFrame.id
@@ -575,18 +638,39 @@ export function App(): JSX.Element {
                                                 }
                                                 className='frame-card'
                                                 key={state.id}
-                                                onClick={() => {
-                                                    selectFrame(state);
-                                                }}
-                                                type='button'
                                             >
-                                                <span className='frame-card__index'>
-                                                    {index + 1}
-                                                </span>
-                                                <span className='frame-card__name'>
-                                                    {frameLabel}
-                                                </span>
-                                            </button>
+                                                <button
+                                                    className='frame-card__select'
+                                                    onClick={() => {
+                                                        selectFrame(state);
+                                                    }}
+                                                    type='button'
+                                                >
+                                                    <img
+                                                        alt={`${frameLabel} badge`}
+                                                        src={frameBadge}
+                                                    />
+                                                </button>
+                                                <button
+                                                    aria-label={`Delete ${frameLabel}`}
+                                                    className='frame-card__delete'
+                                                    disabled={
+                                                        states.length <= 1
+                                                    }
+                                                    onClick={() => {
+                                                        setDeleteCandidateId(
+                                                            state.id
+                                                        );
+                                                    }}
+                                                    title='Delete frame'
+                                                    type='button'
+                                                >
+                                                    <X
+                                                        aria-hidden='true'
+                                                        size={16}
+                                                    />
+                                                </button>
+                                            </div>
                                         );
                                     })}
                                 </div>
@@ -603,224 +687,227 @@ export function App(): JSX.Element {
                                 </button>
                             </section>
 
-                            <section
-                                aria-labelledby='frame-editor-title'
-                                className='frame-editor'
+                            <aside
+                                aria-label='Generated badge'
+                                className='output'
                             >
                                 <div className='panel-heading'>
-                                    <h2 id='frame-editor-title'>
-                                        Frame {selectedFrameIndex + 1}
-                                    </h2>
+                                    <h2>Output</h2>
+                                    <span>
+                                        {formatKilobytes(badgeSvg.length)}
+                                    </span>
                                 </div>
+                                <div className='output__showcase'>
+                                    <div className='preview'>
+                                        {previewSource === '' ? (
+                                            <span>
+                                                Add SVG artwork to start the
+                                                animation loop.
+                                            </span>
+                                        ) : (
+                                            <img
+                                                alt='Generated animated badge preview'
+                                                src={previewSource}
+                                            />
+                                        )}
+                                    </div>
 
-                                <div className='editor-fields'>
-                                    <label className='field'>
-                                        <span>Name</span>
-                                        <input
-                                            onChange={(event) => {
-                                                updateSelectedFrame(
-                                                    'name',
-                                                    event
-                                                );
-                                            }}
-                                            value={selectedFrame.name}
-                                        />
-                                    </label>
-                                    <label className='field field--color'>
-                                        <span>Color</span>
-                                        <input
-                                            onChange={(event) => {
-                                                updateSelectedFrame(
-                                                    'color',
-                                                    event
-                                                );
-                                            }}
-                                            type='color'
-                                            value={selectedFrame.color}
-                                        />
-                                    </label>
-                                </div>
-
-                                <section
-                                    aria-label='Search SVGL logos'
-                                    className='svgl-search'
-                                >
-                                    <label className='field'>
-                                        <span>Logo</span>
-                                        <div className='svgl-search__bar'>
-                                            <Search
+                                    <div className='output__actions'>
+                                        <button
+                                            aria-label={
+                                                copyState === 'copied'
+                                                    ? 'Copied animated SVG'
+                                                    : 'Copy animated SVG'
+                                            }
+                                            className='button button--primary'
+                                            disabled={badgeSvg === ''}
+                                            onClick={copySvg}
+                                            title={
+                                                copyState === 'copied'
+                                                    ? 'Copied'
+                                                    : 'Copy'
+                                            }
+                                            type='button'
+                                        >
+                                            <Copy
                                                 aria-hidden='true'
                                                 size={16}
                                             />
-                                            <input
-                                                onChange={(event) => {
-                                                    setSvglQuery(
-                                                        event.target.value
-                                                    );
-                                                }}
-                                                placeholder='React, Vite, GitHub...'
-                                                value={svglQuery}
-                                            />
-                                        </div>
-                                    </label>
-
-                                    {svglResults.length === 0 ? undefined : (
-                                        <div className='svgl-results'>
-                                            {svglResults.map((result) => (
-                                                <button
-                                                    aria-current={
-                                                        result.id ===
-                                                        selectedSvglResult?.id
-                                                            ? 'true'
-                                                            : undefined
-                                                    }
-                                                    className='svgl-result'
-                                                    key={result.id}
-                                                    onClick={() => {
-                                                        setSelectedSvglResult(
-                                                            result
-                                                        );
-                                                    }}
-                                                    type='button'
-                                                >
-                                                    <img
-                                                        alt=''
-                                                        src={getSvglRoute(
-                                                            result.route
-                                                        )}
-                                                    />
-                                                    <span>{result.title}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    <div className='svgl-actions'>
-                                        <button
-                                            className='button button--secondary'
-                                            disabled={
-                                                selectedSvglResult === undefined
-                                            }
-                                            onClick={cancelSvglSelection}
-                                            type='button'
-                                        >
-                                            Cancel
+                                            {copyState === 'copied'
+                                                ? 'Copied'
+                                                : 'Copy'}
                                         </button>
                                         <button
+                                            aria-label='Download animated SVG'
                                             className='button button--primary'
-                                            disabled={
-                                                selectedSvglResult === undefined
-                                            }
-                                            onClick={chooseSvglResult}
+                                            disabled={badgeSvg === ''}
+                                            onClick={downloadSvg}
+                                            title='Download'
                                             type='button'
                                         >
-                                            Choose
+                                            <Download
+                                                aria-hidden='true'
+                                                size={16}
+                                            />
+                                            Download
                                         </button>
                                     </div>
-                                </section>
-
-                                <label className='field source-field'>
-                                    <span>SVG source</span>
-                                    {selectedFrameHasSource ? (
-                                        <textarea
-                                            className='source-field__textarea'
-                                            onChange={(event) => {
-                                                updateSelectedFrame(
-                                                    'source',
-                                                    event
-                                                );
-                                            }}
-                                            value={selectedFrame.source}
-                                        />
-                                    ) : (
-                                        <div className='source-empty'>
-                                            <button
-                                                className='button button--secondary'
-                                                onClick={pasteSource}
-                                                type='button'
-                                            >
-                                                <ClipboardPaste
-                                                    aria-hidden='true'
-                                                    size={16}
-                                                />
-                                                Paste
-                                            </button>
-                                            <button
-                                                className='button button--secondary'
-                                                onClick={openFilePicker}
-                                                type='button'
-                                            >
-                                                <FolderOpen
-                                                    aria-hidden='true'
-                                                    size={16}
-                                                />
-                                                Open file
-                                            </button>
-                                        </div>
-                                    )}
-                                </label>
-                            </section>
+                                </div>
+                            </aside>
                         </section>
 
-                        <aside aria-label='Generated badge' className='output'>
+                        <section
+                            aria-labelledby='frame-editor-title'
+                            className='frame-editor'
+                        >
                             <div className='panel-heading'>
-                                <h2>Output</h2>
-                                <span>{formatKilobytes(badgeSvg.length)}</span>
+                                <h2 id='frame-editor-title'>Edit Frame</h2>
+                                <span>Frame {selectedFrameIndex + 1}</span>
                             </div>
-                            <div className='output__showcase'>
-                                <div className='preview'>
-                                    {previewSource === '' ? (
-                                        <span>
-                                            Add SVG artwork to start the
-                                            animation loop.
-                                        </span>
-                                    ) : (
-                                        <img
-                                            alt='Generated animated badge preview'
-                                            src={previewSource}
+
+                            <div className='editor-fields'>
+                                <label className='field'>
+                                    <span>Name</span>
+                                    <input
+                                        onChange={(event) => {
+                                            updateSelectedFrame('name', event);
+                                        }}
+                                        value={selectedFrame.name}
+                                    />
+                                </label>
+                                <label className='field field--color'>
+                                    <span>Color</span>
+                                    <input
+                                        onChange={(event) => {
+                                            updateSelectedFrame('color', event);
+                                        }}
+                                        type='color'
+                                        value={selectedFrame.color}
+                                    />
+                                </label>
+                            </div>
+
+                            <section
+                                aria-label='Search SVGL logos'
+                                className='svgl-search'
+                            >
+                                <label className='field'>
+                                    <span>Logo</span>
+                                    <div className='svgl-search__bar'>
+                                        <Search aria-hidden='true' size={16} />
+                                        <input
+                                            onChange={(event) => {
+                                                setSvglQuery(
+                                                    event.target.value
+                                                );
+                                            }}
+                                            placeholder='React, Vite, GitHub...'
+                                            value={svglQuery}
                                         />
+                                    </div>
+                                </label>
+
+                                <div className='svgl-results'>
+                                    {svglResults.length === 0 ? (
+                                        <p>
+                                            SVGL matches for "{svglQuery}" will
+                                            appear here.
+                                        </p>
+                                    ) : (
+                                        svglResults.map((result) => (
+                                            <button
+                                                aria-current={
+                                                    result.id ===
+                                                    selectedSvglResult?.id
+                                                        ? 'true'
+                                                        : undefined
+                                                }
+                                                className='svgl-result'
+                                                key={result.id}
+                                                onClick={() => {
+                                                    setSelectedSvglResult(
+                                                        result
+                                                    );
+                                                }}
+                                                type='button'
+                                            >
+                                                <img
+                                                    alt=''
+                                                    src={getSvglRoute(
+                                                        result.route
+                                                    )}
+                                                />
+                                                <span>{result.title}</span>
+                                            </button>
+                                        ))
                                     )}
                                 </div>
 
-                                <div className='output__actions'>
+                                <div className='svgl-actions'>
                                     <button
-                                        aria-label={
-                                            copyState === 'copied'
-                                                ? 'Copied animated SVG'
-                                                : 'Copy animated SVG'
+                                        className='button button--secondary'
+                                        disabled={
+                                            selectedSvglResult === undefined
                                         }
-                                        className='button button--primary'
-                                        disabled={badgeSvg === ''}
-                                        onClick={copySvg}
-                                        title={
-                                            copyState === 'copied'
-                                                ? 'Copied'
-                                                : 'Copy'
-                                        }
+                                        onClick={cancelSvglSelection}
                                         type='button'
                                     >
-                                        <Copy aria-hidden='true' size={16} />
-                                        {copyState === 'copied'
-                                            ? 'Copied'
-                                            : 'Copy'}
+                                        Cancel
                                     </button>
                                     <button
-                                        aria-label='Download animated SVG'
                                         className='button button--primary'
-                                        disabled={badgeSvg === ''}
-                                        onClick={downloadSvg}
-                                        title='Download'
+                                        disabled={
+                                            selectedSvglResult === undefined
+                                        }
+                                        onClick={chooseSvglResult}
                                         type='button'
                                     >
-                                        <Download
-                                            aria-hidden='true'
-                                            size={16}
-                                        />
-                                        Download
+                                        Choose
                                     </button>
                                 </div>
-                            </div>
-                        </aside>
+                            </section>
+
+                            <label className='field source-field'>
+                                <span>SVG source</span>
+                                {selectedFrameHasSource ? (
+                                    <textarea
+                                        className='source-field__textarea'
+                                        onChange={(event) => {
+                                            updateSelectedFrame(
+                                                'source',
+                                                event
+                                            );
+                                        }}
+                                        value={selectedFrame.source}
+                                    />
+                                ) : (
+                                    <div className='source-empty'>
+                                        <button
+                                            className='button button--secondary'
+                                            onClick={pasteSource}
+                                            type='button'
+                                        >
+                                            <ClipboardPaste
+                                                aria-hidden='true'
+                                                size={16}
+                                            />
+                                            Paste
+                                        </button>
+                                        <button
+                                            className='button button--secondary'
+                                            onClick={openFilePicker}
+                                            type='button'
+                                        >
+                                            <FolderOpen
+                                                aria-hidden='true'
+                                                size={16}
+                                            />
+                                            Open file
+                                        </button>
+                                    </div>
+                                )}
+                            </label>
+                        </section>
                     </section>
                 </div>
 
@@ -834,6 +921,40 @@ export function App(): JSX.Element {
                     type='file'
                 />
             </section>
+
+            {deleteCandidateId === undefined ? undefined : (
+                <div className='confirm-backdrop' role='presentation'>
+                    <section
+                        aria-labelledby='delete-frame-title'
+                        aria-modal='true'
+                        className='confirm-dialog'
+                        role='dialog'
+                    >
+                        <div className='panel-heading'>
+                            <h2 id='delete-frame-title'>Delete Frame</h2>
+                        </div>
+                        <p>This removes the frame from the badge animation.</p>
+                        <div className='confirm-dialog__actions'>
+                            <button
+                                className='button button--secondary'
+                                onClick={() => {
+                                    setDeleteCandidateId(undefined);
+                                }}
+                                type='button'
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className='button button--primary'
+                                onClick={confirmDeleteState}
+                                type='button'
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
         </main>
     );
 }

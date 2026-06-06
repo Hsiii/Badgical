@@ -100,15 +100,15 @@ textarea {
 
 .tool-panel {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+    grid-template-columns: 360px minmax(0, 1fr);
     gap: var(--space-12);
-    align-items: start;
+    align-items: stretch;
     align-self: stretch;
     min-height: 0;
 }
 
-.frame-workbench,
-.output {
+.frame-rail,
+.frame-editor {
     display: grid;
     align-content: start;
     min-width: 0;
@@ -117,9 +117,11 @@ textarea {
     background: var(--clr-surface);
 }
 
-.frame-workbench {
-    grid-template-columns: 248px minmax(0, 1fr);
-    overflow: hidden;
+.frame-rail {
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: var(--space-12);
+    border: 0;
+    border-radius: 0;
 }
 
 .frames,
@@ -133,7 +135,25 @@ textarea {
 }
 
 .frames {
-    border-right: 1px solid var(--clr-border);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-8);
+    overflow: hidden;
+}
+
+.frame-list {
+    min-height: 0;
+    overflow: auto;
+}
+
+.output {
+    align-content: start;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-8);
+}
+
+.frame-editor {
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    min-height: 100%;
 }
 
 .panel-heading {
@@ -168,16 +188,15 @@ textarea {
 
 .frame-card {
     display: grid;
-    grid-template-columns: 28px minmax(0, 1fr);
-    gap: var(--space-8);
+    grid-template-columns: minmax(0, 1fr) 32px;
+    gap: var(--space-12);
     align-items: center;
-    min-height: 44px;
+    min-height: 48px;
     padding: var(--space-8);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
     background: var(--clr-surface);
     color: var(--clr-text);
-    cursor: pointer;
     text-align: left;
 }
 
@@ -186,21 +205,39 @@ textarea {
     background: var(--clr-accent-soft);
 }
 
-.frame-card__index {
-    display: grid;
-    width: 28px;
-    height: 28px;
-    place-items: center;
-    border-radius: var(--space-8);
-    background: var(--clr-control);
-    font: var(--font-small);
+.frame-card__select {
+    display: flex;
+    min-width: 0;
+    min-height: 32px;
+    align-items: center;
+    justify-self: start;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
 }
 
-.frame-card__name {
-    overflow: hidden;
-    font: var(--font-small);
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.frame-card__select img {
+    width: auto;
+    max-width: 100%;
+    height: 28px;
+}
+
+.frame-card__delete {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    justify-self: end;
+    border: 0;
+    border-radius: var(--space-8);
+    background: transparent;
+    color: var(--clr-text);
+    cursor: pointer;
+}
+
+.frame-card__delete:disabled {
+    cursor: not-allowed;
+    opacity: 0.32;
 }
 
 .button,
@@ -261,6 +298,9 @@ textarea {
 
 .add-frame {
     justify-self: stretch;
+    border-style: dashed;
+    background: transparent;
+    color: var(--clr-accent);
 }
 
 .field {
@@ -347,7 +387,7 @@ textarea {
 .preview {
     display: grid;
     width: 100%;
-    min-height: 96px;
+    min-height: 120px;
     place-items: center;
     border-radius: var(--space-4);
     background: var(--clr-control);
@@ -411,6 +451,20 @@ textarea {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
     gap: var(--space-8);
+    min-height: 192px;
+    align-content: start;
+}
+
+.svgl-results p {
+    grid-column: 1 / -1;
+    display: grid;
+    min-height: 192px;
+    place-items: center;
+    border: 1px dashed var(--clr-border);
+    border-radius: var(--space-8);
+    color: var(--clr-text-muted);
+    font: var(--font-small);
+    text-align: center;
 }
 
 .svgl-result {
@@ -451,6 +505,36 @@ textarea {
     gap: var(--space-8);
 }
 
+.confirm-backdrop {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: var(--space-16);
+    background: var(--clr-backdrop);
+}
+
+.confirm-dialog {
+    display: grid;
+    gap: var(--space-16);
+    width: min(100%, 360px);
+    padding: var(--space-16);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-8);
+    background: var(--clr-surface);
+}
+
+.confirm-dialog p {
+    color: var(--clr-text);
+    font: var(--font-small);
+}
+
+.confirm-dialog__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+}
+
 @media (max-width: 920px) {
     .builder__workspace {
         padding: var(--space-16);
@@ -460,13 +544,8 @@ textarea {
         grid-template-columns: 1fr;
     }
 
-    .frame-workbench {
-        grid-template-columns: 1fr;
-    }
-
-    .frames {
-        border-right: 0;
-        border-bottom: 1px solid var(--clr-border);
+    .frame-rail {
+        grid-template-rows: auto auto;
     }
 
     .output {
