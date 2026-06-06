@@ -569,7 +569,8 @@ textarea {
 .color-editor__field-stack,
 .color-editor__controls {
     display: grid;
-    gap: var(--space-12);
+    gap: var(--space-16);
+    align-content: start;
 }
 
 .color-field {
@@ -613,19 +614,14 @@ textarea {
     cursor: pointer;
 }
 
-.color-editor__preview {
-    width: var(--space-48);
-    height: var(--space-48);
-    border: 1px solid var(--clr-border);
-    border-radius: var(--space-8);
-    background: var(--badge-edit-bg);
+.color-editor__controls {
+    grid-template-rows: auto auto;
 }
 
 .color-editor__rgb {
-    grid-column: 1 / -1;
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-8);
+    gap: var(--space-12);
 }
 
 .color-channel {

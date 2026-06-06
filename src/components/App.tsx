@@ -1306,14 +1306,6 @@ export function App(): JSX.Element {
                                                 </label>
                                             </div>
                                             <div className='color-editor__controls'>
-                                                <div
-                                                    aria-hidden='true'
-                                                    className='color-editor__preview'
-                                                    style={{
-                                                        backgroundColor:
-                                                            selectedMaterializedFrame.color,
-                                                    }}
-                                                />
                                                 <label className='field'>
                                                     <span>Hex</span>
                                                     <input
