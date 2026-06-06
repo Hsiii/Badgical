@@ -248,10 +248,10 @@ const buildAnimationSteps = (stateCount: number): string => {
         return '0%,100%{transform:translateY(0)}';
     }
 
-    const totalFrames = stateCount + 1;
+    const totalFrames = stateCount;
     const holdShare = 0.72;
 
-    return Array.from({ length: totalFrames }, (_value, index) => {
+    return Array.from({ length: stateCount }, (_value, index) => {
         const frameStart = (index / totalFrames) * 100;
         const frameHoldEnd = ((index + holdShare) / totalFrames) * 100;
         const frameEnd = ((index + 1) / totalFrames) * 100;
@@ -276,7 +276,7 @@ const buildBadgeSvg = (states: readonly BadgeState[]): string => {
             ? [...visibleStates, firstState]
             : visibleStates;
     const duration = Math.max(
-        animatedStates.length * frameSeconds,
+        visibleStates.length * frameSeconds,
         frameSeconds
     );
     const slots = animatedStates
