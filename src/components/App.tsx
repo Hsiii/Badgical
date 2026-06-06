@@ -1306,7 +1306,7 @@ export function App(): JSX.Element {
                                                 </label>
                                             </div>
                                             <div className='color-editor__controls'>
-                                                <label className='field'>
+                                                <label className='field color-editor__field-row'>
                                                     <span>Hex</span>
                                                     <input
                                                         onBlur={(event) => {
@@ -1327,129 +1327,66 @@ export function App(): JSX.Element {
                                                         }
                                                     />
                                                 </label>
-                                                <div className='color-editor__rgb'>
-                                                    <label className='field'>
+                                                <div className='color-editor__rgb-row'>
+                                                    <label className='field color-editor__field-row'>
                                                         <span>R</span>
-                                                        <div className='color-channel'>
-                                                            <input
-                                                                max='255'
-                                                                min='0'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateSelectedFrameChannel(
-                                                                        'red',
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='range'
-                                                                value={
-                                                                    selectedFrameChannels.red
-                                                                }
-                                                            />
-                                                            <input
-                                                                max='255'
-                                                                min='0'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateSelectedFrameChannel(
-                                                                        'red',
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='number'
-                                                                value={
-                                                                    selectedFrameChannels.red
-                                                                }
-                                                            />
-                                                        </div>
+                                                        <input
+                                                            max='255'
+                                                            min='0'
+                                                            onChange={(
+                                                                event
+                                                            ) => {
+                                                                updateSelectedFrameChannel(
+                                                                    'red',
+                                                                    event.target
+                                                                        .value
+                                                                );
+                                                            }}
+                                                            type='number'
+                                                            value={
+                                                                selectedFrameChannels.red
+                                                            }
+                                                        />
                                                     </label>
-                                                    <label className='field'>
+                                                    <label className='field color-editor__field-row'>
                                                         <span>G</span>
-                                                        <div className='color-channel'>
-                                                            <input
-                                                                max='255'
-                                                                min='0'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateSelectedFrameChannel(
-                                                                        'green',
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='range'
-                                                                value={
-                                                                    selectedFrameChannels.green
-                                                                }
-                                                            />
-                                                            <input
-                                                                max='255'
-                                                                min='0'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateSelectedFrameChannel(
-                                                                        'green',
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='number'
-                                                                value={
-                                                                    selectedFrameChannels.green
-                                                                }
-                                                            />
-                                                        </div>
+                                                        <input
+                                                            max='255'
+                                                            min='0'
+                                                            onChange={(
+                                                                event
+                                                            ) => {
+                                                                updateSelectedFrameChannel(
+                                                                    'green',
+                                                                    event.target
+                                                                        .value
+                                                                );
+                                                            }}
+                                                            type='number'
+                                                            value={
+                                                                selectedFrameChannels.green
+                                                            }
+                                                        />
                                                     </label>
-                                                    <label className='field'>
+                                                    <label className='field color-editor__field-row'>
                                                         <span>B</span>
-                                                        <div className='color-channel'>
-                                                            <input
-                                                                max='255'
-                                                                min='0'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateSelectedFrameChannel(
-                                                                        'blue',
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='range'
-                                                                value={
-                                                                    selectedFrameChannels.blue
-                                                                }
-                                                            />
-                                                            <input
-                                                                max='255'
-                                                                min='0'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateSelectedFrameChannel(
-                                                                        'blue',
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='number'
-                                                                value={
-                                                                    selectedFrameChannels.blue
-                                                                }
-                                                            />
-                                                        </div>
+                                                        <input
+                                                            max='255'
+                                                            min='0'
+                                                            onChange={(
+                                                                event
+                                                            ) => {
+                                                                updateSelectedFrameChannel(
+                                                                    'blue',
+                                                                    event.target
+                                                                        .value
+                                                                );
+                                                            }}
+                                                            type='number'
+                                                            value={
+                                                                selectedFrameChannels.blue
+                                                            }
+                                                        />
                                                     </label>
                                                 </div>
                                             </div>
