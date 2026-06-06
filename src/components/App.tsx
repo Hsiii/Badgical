@@ -48,11 +48,27 @@ const escapeXml = (value: string): string =>
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&apos;');
+        .replaceAll('"', '&quot;');
+
+const compactNumber = (value: number): string =>
+    Number(value.toFixed(2)).toString();
+
+const minifySvgSource = (source: string): string =>
+    source
+        .trim()
+        .replaceAll(/<!--[\S\s]*?-->/g, '')
+        .replaceAll(/>\s+</g, '><')
+        .replaceAll(/\s{2,}/g, ' ')
+        .replaceAll(/\s+\/>/g, '/>')
+        .replaceAll(';}', '}')
+        .replaceAll(/:\s+/g, ':')
+        .replaceAll(/,\s+/g, ',');
+
+const compactColor = (color: string): string =>
+    color.replace(/^#([\dA-Fa-f])\1([\dA-Fa-f])\2([\dA-Fa-f])\3$/, '#$1$2$3');
 
 const toDataUri = (source: string): string => {
-    const encodedSource = encodeURIComponent(source)
+    const encodedSource = encodeURIComponent(minifySvgSource(source))
         .replaceAll("'", '%27')
         .replaceAll('"', '%22');
 
@@ -71,7 +87,7 @@ const getReadableInk = (color: string): string => {
     const blue = Number.parseInt(normalizedColor.slice(4, 6), 16);
     const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
 
-    return luminance > 150 ? '#1f2328' : '#ffffff';
+    return luminance > 150 ? '#1f2328' : '#fff';
 };
 
 const normalizeStates = (
@@ -104,7 +120,7 @@ const getBadgeWidth = (states: readonly BadgeState[]): number => {
 
 const buildAnimationSteps = (stateCount: number): string => {
     if (stateCount < 2) {
-        return '0%, 100% { transform: translateY(0); }';
+        return '0%,100%{transform:translateY(0)}';
     }
 
     const totalFrames = stateCount + 1;
@@ -116,9 +132,8 @@ const buildAnimationSteps = (stateCount: number): string => {
         const frameEnd = ((index + 1) / totalFrames) * 100;
         const offset = index * badgeHeight;
 
-        return `${frameStart.toFixed(2)}%, ${frameHoldEnd.toFixed(2)}% { transform: translateY(-${offset}px); }
-      ${frameEnd.toFixed(2)}% { transform: translateY(-${offset + badgeHeight}px); }`;
-    }).join('\n      ');
+        return `${compactNumber(frameStart)}%,${compactNumber(frameHoldEnd)}%{transform:translateY(-${offset}px)}${compactNumber(frameEnd)}%{transform:translateY(-${offset + badgeHeight}px)}`;
+    }).join('');
 };
 
 const buildBadgeSvg = (states: readonly BadgeState[]): string => {
@@ -139,51 +154,35 @@ const buildBadgeSvg = (states: readonly BadgeState[]): string => {
         animatedStates.length * frameSeconds,
         frameSeconds
     );
-    const label =
-        visibleStates.length > 1
-            ? `${firstState.name} swapping with ${visibleStates
-                  .slice(1)
-                  .map((state) => state.name)
-                  .join(', ')}`
-            : firstState.name;
-
     const slots = animatedStates
         .map((state, index) => {
             const slotY = index * badgeHeight;
             const ink = getReadableInk(state.color);
+            const textAttributes =
+                visibleStates.length === 1
+                    ? ` font-size="${textSize}" font-weight="700"`
+                    : '';
 
-            return `<g class="slot" transform="translate(0 ${slotY})">
-      <rect width="${width}" height="${badgeHeight}" fill="${escapeXml(state.color)}"/>
-      <image x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}" href="${escapeXml(
-          toDataUri(state.source)
-      )}"/>
-      <text fill="${ink}" x="${textX}" y="18" text-anchor="middle">${escapeXml(
-          state.name.toUpperCase()
-      )}</text>
-    </g>`;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.color))}"/><image x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}" href="${escapeXml(toDataUri(state.source))}"/><text fill="${ink}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(state.name.toUpperCase())}</text>`;
+
+            if (visibleStates.length === 1) {
+                return content;
+            }
+
+            return `<g class="f"${slotY === 0 ? '' : ` transform="translate(0 ${slotY})"`}>${content}</g>`;
         })
-        .join('\n    ');
+        .join('');
+    const animationStyle =
+        visibleStates.length > 1
+            ? `.s{animation:a ${duration}s ease-in-out 1.2s infinite}@keyframes a{${buildAnimationSteps(visibleStates.length)}}@media (prefers-reduced-motion:reduce){.s{animation:none}.f:nth-child(n+2){display:none}}`
+            : '';
+    const body = visibleStates.length > 1 ? `<g class="s">${slots}</g>` : slots;
+    const style =
+        visibleStates.length > 1
+            ? `<style>text{font:700 ${textSize}px sans-serif}${animationStyle}</style>`
+            : '';
 
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${badgeHeight}" viewBox="0 0 ${width} ${badgeHeight}" role="img" aria-label="${escapeXml(label)}">
-  <title>${escapeXml(visibleStates.map((state) => state.name).join(' / '))}</title>
-  <style>
-    .stack { animation: swap ${duration}s ease-in-out 1.2s infinite; }
-    .slot text { font: 700 ${textSize}px Verdana, Geneva, DejaVu Sans, sans-serif; text-rendering: geometricPrecision; }
-    @keyframes swap {
-      ${buildAnimationSteps(visibleStates.length)}
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .stack { animation: none; }
-      .slot:nth-child(n+2) { display: none; }
-    }
-  </style>
-  <clipPath id="badge-clip"><rect width="${width}" height="${badgeHeight}"/></clipPath>
-  <g clip-path="url(#badge-clip)">
-    <g class="stack">
-    ${slots}
-    </g>
-  </g>
-</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${badgeHeight}" viewBox="0 0 ${width} ${badgeHeight}">${style}${body}</svg>`;
 };
 
 const buildSingleBadgeSvg = (state: BadgeState, index: number): string =>
