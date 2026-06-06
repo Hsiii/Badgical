@@ -739,7 +739,7 @@ export function App(): JSX.Element {
                             ? 'Searching SVGL...'
                             : undefined}
                         {svglStatus === 'empty'
-                            ? `No SVGL results for "${svglQuery}". Try another name or paste SVG source.`
+                            ? `No matching logos for "${svglQuery}". Try another name or paste SVG source.`
                             : undefined}
                         {svglStatus === 'error'
                             ? 'SVGL search is unavailable. Paste SVG source or try again.'
