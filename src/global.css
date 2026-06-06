@@ -102,6 +102,7 @@ textarea {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
     gap: var(--space-12);
+    align-items: start;
     align-self: stretch;
     min-height: 0;
 }
@@ -228,6 +229,11 @@ textarea {
     border: 0;
     background: transparent;
     color: var(--clr-text-strong);
+}
+
+.icon-button svg {
+    width: 24px;
+    height: 24px;
 }
 
 .topbar > .icon-button {
