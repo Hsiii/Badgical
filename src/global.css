@@ -19,6 +19,11 @@ body {
     line-height: 1.5;
 }
 
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
 button,
 input,
 textarea {
@@ -49,24 +54,17 @@ textarea {
 
 .builder {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
     min-height: 100vh;
     width: min(100%, 1440px);
     margin: 0 auto;
 }
 
-.topbar__brand,
-.topbar__meta,
 .field span {
     color: var(--clr-text-muted);
     font: var(--font-label);
     letter-spacing: 0;
     text-transform: uppercase;
-}
-
-.builder__title {
-    color: var(--clr-text-strong);
-    font: var(--font-display);
 }
 
 .dialog__title {
@@ -83,40 +81,60 @@ textarea {
     grid-template-columns: max-content 1fr max-content;
     gap: var(--space-16);
     align-items: center;
-    min-height: 56px;
-    padding: 0 var(--space-24);
-    border-bottom: 1px solid var(--clr-border);
+    min-height: 72px;
+    padding: var(--space-20) var(--space-24);
 }
 
-.topbar__brand {
-    color: var(--clr-accent);
-    font-weight: var(--fw-bold);
+.brand-badge {
+    display: inline-flex;
+    gap: var(--space-8);
+    align-items: center;
+    justify-self: start;
+    height: 32px;
+    padding: 0 var(--space-12) 0 var(--space-8);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-8);
+    color: var(--clr-text-strong);
+    font: var(--font-small);
+    font-weight: var(--fw-semibold);
+}
+
+.brand-badge__icon {
+    display: grid;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    border-radius: var(--space-4);
+    background: var(--clr-brand-soft);
+    color: var(--clr-brand);
+}
+
+.brand-badge__icon img {
+    width: 16px;
+    height: 16px;
 }
 
 .builder__workspace {
     display: grid;
-    grid-template-columns: 352px minmax(0, 1fr);
+    grid-template-rows: minmax(320px, 1fr) auto;
+    justify-items: center;
     min-height: 0;
+    padding: var(--space-24);
 }
 
-.chain,
-.output,
 .dialog {
     border: 1px solid var(--clr-border);
     border-radius: 0;
     background: var(--clr-surface);
 }
 
-.chain,
-.output {
-    padding: var(--space-20);
-}
-
 .chain {
     display: grid;
     gap: var(--space-4);
+    width: min(280px, 100%);
     align-content: start;
-    border-width: 0 1px 0 0;
+    align-self: center;
+    justify-self: center;
 }
 
 .chain__segment {
@@ -142,7 +160,7 @@ textarea {
 
 .chain__line {
     width: 1px;
-    height: 16px;
+    height: 28px;
     background: var(--clr-border);
 }
 
@@ -167,33 +185,41 @@ textarea {
     width: 40px;
 }
 
+.topbar > .icon-button {
+    grid-column: 3;
+    justify-self: end;
+}
+
 .chain__add {
     justify-self: center;
     width: 40px;
     padding: 0;
 }
 
+.chain__add:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+}
+
 .output {
     display: grid;
-    gap: var(--space-16);
-    align-content: start;
+    gap: var(--space-12);
+    align-self: end;
+    justify-items: center;
     min-width: 0;
-    border-width: 0;
+    padding-bottom: var(--space-24);
 }
 
 .output__showcase {
     display: grid;
     gap: var(--space-12);
-    align-content: start;
+    justify-items: center;
 }
 
 .preview {
     display: grid;
-    min-height: 184px;
+    min-height: 44px;
     place-items: center;
-    border: 1px solid var(--clr-border);
-    border-radius: var(--space-4);
-    background: var(--clr-bg-subtle);
 }
 
 .preview img {
@@ -210,12 +236,10 @@ textarea {
 
 .output__actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 40px 40px;
     gap: var(--space-8);
-    width: min(360px, 100%);
 }
 
-.output__actions button,
 .dialog__footer .button--primary {
     background: var(--clr-accent);
     color: var(--clr-surface-raised);
@@ -341,25 +365,25 @@ textarea {
     }
 
     .builder__workspace {
-        grid-template-columns: 1fr;
-    }
-
-    .chain {
-        border-width: 0 0 1px;
-    }
-
-    .output {
-        grid-template-columns: 1fr;
+        grid-template-rows: minmax(300px, 1fr) auto;
     }
 }
 
 @media (max-width: 640px) {
+    .topbar {
+        min-height: 64px;
+        padding: var(--space-16);
+    }
+
+    .builder__workspace {
+        padding: var(--space-16);
+    }
+
     .dialog-backdrop {
         padding: var(--space-16);
     }
 
     .dialog__row,
-    .output__actions,
     .dialog__footer,
     .source-empty,
     .chain__node {
