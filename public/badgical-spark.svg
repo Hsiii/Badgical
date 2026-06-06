@@ -5,10 +5,8 @@
             <stop offset="0.58" stop-color="#5968c9" />
             <stop offset="1" stop-color="#6f7fdd" />
         </linearGradient>
-        <linearGradient id="spark-fill" x1="10" x2="23" y1="20" y2="4" gradientUnits="userSpaceOnUse">
+        <linearGradient id="spark-fill" x1="8" x2="24" y1="22" y2="2" gradientUnits="userSpaceOnUse">
             <stop stop-color="#7c61c8" />
-            <stop offset="0.38" stop-color="#8969cd" />
-            <stop offset="0.7" stop-color="#a784da" />
             <stop offset="1" stop-color="#dbdaec" />
         </linearGradient>
         <path id="spark-shape" d="M15.52 2.24c.36-1.04 1.84-1.04 2.2 0l1.64 4.68a6.94 6.94 0 0 0 4.24 4.24l4.68 1.64c1.04.36 1.04 1.84 0 2.2l-4.68 1.64a6.94 6.94 0 0 0-4.24 4.24l-1.64 4.68c-.36 1.04-1.84 1.04-2.2 0l-1.64-4.68a6.94 6.94 0 0 0-4.24-4.24L4.96 15c-1.04-.36-1.04-1.84 0-2.2l4.68-1.64a6.94 6.94 0 0 0 4.24-4.24l1.64-4.68Z" />
