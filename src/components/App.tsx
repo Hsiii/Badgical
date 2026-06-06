@@ -34,6 +34,8 @@ interface SvglResult {
     readonly title: string;
 }
 
+type SvglSearchStatus = 'idle' | 'loading' | 'empty' | 'ready' | 'error';
+
 const defaultStates: readonly BadgeState[] = [
     {
         id: 'badgical',
@@ -283,6 +285,7 @@ export function App(): JSX.Element {
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
     const [svglQuery, setSvglQuery] = useState(defaultStates[0].name);
     const [svglResults, setSvglResults] = useState<readonly SvglResult[]>([]);
+    const [svglStatus, setSvglStatus] = useState<SvglSearchStatus>('idle');
     const [selectedSvglResult, setSelectedSvglResult] = useState<
         SvglResult | undefined
     >(undefined);
@@ -299,15 +302,12 @@ export function App(): JSX.Element {
         () => states.find((state) => state.id === selectedFrameId) ?? states[0],
         [selectedFrameId, states]
     );
-    const selectedFrameIndex = Math.max(
-        states.findIndex((state) => state.id === selectedFrame.id),
-        0
-    );
     const selectedFrameHasSource = selectedFrame.source.trim() !== '';
 
     useEffect(() => {
         setSvglQuery(selectedFrame.name);
         setSvglResults([]);
+        setSvglStatus('idle');
         setSelectedSvglResult(undefined);
     }, [selectedFrame.id, selectedFrame.name]);
 
@@ -316,11 +316,13 @@ export function App(): JSX.Element {
 
         if (query === '') {
             setSvglResults([]);
+            setSvglStatus('idle');
             setSelectedSvglResult(undefined);
             return undefined;
         }
 
         const abortController = new AbortController();
+        setSvglStatus('loading');
         const timeoutId = globalThis.setTimeout(
             () => {
                 fetch(
@@ -340,6 +342,9 @@ export function App(): JSX.Element {
                         const visibleResults = results.slice(0, maxSvglResults);
 
                         setSvglResults(visibleResults);
+                        setSvglStatus(
+                            visibleResults.length === 0 ? 'empty' : 'ready'
+                        );
                         setSelectedSvglResult((currentResult) =>
                             visibleResults.some(
                                 (result) => result.id === currentResult?.id
@@ -357,6 +362,7 @@ export function App(): JSX.Element {
                         }
 
                         setSvglResults([]);
+                        setSvglStatus('error');
                         setSelectedSvglResult(undefined);
                     });
             },
@@ -411,6 +417,7 @@ export function App(): JSX.Element {
         setSelectedFrameId(newState.id);
         setSvglQuery(newState.name);
         setSvglResults([]);
+        setSvglStatus('idle');
         setSelectedSvglResult(undefined);
         setCopyState('idle');
     };
@@ -441,6 +448,7 @@ export function App(): JSX.Element {
             setSelectedFrameId(nextState.id);
             setSvglQuery(nextState.name);
             setSvglResults([]);
+            setSvglStatus('idle');
             setSelectedSvglResult(undefined);
         }
 
@@ -533,6 +541,7 @@ export function App(): JSX.Element {
                 );
                 setCopyState('idle');
                 setSvglResults([]);
+                setSvglStatus('idle');
                 setSelectedSvglResult(undefined);
             })
             .catch(() => undefined);
@@ -762,7 +771,6 @@ export function App(): JSX.Element {
                         >
                             <div className='panel-heading'>
                                 <h2 id='frame-editor-title'>Edit Frame</h2>
-                                <span>Frame {selectedFrameIndex + 1}</span>
                             </div>
 
                             <div className='editor-fields'>
@@ -810,8 +818,18 @@ export function App(): JSX.Element {
                                 <div className='svgl-results'>
                                     {svglResults.length === 0 ? (
                                         <p>
-                                            SVGL matches for "{svglQuery}" will
-                                            appear here.
+                                            {svglStatus === 'loading'
+                                                ? 'Searching SVGL...'
+                                                : undefined}
+                                            {svglStatus === 'empty'
+                                                ? `No SVGL results for "${svglQuery}". Try another name or paste SVG source.`
+                                                : undefined}
+                                            {svglStatus === 'error'
+                                                ? 'SVGL search is unavailable. Paste SVG source or try again.'
+                                                : undefined}
+                                            {svglStatus === 'idle'
+                                                ? 'Search SVGL to apply a logo.'
+                                                : undefined}
                                         </p>
                                     ) : (
                                         svglResults.map((result) => (
