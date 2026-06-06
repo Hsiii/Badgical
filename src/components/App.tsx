@@ -35,6 +35,10 @@ interface SvglResult {
     readonly title: string;
 }
 
+interface SvglApiError {
+    readonly error?: string;
+}
+
 type SvglSearchStatus = 'idle' | 'loading' | 'empty' | 'ready' | 'error';
 type EditorMode = 'color' | 'text' | 'source';
 
@@ -316,6 +320,24 @@ const buildSingleBadgeSvg = (state: BadgeState, index: number): string =>
 const getSvglRoute = (route: string | SvglRouteOptions): string =>
     typeof route === 'string' ? route : route.light;
 
+const isSvglNotFoundResponse = (
+    response: Response,
+    payload: SvglApiError
+): boolean =>
+    response.status === 404 &&
+    payload.error?.includes('SVG not found') === true;
+
+const isSvglApiError = (payload: unknown): payload is SvglApiError =>
+    typeof payload === 'object' && payload !== null && 'error' in payload;
+
+const isSvglResultList = (payload: unknown): payload is readonly SvglResult[] =>
+    typeof payload === 'object' &&
+    payload !== null &&
+    'length' in payload &&
+    'slice' in payload &&
+    typeof payload.length === 'number' &&
+    typeof payload.slice === 'function';
+
 const getSvglSourceUrl = (route: string | SvglRouteOptions): string => {
     const svgRoute = getSvglRoute(route);
 
@@ -441,11 +463,25 @@ export function App(): JSX.Element {
                     }
                 )
                     .then(async (response) => {
+                        const payload = (await response.json()) as unknown;
+
+                        if (
+                            !response.ok &&
+                            isSvglApiError(payload) &&
+                            isSvglNotFoundResponse(response, payload)
+                        ) {
+                            return [];
+                        }
+
                         if (!response.ok) {
                             throw new Error('SVGL search failed');
                         }
 
-                        return (await response.json()) as readonly SvglResult[];
+                        if (!isSvglResultList(payload)) {
+                            throw new TypeError('SVGL search payload invalid');
+                        }
+
+                        return payload;
                     })
                     .then((results) => {
                         const visibleResults = results.slice(0, maxSvglResults);
@@ -765,10 +801,10 @@ export function App(): JSX.Element {
                             ? 'Searching SVGL...'
                             : undefined}
                         {svglStatus === 'empty'
-                            ? `No matching logos for "${svglQuery}". Try another name or paste SVG source.`
+                            ? `SVGL has no logo titled "${svglQuery}". Try another name or paste SVG source.`
                             : undefined}
                         {svglStatus === 'error'
-                            ? 'SVGL search is unavailable. Paste SVG source or try again.'
+                            ? 'SVGL search is unavailable right now. Paste SVG source or try again.'
                             : undefined}
                         {svglStatus === 'idle'
                             ? 'Search SVGL to apply a logo.'
