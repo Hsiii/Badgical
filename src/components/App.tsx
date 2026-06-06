@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ChangeEvent, CSSProperties, JSX } from 'react';
+import type { ChangeEvent, CSSProperties, JSX, PointerEvent } from 'react';
 import {
     ClipboardPaste,
     Copy,
@@ -37,6 +37,15 @@ interface SvglResult {
 
 interface SvglApiError {
     readonly error?: string;
+}
+
+interface SvglSearchCopy {
+    readonly chooseLabel: string;
+    readonly emptyMessage: (query: string) => string;
+    readonly errorMessage: string;
+    readonly idleMessage: string;
+    readonly label: string;
+    readonly placeholder: string;
 }
 
 type SvglSearchStatus = 'idle' | 'loading' | 'empty' | 'ready' | 'error';
@@ -179,6 +188,9 @@ const getBadgeHoverFilter = (color: string): string =>
 const clampColorChannel = (value: number): number =>
     Math.min(Math.max(Math.round(value), 0), 255);
 
+const clampPercentage = (value: number): number =>
+    Math.min(Math.max(value, 0), 100);
+
 const channelToHex = (value: number): string =>
     clampColorChannel(value).toString(16).padStart(2, '0');
 
@@ -202,6 +214,92 @@ const normalizeHexInput = (value: string): string | undefined => {
     const [, hexValue] = shortHexMatch;
 
     return `#${hexValue[0]}${hexValue[0]}${hexValue[1]}${hexValue[1]}${hexValue[2]}${hexValue[2]}`;
+};
+
+const rgbToHsv = (
+    red: number,
+    green: number,
+    blue: number
+): {
+    readonly hue: number;
+    readonly saturation: number;
+    readonly value: number;
+} => {
+    const normalizedRed = red / 255;
+    const normalizedGreen = green / 255;
+    const normalizedBlue = blue / 255;
+    const maxChannel = Math.max(normalizedRed, normalizedGreen, normalizedBlue);
+    const minChannel = Math.min(normalizedRed, normalizedGreen, normalizedBlue);
+    const delta = maxChannel - minChannel;
+    let hue = 0;
+
+    if (delta !== 0) {
+        if (maxChannel === normalizedRed) {
+            hue = ((normalizedGreen - normalizedBlue) / delta) % 6;
+        } else if (maxChannel === normalizedGreen) {
+            hue = (normalizedBlue - normalizedRed) / delta + 2;
+        } else {
+            hue = (normalizedRed - normalizedGreen) / delta + 4;
+        }
+    }
+
+    return {
+        hue: Math.round((hue * 60 + 360) % 360),
+        saturation:
+            maxChannel === 0 ? 0 : Math.round((delta / maxChannel) * 100),
+        value: Math.round(maxChannel * 100),
+    };
+};
+
+const hsvToHex = (hue: number, saturation: number, value: number): string => {
+    const normalizedHue = ((hue % 360) + 360) % 360;
+    const normalizedSaturation = clampPercentage(saturation) / 100;
+    const normalizedValue = clampPercentage(value) / 100;
+    const chroma = normalizedValue * normalizedSaturation;
+    const huePrime = normalizedHue / 60;
+    const secondary = chroma * (1 - Math.abs((huePrime % 2) - 1));
+    const match = normalizedValue - chroma;
+    let red = 0;
+    let green = 0;
+    let blue = 0;
+
+    if (huePrime >= 0 && huePrime < 1) {
+        red = chroma;
+        green = secondary;
+    } else if (huePrime < 2) {
+        red = secondary;
+        green = chroma;
+    } else if (huePrime < 3) {
+        green = chroma;
+        blue = secondary;
+    } else if (huePrime < 4) {
+        green = secondary;
+        blue = chroma;
+    } else if (huePrime < 5) {
+        red = secondary;
+        blue = chroma;
+    } else {
+        red = chroma;
+        blue = secondary;
+    }
+
+    return rgbToHex(
+        (red + match) * 255,
+        (green + match) * 255,
+        (blue + match) * 255
+    );
+};
+
+const getColorHsv = (
+    color: string
+): {
+    readonly hue: number;
+    readonly saturation: number;
+    readonly value: number;
+} => {
+    const { blue, green, red } = getColorChannels(color);
+
+    return rgbToHsv(red, green, blue);
 };
 
 const materializeState = (state: BadgeState, _index: number): BadgeState => ({
@@ -419,6 +517,7 @@ export function App(): JSX.Element {
     const selectedFrameChannels = getColorChannels(
         selectedMaterializedFrame.color
     );
+    const selectedFrameHsv = getColorHsv(selectedMaterializedFrame.color);
     const selectedFrameInk = getReadableInk(selectedMaterializedFrame.color);
     const selectedFrameArtwork = selectedMaterializedFrame.source;
     const editorBadgeStyle = {
@@ -586,6 +685,52 @@ export function App(): JSX.Element {
         }
 
         updateSelectedFrameValue('color', rgbToHex(red, green, blue));
+    };
+
+    const updateSelectedFrameHue = (value: string): void => {
+        const nextHue = Number.parseInt(value, 10);
+
+        if (Number.isNaN(nextHue)) {
+            return;
+        }
+
+        updateSelectedFrameValue(
+            'color',
+            hsvToHex(
+                nextHue,
+                selectedFrameHsv.saturation,
+                selectedFrameHsv.value
+            )
+        );
+    };
+
+    const updateSelectedFrameSaturationValue = (
+        saturation: number,
+        value: number
+    ): void => {
+        updateSelectedFrameValue(
+            'color',
+            hsvToHex(selectedFrameHsv.hue, saturation, value)
+        );
+    };
+
+    const updateSelectedFrameFromColorField = (
+        event: PointerEvent<HTMLButtonElement>
+    ): void => {
+        const bounds = event.currentTarget.getBoundingClientRect();
+        const horizontalRatio = Math.min(
+            Math.max((event.clientX - bounds.left) / bounds.width, 0),
+            1
+        );
+        const verticalRatio = Math.min(
+            Math.max((event.clientY - bounds.top) / bounds.height, 0),
+            1
+        );
+
+        updateSelectedFrameSaturationValue(
+            horizontalRatio * 100,
+            (1 - verticalRatio) * 100
+        );
     };
 
     const updateSelectedFrameAllCaps = (allCaps: boolean): void => {
@@ -775,10 +920,14 @@ export function App(): JSX.Element {
         );
     };
 
-    const renderSvglSearch = (
-        label: string,
-        chooseLabel: string
-    ): JSX.Element => (
+    const renderSvglSearch = ({
+        chooseLabel,
+        emptyMessage,
+        errorMessage,
+        idleMessage,
+        label,
+        placeholder,
+    }: SvglSearchCopy): JSX.Element => (
         <section aria-label={label} className='svgl-search'>
             <label className='field'>
                 <span>{label}</span>
@@ -788,7 +937,7 @@ export function App(): JSX.Element {
                         onChange={(event) => {
                             setSvglQuery(event.target.value);
                         }}
-                        placeholder='React, Vite, GitHub...'
+                        placeholder={placeholder}
                         value={svglQuery}
                     />
                 </div>
@@ -801,14 +950,10 @@ export function App(): JSX.Element {
                             ? 'Searching SVGL...'
                             : undefined}
                         {svglStatus === 'empty'
-                            ? `SVGL has no logo titled "${svglQuery}". Try another name or paste SVG source.`
+                            ? emptyMessage(svglQuery)
                             : undefined}
-                        {svglStatus === 'error'
-                            ? 'SVGL search is unavailable right now. Paste SVG source or try again.'
-                            : undefined}
-                        {svglStatus === 'idle'
-                            ? 'Search SVGL to apply a logo.'
-                            : undefined}
+                        {svglStatus === 'error' ? errorMessage : undefined}
+                        {svglStatus === 'idle' ? idleMessage : undefined}
                     </p>
                 ) : (
                     svglResults.map((result) => (
@@ -978,8 +1123,8 @@ export function App(): JSX.Element {
                                     <div className='preview'>
                                         {previewSource === '' ? (
                                             <span>
-                                                Add SVG artwork to start the
-                                                animation loop.
+                                                Fix the current frame to restore
+                                                the animated preview.
                                             </span>
                                         ) : (
                                             <img
@@ -1072,19 +1217,25 @@ export function App(): JSX.Element {
                                             )}
                                         />
                                     </button>
-                                    <button
-                                        aria-label='Edit badge text'
-                                        aria-pressed={editorMode === 'text'}
-                                        className='editable-badge__text'
-                                        onClick={() => {
-                                            setEditorMode('text');
-                                        }}
-                                        type='button'
-                                    >
-                                        {getDisplayName(
-                                            selectedMaterializedFrame
-                                        )}
-                                    </button>
+                                    <div className='editable-badge__text'>
+                                        <button
+                                            aria-label='Edit badge text'
+                                            aria-pressed={editorMode === 'text'}
+                                            className='editable-badge__text-hit'
+                                            onClick={() => {
+                                                setEditorMode('text');
+                                            }}
+                                            type='button'
+                                        />
+                                        <div
+                                            aria-hidden='true'
+                                            className='editable-badge__text-display'
+                                        >
+                                            {getDisplayName(
+                                                selectedMaterializedFrame
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1092,156 +1243,237 @@ export function App(): JSX.Element {
                                 {editorMode === 'color' ? (
                                     <div className='editor-drawer__split editor-drawer__split--color'>
                                         <div className='color-editor'>
-                                            <div
-                                                aria-hidden='true'
-                                                className='color-editor__preview'
-                                                style={{
-                                                    backgroundColor:
-                                                        selectedMaterializedFrame.color,
-                                                }}
-                                            />
-                                            <label className='field'>
-                                                <span>Hex</span>
-                                                <input
-                                                    onBlur={(event) => {
-                                                        updateSelectedFrameHex(
-                                                            event.target.value
+                                            <div className='color-editor__field-stack'>
+                                                <button
+                                                    aria-label='Saturation and brightness'
+                                                    className='color-field'
+                                                    onPointerDown={(event) => {
+                                                        event.currentTarget.setPointerCapture(
+                                                            event.pointerId
+                                                        );
+                                                        updateSelectedFrameFromColorField(
+                                                            event
                                                         );
                                                     }}
-                                                    onChange={(event) => {
-                                                        updateSelectedFrameHex(
-                                                            event.target.value
+                                                    onPointerMove={(event) => {
+                                                        if (
+                                                            event.buttons !== 1
+                                                        ) {
+                                                            return;
+                                                        }
+
+                                                        updateSelectedFrameFromColorField(
+                                                            event
                                                         );
                                                     }}
-                                                    value={
-                                                        selectedMaterializedFrame.color
+                                                    style={
+                                                        {
+                                                            '--color-field-hue':
+                                                                hsvToHex(
+                                                                    selectedFrameHsv.hue,
+                                                                    100,
+                                                                    100
+                                                                ),
+                                                        } as CSSProperties
                                                     }
-                                                />
-                                            </label>
-                                            <div className='color-editor__rgb'>
+                                                >
+                                                    <span
+                                                        aria-hidden='true'
+                                                        className='color-field__marker'
+                                                        style={{
+                                                            left: `${selectedFrameHsv.saturation}%`,
+                                                            top: `${100 - selectedFrameHsv.value}%`,
+                                                        }}
+                                                    />
+                                                </button>
                                                 <label className='field'>
-                                                    <span>R</span>
-                                                    <div className='color-channel'>
-                                                        <input
-                                                            max='255'
-                                                            min='0'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateSelectedFrameChannel(
-                                                                    'red',
-                                                                    event.target
-                                                                        .value
-                                                                );
-                                                            }}
-                                                            type='range'
-                                                            value={
-                                                                selectedFrameChannels.red
-                                                            }
-                                                        />
-                                                        <input
-                                                            max='255'
-                                                            min='0'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateSelectedFrameChannel(
-                                                                    'red',
-                                                                    event.target
-                                                                        .value
-                                                                );
-                                                            }}
-                                                            type='number'
-                                                            value={
-                                                                selectedFrameChannels.red
-                                                            }
-                                                        />
-                                                    </div>
-                                                </label>
-                                                <label className='field'>
-                                                    <span>G</span>
-                                                    <div className='color-channel'>
-                                                        <input
-                                                            max='255'
-                                                            min='0'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateSelectedFrameChannel(
-                                                                    'green',
-                                                                    event.target
-                                                                        .value
-                                                                );
-                                                            }}
-                                                            type='range'
-                                                            value={
-                                                                selectedFrameChannels.green
-                                                            }
-                                                        />
-                                                        <input
-                                                            max='255'
-                                                            min='0'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateSelectedFrameChannel(
-                                                                    'green',
-                                                                    event.target
-                                                                        .value
-                                                                );
-                                                            }}
-                                                            type='number'
-                                                            value={
-                                                                selectedFrameChannels.green
-                                                            }
-                                                        />
-                                                    </div>
-                                                </label>
-                                                <label className='field'>
-                                                    <span>B</span>
-                                                    <div className='color-channel'>
-                                                        <input
-                                                            max='255'
-                                                            min='0'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateSelectedFrameChannel(
-                                                                    'blue',
-                                                                    event.target
-                                                                        .value
-                                                                );
-                                                            }}
-                                                            type='range'
-                                                            value={
-                                                                selectedFrameChannels.blue
-                                                            }
-                                                        />
-                                                        <input
-                                                            max='255'
-                                                            min='0'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateSelectedFrameChannel(
-                                                                    'blue',
-                                                                    event.target
-                                                                        .value
-                                                                );
-                                                            }}
-                                                            type='number'
-                                                            value={
-                                                                selectedFrameChannels.blue
-                                                            }
-                                                        />
-                                                    </div>
+                                                    <span>Hue</span>
+                                                    <input
+                                                        className='color-editor__hue'
+                                                        max='360'
+                                                        min='0'
+                                                        onChange={(event) => {
+                                                            updateSelectedFrameHue(
+                                                                event.target
+                                                                    .value
+                                                            );
+                                                        }}
+                                                        type='range'
+                                                        value={
+                                                            selectedFrameHsv.hue
+                                                        }
+                                                    />
                                                 </label>
                                             </div>
+                                            <div className='color-editor__controls'>
+                                                <div
+                                                    aria-hidden='true'
+                                                    className='color-editor__preview'
+                                                    style={{
+                                                        backgroundColor:
+                                                            selectedMaterializedFrame.color,
+                                                    }}
+                                                />
+                                                <label className='field'>
+                                                    <span>Hex</span>
+                                                    <input
+                                                        onBlur={(event) => {
+                                                            updateSelectedFrameHex(
+                                                                event.target
+                                                                    .value
+                                                            );
+                                                        }}
+                                                        onChange={(event) => {
+                                                            updateSelectedFrameHex(
+                                                                event.target
+                                                                    .value
+                                                            );
+                                                        }}
+                                                        placeholder='#5968C9'
+                                                        value={
+                                                            selectedMaterializedFrame.color
+                                                        }
+                                                    />
+                                                </label>
+                                                <div className='color-editor__rgb'>
+                                                    <label className='field'>
+                                                        <span>R</span>
+                                                        <div className='color-channel'>
+                                                            <input
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateSelectedFrameChannel(
+                                                                        'red',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='range'
+                                                                value={
+                                                                    selectedFrameChannels.red
+                                                                }
+                                                            />
+                                                            <input
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateSelectedFrameChannel(
+                                                                        'red',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='number'
+                                                                value={
+                                                                    selectedFrameChannels.red
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </label>
+                                                    <label className='field'>
+                                                        <span>G</span>
+                                                        <div className='color-channel'>
+                                                            <input
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateSelectedFrameChannel(
+                                                                        'green',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='range'
+                                                                value={
+                                                                    selectedFrameChannels.green
+                                                                }
+                                                            />
+                                                            <input
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateSelectedFrameChannel(
+                                                                        'green',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='number'
+                                                                value={
+                                                                    selectedFrameChannels.green
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </label>
+                                                    <label className='field'>
+                                                        <span>B</span>
+                                                        <div className='color-channel'>
+                                                            <input
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateSelectedFrameChannel(
+                                                                        'blue',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='range'
+                                                                value={
+                                                                    selectedFrameChannels.blue
+                                                                }
+                                                            />
+                                                            <input
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateSelectedFrameChannel(
+                                                                        'blue',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='number'
+                                                                value={
+                                                                    selectedFrameChannels.blue
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
                                         </div>
-                                        {renderSvglSearch(
-                                            'Logo color',
-                                            'Apply color'
-                                        )}
+                                        {renderSvglSearch({
+                                            chooseLabel: 'Apply color',
+                                            emptyMessage: (query) =>
+                                                `No SVGL logo titled "${query}". Try another search.`,
+                                            errorMessage:
+                                                'SVGL search is unavailable right now. Enter a hex value or try again.',
+                                            idleMessage:
+                                                'Search SVGL to sample a logo color.',
+                                            label: 'Logo color',
+                                            placeholder:
+                                                'Search a brand or product',
+                                        })}
                                     </div>
                                 ) : undefined}
 
@@ -1274,6 +1506,7 @@ export function App(): JSX.Element {
                                                         event
                                                     );
                                                 }}
+                                                placeholder='Badge text'
                                                 value={selectedFrame.name}
                                             />
                                         </label>
@@ -1297,6 +1530,11 @@ export function App(): JSX.Element {
                                                 />
                                             ) : (
                                                 <div className='source-empty'>
+                                                    <p>
+                                                        Paste SVG markup or open
+                                                        an SVG file to restore
+                                                        the logo artwork.
+                                                    </p>
                                                     <button
                                                         className='button button--secondary'
                                                         onClick={pasteSource}
@@ -1322,7 +1560,18 @@ export function App(): JSX.Element {
                                                 </div>
                                             )}
                                         </label>
-                                        {renderSvglSearch('Logo', 'Choose')}
+                                        {renderSvglSearch({
+                                            chooseLabel: 'Choose',
+                                            emptyMessage: (query) =>
+                                                `No SVGL logo titled "${query}". Try another search or paste SVG source.`,
+                                            errorMessage:
+                                                'SVGL search is unavailable right now. Paste SVG source or try again.',
+                                            idleMessage:
+                                                'Search SVGL to replace the logo artwork.',
+                                            label: 'Logo',
+                                            placeholder:
+                                                'Search a brand or product',
+                                        })}
                                     </div>
                                 ) : undefined}
                             </section>

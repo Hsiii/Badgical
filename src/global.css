@@ -362,7 +362,7 @@ textarea {
 
 .editable-badge__color,
 .editable-badge__logo,
-.editable-badge__text {
+.editable-badge__text-hit {
     border: 0;
     background: transparent;
     color: inherit;
@@ -390,7 +390,7 @@ textarea {
 }
 
 .editable-badge__logo,
-.editable-badge__text {
+.editable-badge__text-hit {
     display: grid;
     place-items: center;
     border-radius: var(--space-8);
@@ -412,8 +412,15 @@ textarea {
 
 .editable-badge__logo:hover,
 .editable-badge__logo[aria-pressed='true'],
-.editable-badge__text:hover,
-.editable-badge__text[aria-pressed='true'] {
+.editable-badge__text-hit:hover,
+.editable-badge__text-hit[aria-pressed='true'] {
+    backdrop-filter: var(--badge-edit-filter);
+    background: var(--clr-badge-edit-hover);
+    filter: var(--badge-edit-filter);
+}
+
+.editable-badge__text-hit:hover + .editable-badge__text-display,
+.editable-badge__text-hit[aria-pressed='true'] + .editable-badge__text-display {
     backdrop-filter: var(--badge-edit-filter);
     background: var(--clr-badge-edit-hover);
     filter: var(--badge-edit-filter);
@@ -425,7 +432,41 @@ textarea {
     object-fit: contain;
 }
 
-.editable-badge__text {
+.editable-badge__text-hit,
+.editable-badge__text-display {
+    position: absolute;
+    top: 50%;
+    right: var(--space-8);
+    left: var(--space-8);
+    min-width: 0;
+    height: var(--badge-logo-size-y);
+    transform: translateY(-50%);
+}
+
+.editable-badge__text-hit {
+    left: auto;
+    width: min(
+        calc(var(--space-48) * 6),
+        calc(100% - var(--badge-text-left) - var(--space-16))
+    );
+}
+
+.editable-badge__text-display {
+    left: auto;
+    width: min(
+        calc(var(--space-48) * 6),
+        calc(100% - var(--badge-text-left) - var(--space-16))
+    );
+    display: grid;
+    place-items: center;
+    border-radius: var(--space-8);
+    pointer-events: none;
+    transition:
+        background 160ms ease,
+        filter 160ms ease;
+}
+
+.editable-badge__text-display {
     min-width: 0;
     padding: 0 var(--space-8);
     overflow-wrap: anywhere;
@@ -520,8 +561,56 @@ textarea {
 }
 
 .color-editor {
-    grid-template-columns: var(--space-48) minmax(0, 1fr);
-    align-items: end;
+    grid-template-columns: calc(var(--space-48) * 4) minmax(0, 1fr);
+    gap: var(--space-16);
+    align-items: start;
+}
+
+.color-editor__field-stack,
+.color-editor__controls {
+    display: grid;
+    gap: var(--space-12);
+}
+
+.color-field {
+    position: relative;
+    width: calc(var(--space-48) * 4);
+    height: calc(var(--space-48) * 4);
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-8);
+    background:
+        linear-gradient(to top, #000, transparent),
+        linear-gradient(to right, #fff, var(--color-field-hue));
+    cursor: crosshair;
+}
+
+.color-field__marker {
+    position: absolute;
+    width: var(--space-16);
+    height: var(--space-16);
+    border: 2px solid var(--clr-surface);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--clr-text-strong);
+    transform: translate(-50%, -50%);
+}
+
+.color-editor__hue {
+    min-height: var(--space-40);
+    padding: 0;
+    border: 0;
+    background: linear-gradient(
+        to right,
+        #f00,
+        #ff0,
+        #0f0,
+        #0ff,
+        #00f,
+        #f0f,
+        #f00
+    );
+    cursor: pointer;
 }
 
 .color-editor__preview {
@@ -571,14 +660,22 @@ textarea {
 }
 
 .source-empty {
-    display: flex;
+    display: grid;
     gap: var(--space-12);
-    align-items: center;
-    justify-content: center;
+    align-content: center;
+    justify-items: center;
     min-height: 160px;
+    padding: var(--space-16);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
     background: var(--clr-control);
+}
+
+.source-empty p {
+    max-width: 240px;
+    color: var(--clr-text-muted);
+    font: var(--font-small);
+    text-align: center;
 }
 
 .output__showcase {
@@ -794,7 +891,13 @@ textarea {
     }
 
     .editable-badge__logo,
-    .editable-badge__text {
+    .editable-badge__text-hit,
+    .editable-badge__text-display {
         min-height: 0;
+    }
+
+    .color-field {
+        width: 100%;
+        max-width: calc(var(--space-48) * 4);
     }
 }
