@@ -209,7 +209,7 @@ export function App(): JSX.Element {
             ...currentStates,
             {
                 id: crypto.randomUUID(),
-                name: 'State',
+                name: 'Frame',
                 color: '#000000',
                 source: '',
             },
@@ -268,7 +268,7 @@ export function App(): JSX.Element {
                     <form className='state-list'>
                         {states.map((state, index) => (
                             <fieldset className='state-card' key={state.id}>
-                                <legend>State {index + 1}</legend>
+                                <legend>Frame {index + 1}</legend>
                                 <label className='field field--source'>
                                     <span>SVG source</span>
                                     <textarea
@@ -310,12 +310,12 @@ export function App(): JSX.Element {
                                     />
                                 </label>
                                 <button
-                                    aria-label={`Remove state ${index + 1}`}
+                                    aria-label={`Remove frame ${index + 1}`}
                                     className='icon-button state-card__remove'
                                     onClick={() => {
                                         removeState(state.id);
                                     }}
-                                    title='Remove state'
+                                    title='Remove frame'
                                     type='button'
                                 >
                                     <Trash2 aria-hidden='true' size={16} />
@@ -329,7 +329,7 @@ export function App(): JSX.Element {
                             type='button'
                         >
                             <Plus aria-hidden='true' size={16} />
-                            Add state
+                            Add frame
                         </button>
                     </form>
 
@@ -337,7 +337,7 @@ export function App(): JSX.Element {
                         <div className='preview'>
                             {previewSource === '' ? (
                                 <span>
-                                    Preview appears after one complete state.
+                                    Preview appears after one complete frame.
                                 </span>
                             ) : (
                                 <img
