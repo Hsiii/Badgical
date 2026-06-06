@@ -1,0 +1,20 @@
+:root {
+    --ff-body: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
+    --ff-display: 'Iowan Old Style', 'Palatino Linotype', serif;
+
+    --fs-label: 0.75rem;
+    --fs-body: 1rem;
+    --fs-title: clamp(2.75rem, 7vw, 5rem);
+
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+
+    --font-label: var(--fw-semibold) var(--fs-label) / 1.2 var(--ff-body);
+    --font-body-md: var(--fw-medium) var(--fs-body) / 1.6 var(--ff-body);
+    --font-display: var(--fw-bold) var(--fs-title) / 0.94 var(--ff-display);
+
+    --space-16: 16px;
+    --space-24: 24px;
+    --space-32: 32px;
+}

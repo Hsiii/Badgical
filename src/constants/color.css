@@ -1,0 +1,10 @@
+:root {
+    accent-color: var(--clr-accent);
+
+    --clr-bg: #f7f4ee;
+    --clr-surface: #fffdf9;
+    --clr-text: #1f1d1a;
+    --clr-text-muted: #66605a;
+    --clr-border: #d9d1c7;
+    --clr-accent: #9f4b2e;
+}
