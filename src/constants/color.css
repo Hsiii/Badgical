@@ -4,7 +4,6 @@
     --clr-slate-indigo: #5968c9;
     --clr-lavender-purple: #9972d3;
     --clr-lavender: #dbdaec;
-    --clr-mint: #dceee8;
     --clr-graphite: #30334c;
 
     --clr-bg: #ffffff;
@@ -19,7 +18,7 @@
     --clr-border-strong: var(--clr-lavender-purple);
     --clr-accent: var(--clr-slate-indigo);
     --clr-accent-strong: #4654ad;
-    --clr-accent-soft: var(--clr-mint);
+    --clr-accent-soft: var(--clr-control);
     --clr-brand: var(--clr-lavender-purple);
     --clr-brand-soft: var(--clr-lavender);
     --clr-control: #f4f3fb;

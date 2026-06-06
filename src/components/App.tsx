@@ -1,11 +1,10 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, JSX } from 'react';
 import {
     ClipboardPaste,
     Copy,
     Download,
     FolderOpen,
-    LoaderCircle,
     Plus,
     Search,
 } from 'lucide-react';
@@ -34,8 +33,6 @@ interface SvglResult {
     readonly title: string;
 }
 
-type SvglStatus = 'idle' | 'loading' | 'error';
-
 const defaultStates: readonly BadgeState[] = [
     {
         id: 'badgical',
@@ -51,9 +48,6 @@ const emptyDraft: EditorDraft = {
     source: '',
 };
 
-const placeholderSource =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="#1f2328" stroke-width="1.75" stroke-linecap="round"/></svg>';
-
 const badgeHeight = 28;
 const logoSize = 16;
 const logoX = 6;
@@ -64,7 +58,7 @@ const textPadding = 16;
 const textSize = 10;
 const frameSeconds = 2.4;
 const maxFrames = 5;
-const maxSvglResults = 6;
+const maxSvglResults = 8;
 const githubUrl = 'https://github.com/Hsiii/Badgical';
 
 function GitHubMark(): JSX.Element {
@@ -242,15 +236,6 @@ const buildBadgeSvg = (states: readonly BadgeState[]): string => {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${badgeHeight}" viewBox="0 0 ${width} ${badgeHeight}">${style}${body}</svg>`;
 };
 
-const buildSingleBadgeSvg = (state: BadgeState, index: number): string =>
-    buildBadgeSvg([
-        {
-            ...state,
-            name: state.name === '' ? `Frame ${index + 1}` : state.name,
-            source: state.source === '' ? placeholderSource : state.source,
-        },
-    ]);
-
 const getSvglRoute = (route: string | SvglRouteOptions): string =>
     typeof route === 'string' ? route : route.light;
 
@@ -267,16 +252,18 @@ const getSvglSourceUrl = (route: string | SvglRouteOptions): string => {
     }
 };
 
+const formatKilobytes = (bytes: number): string =>
+    `${(bytes / 1024).toFixed(1)} KB`;
+
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);
     const [selectedFrameId, setSelectedFrameId] = useState(defaultStates[0].id);
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
-    const [svglQuery, setSvglQuery] = useState('');
+    const [svglQuery, setSvglQuery] = useState(defaultStates[0].name);
     const [svglResults, setSvglResults] = useState<readonly SvglResult[]>([]);
-    const [svglStatus, setSvglStatus] = useState<SvglStatus>('idle');
-    const [svglMessage, setSvglMessage] = useState(
-        'Search SVGL by product or framework name.'
-    );
+    const [selectedSvglResult, setSelectedSvglResult] = useState<
+        SvglResult | undefined
+    >(undefined);
     const fileInputReference = useRef<HTMLInputElement | undefined>(undefined);
     const badgeSvg = useMemo(() => buildBadgeSvg(states), [states]);
     const previewSource = useMemo(
@@ -291,14 +278,76 @@ export function App(): JSX.Element {
         states.findIndex((state) => state.id === selectedFrame.id),
         0
     );
+    const selectedFrameHasSource = selectedFrame.source.trim() !== '';
+
+    useEffect(() => {
+        setSvglQuery(selectedFrame.name);
+        setSvglResults([]);
+        setSelectedSvglResult(undefined);
+    }, [selectedFrame.id, selectedFrame.name]);
+
+    useEffect(() => {
+        const query = svglQuery.trim();
+
+        if (query === '') {
+            setSvglResults([]);
+            setSelectedSvglResult(undefined);
+            return undefined;
+        }
+
+        const abortController = new AbortController();
+        const timeoutId = globalThis.setTimeout(
+            () => {
+                fetch(
+                    `https://api.svgl.app?search=${encodeURIComponent(query)}`,
+                    {
+                        signal: abortController.signal,
+                    }
+                )
+                    .then(async (response) => {
+                        if (!response.ok) {
+                            throw new Error('SVGL search failed');
+                        }
+
+                        return (await response.json()) as readonly SvglResult[];
+                    })
+                    .then((results) => {
+                        const visibleResults = results.slice(0, maxSvglResults);
+
+                        setSvglResults(visibleResults);
+                        setSelectedSvglResult((currentResult) =>
+                            visibleResults.some(
+                                (result) => result.id === currentResult?.id
+                            )
+                                ? currentResult
+                                : undefined
+                        );
+                    })
+                    .catch((error: unknown) => {
+                        if (
+                            error instanceof DOMException &&
+                            error.name === 'AbortError'
+                        ) {
+                            return;
+                        }
+
+                        setSvglResults([]);
+                        setSelectedSvglResult(undefined);
+                    });
+            },
+            320,
+            undefined
+        );
+
+        return (): void => {
+            abortController.abort();
+            globalThis.clearTimeout(timeoutId);
+        };
+    }, [svglQuery]);
 
     const selectFrame = (state: BadgeState): void => {
         setSelectedFrameId(state.id);
         setCopyState('idle');
-        setSvglQuery('');
-        setSvglResults([]);
-        setSvglStatus('idle');
-        setSvglMessage('Search SVGL by product or framework name.');
     };
 
     const updateSelectedFrame = (
@@ -317,6 +366,9 @@ export function App(): JSX.Element {
                     : state
             )
         );
+        if (field === 'name') {
+            setSvglQuery(value);
+        }
         setCopyState('idle');
     };
 
@@ -332,6 +384,9 @@ export function App(): JSX.Element {
 
         setStates((currentStates) => [...currentStates, newState]);
         setSelectedFrameId(newState.id);
+        setSvglQuery(newState.name);
+        setSvglResults([]);
+        setSelectedSvglResult(undefined);
         setCopyState('idle');
     };
 
@@ -383,48 +438,16 @@ export function App(): JSX.Element {
             });
     };
 
-    const searchSvgl = (): void => {
-        const query = svglQuery.trim();
+    const cancelSvglSelection = (): void => {
+        setSelectedSvglResult(undefined);
+    };
 
-        if (query === '') {
-            setSvglResults([]);
-            setSvglStatus('idle');
-            setSvglMessage('Enter a name to search SVGL.');
+    const chooseSvglResult = (): void => {
+        if (selectedSvglResult === undefined) {
             return;
         }
 
-        setSvglStatus('loading');
-        setSvglMessage('Searching SVGL...');
-        fetch(`https://api.svgl.app?search=${encodeURIComponent(query)}`)
-            .then(async (response) => {
-                if (!response.ok) {
-                    throw new Error('SVGL search failed');
-                }
-
-                return (await response.json()) as readonly SvglResult[];
-            })
-            .then((results) => {
-                const visibleResults = results.slice(0, maxSvglResults);
-
-                setSvglResults(visibleResults);
-                setSvglStatus('idle');
-                setSvglMessage(
-                    visibleResults.length === 0
-                        ? 'No SVGL results found.'
-                        : 'Choose a logo to use its SVG source.'
-                );
-            })
-            .catch(() => {
-                setSvglResults([]);
-                setSvglStatus('error');
-                setSvglMessage('SVGL search is unavailable right now.');
-            });
-    };
-
-    const useSvglResult = (result: SvglResult): void => {
-        setSvglStatus('loading');
-        setSvglMessage(`Loading ${result.title} SVG...`);
-        fetch(getSvglSourceUrl(result.route))
+        fetch(getSvglSourceUrl(selectedSvglResult.route))
             .then(async (response) => {
                 if (!response.ok) {
                     throw new Error('SVGL source failed');
@@ -441,7 +464,7 @@ export function App(): JSX.Element {
                                   name:
                                       state.name === '' ||
                                       /^frame$/iu.test(state.name)
-                                          ? result.title
+                                          ? selectedSvglResult.title
                                           : state.name,
                                   source,
                               }
@@ -449,13 +472,10 @@ export function App(): JSX.Element {
                     )
                 );
                 setCopyState('idle');
-                setSvglStatus('idle');
-                setSvglMessage(`${result.title} SVG loaded.`);
+                setSvglResults([]);
+                setSelectedSvglResult(undefined);
             })
-            .catch(() => {
-                setSvglStatus('error');
-                setSvglMessage('Could not load that SVG source.');
-            });
+            .catch(() => undefined);
     };
 
     const copySvg = (): void => {
@@ -506,7 +526,9 @@ export function App(): JSX.Element {
                         </span>
                         <span>Badgical</span>
                     </a>
-                    <h1 id='builder-title'>Badge animation</h1>
+                    <h1 className='visually-hidden' id='builder-title'>
+                        Badgical badge builder
+                    </h1>
                     <a
                         aria-label='Open Badgical on GitHub'
                         className='icon-button'
@@ -523,217 +545,227 @@ export function App(): JSX.Element {
                     <section className='tool-panel'>
                         <section
                             aria-labelledby='frames-title'
-                            className='frames'
+                            className='frame-workbench'
                         >
-                            <div className='panel-heading'>
-                                <h2 id='frames-title'>Frames</h2>
-                                <span>
-                                    {states.length}/{maxFrames}
-                                </span>
-                            </div>
-
-                            <div className='frame-list'>
-                                {states.map((state, index) => {
-                                    const singleBadgeSource = toDataUri(
-                                        buildSingleBadgeSvg(state, index)
-                                    );
-                                    const badgeLabel =
-                                        state.name === ''
-                                            ? `Frame ${index + 1}`
-                                            : state.name;
-
-                                    return (
-                                        <button
-                                            aria-current={
-                                                state.id === selectedFrame.id
-                                                    ? 'true'
-                                                    : undefined
-                                            }
-                                            className='frame-card'
-                                            key={state.id}
-                                            onClick={() => {
-                                                selectFrame(state);
-                                            }}
-                                            type='button'
-                                        >
-                                            <span className='frame-card__index'>
-                                                {index + 1}
-                                            </span>
-                                            <img
-                                                alt={`${badgeLabel} badge`}
-                                                className='frame-card__badge'
-                                                src={singleBadgeSource}
-                                            />
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
-                            <button
-                                aria-label='Add frame'
-                                className='button button--secondary add-frame'
-                                disabled={states.length >= maxFrames}
-                                onClick={addState}
-                                type='button'
-                            >
-                                <Plus aria-hidden='true' size={16} />
-                                Add frame
-                            </button>
-                        </section>
-
-                        <section
-                            aria-labelledby='frame-editor-title'
-                            className='frame-editor'
-                        >
-                            <div className='panel-heading'>
-                                <h2 id='frame-editor-title'>
-                                    Frame {selectedFrameIndex + 1}
-                                </h2>
-                                <span>Live edits</span>
-                            </div>
-
-                            <div className='editor-fields'>
-                                <label className='field'>
-                                    <span>Name</span>
-                                    <input
-                                        onChange={(event) => {
-                                            updateSelectedFrame('name', event);
-                                        }}
-                                        value={selectedFrame.name}
-                                    />
-                                </label>
-                                <label className='field field--color'>
-                                    <span>Color</span>
-                                    <input
-                                        onChange={(event) => {
-                                            updateSelectedFrame('color', event);
-                                        }}
-                                        type='color'
-                                        value={selectedFrame.color}
-                                    />
-                                </label>
-                            </div>
-
                             <section
-                                aria-label='Search SVGL logos'
-                                className='svgl-search'
+                                aria-labelledby='frames-title'
+                                className='frames'
                             >
-                                <label className='field'>
-                                    <span>SVGL search</span>
-                                    <div className='svgl-search__bar'>
-                                        <input
-                                            onChange={(event) => {
-                                                setSvglQuery(
-                                                    event.target.value
-                                                );
-                                            }}
-                                            onKeyDown={(event) => {
-                                                if (event.key === 'Enter') {
-                                                    event.preventDefault();
-                                                    searchSvgl();
-                                                }
-                                            }}
-                                            placeholder='React, Vite, GitHub...'
-                                            value={svglQuery}
-                                        />
-                                        <button
-                                            aria-label='Search SVGL'
-                                            className='icon-button'
-                                            disabled={svglStatus === 'loading'}
-                                            onClick={searchSvgl}
-                                            title='Search SVGL'
-                                            type='button'
-                                        >
-                                            {svglStatus === 'loading' ? (
-                                                <LoaderCircle
-                                                    aria-hidden='true'
-                                                    className='spin'
-                                                    size={16}
-                                                />
-                                            ) : (
-                                                <Search
-                                                    aria-hidden='true'
-                                                    size={16}
-                                                />
-                                            )}
-                                        </button>
-                                    </div>
-                                </label>
-
-                                <p
-                                    className={
-                                        svglStatus === 'error'
-                                            ? 'svgl-search__message svgl-search__message--error'
-                                            : 'svgl-search__message'
-                                    }
-                                >
-                                    {svglMessage}
-                                </p>
-
-                                <div className='svgl-results'>
-                                    {svglResults.map((result) => (
-                                        <button
-                                            className='svgl-result'
-                                            key={result.id}
-                                            onClick={() => {
-                                                useSvglResult(result);
-                                            }}
-                                            type='button'
-                                        >
-                                            <img
-                                                alt=''
-                                                src={getSvglRoute(result.route)}
-                                            />
-                                            <span>{result.title}</span>
-                                        </button>
-                                    ))}
+                                <div className='panel-heading'>
+                                    <h2 id='frames-title'>Frames</h2>
+                                    <span>
+                                        {states.length}/{maxFrames}
+                                    </span>
                                 </div>
+
+                                <div className='frame-list'>
+                                    {states.map((state, index) => {
+                                        const frameLabel =
+                                            state.name === ''
+                                                ? `Frame ${index + 1}`
+                                                : state.name;
+
+                                        return (
+                                            <button
+                                                aria-current={
+                                                    state.id ===
+                                                    selectedFrame.id
+                                                        ? 'true'
+                                                        : undefined
+                                                }
+                                                className='frame-card'
+                                                key={state.id}
+                                                onClick={() => {
+                                                    selectFrame(state);
+                                                }}
+                                                type='button'
+                                            >
+                                                <span className='frame-card__index'>
+                                                    {index + 1}
+                                                </span>
+                                                <span className='frame-card__name'>
+                                                    {frameLabel}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <button
+                                    aria-label='Add frame'
+                                    className='button button--primary add-frame'
+                                    disabled={states.length >= maxFrames}
+                                    onClick={addState}
+                                    type='button'
+                                >
+                                    <Plus aria-hidden='true' size={16} />
+                                    Add frame
+                                </button>
                             </section>
 
-                            <label className='field source-field'>
-                                <span>SVG source</span>
-                                {selectedFrame.source === '' ? (
-                                    <div className='source-empty'>
-                                        <button
-                                            onClick={pasteSource}
-                                            type='button'
-                                        >
-                                            <ClipboardPaste
+                            <section
+                                aria-labelledby='frame-editor-title'
+                                className='frame-editor'
+                            >
+                                <div className='panel-heading'>
+                                    <h2 id='frame-editor-title'>
+                                        Frame {selectedFrameIndex + 1}
+                                    </h2>
+                                </div>
+
+                                <div className='editor-fields'>
+                                    <label className='field'>
+                                        <span>Name</span>
+                                        <input
+                                            onChange={(event) => {
+                                                updateSelectedFrame(
+                                                    'name',
+                                                    event
+                                                );
+                                            }}
+                                            value={selectedFrame.name}
+                                        />
+                                    </label>
+                                    <label className='field field--color'>
+                                        <span>Color</span>
+                                        <input
+                                            onChange={(event) => {
+                                                updateSelectedFrame(
+                                                    'color',
+                                                    event
+                                                );
+                                            }}
+                                            type='color'
+                                            value={selectedFrame.color}
+                                        />
+                                    </label>
+                                </div>
+
+                                <section
+                                    aria-label='Search SVGL logos'
+                                    className='svgl-search'
+                                >
+                                    <label className='field'>
+                                        <span>Logo</span>
+                                        <div className='svgl-search__bar'>
+                                            <Search
                                                 aria-hidden='true'
                                                 size={16}
                                             />
-                                            Paste
+                                            <input
+                                                onChange={(event) => {
+                                                    setSvglQuery(
+                                                        event.target.value
+                                                    );
+                                                }}
+                                                placeholder='React, Vite, GitHub...'
+                                                value={svglQuery}
+                                            />
+                                        </div>
+                                    </label>
+
+                                    {svglResults.length === 0 ? undefined : (
+                                        <div className='svgl-results'>
+                                            {svglResults.map((result) => (
+                                                <button
+                                                    aria-current={
+                                                        result.id ===
+                                                        selectedSvglResult?.id
+                                                            ? 'true'
+                                                            : undefined
+                                                    }
+                                                    className='svgl-result'
+                                                    key={result.id}
+                                                    onClick={() => {
+                                                        setSelectedSvglResult(
+                                                            result
+                                                        );
+                                                    }}
+                                                    type='button'
+                                                >
+                                                    <img
+                                                        alt=''
+                                                        src={getSvglRoute(
+                                                            result.route
+                                                        )}
+                                                    />
+                                                    <span>{result.title}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <div className='svgl-actions'>
+                                        <button
+                                            className='button button--secondary'
+                                            disabled={
+                                                selectedSvglResult === undefined
+                                            }
+                                            onClick={cancelSvglSelection}
+                                            type='button'
+                                        >
+                                            Cancel
                                         </button>
                                         <button
-                                            onClick={openFilePicker}
+                                            className='button button--primary'
+                                            disabled={
+                                                selectedSvglResult === undefined
+                                            }
+                                            onClick={chooseSvglResult}
                                             type='button'
                                         >
-                                            <FolderOpen
-                                                aria-hidden='true'
-                                                size={16}
-                                            />
-                                            Open file
+                                            Choose
                                         </button>
                                     </div>
-                                ) : (
-                                    <textarea
-                                        className='source-field__textarea'
-                                        onChange={(event) => {
-                                            updateSelectedFrame(
-                                                'source',
-                                                event
-                                            );
-                                        }}
-                                        value={selectedFrame.source}
-                                    />
-                                )}
-                            </label>
+                                </section>
+
+                                <label className='field source-field'>
+                                    <span>SVG source</span>
+                                    {selectedFrameHasSource ? (
+                                        <textarea
+                                            className='source-field__textarea'
+                                            onChange={(event) => {
+                                                updateSelectedFrame(
+                                                    'source',
+                                                    event
+                                                );
+                                            }}
+                                            value={selectedFrame.source}
+                                        />
+                                    ) : (
+                                        <div className='source-empty'>
+                                            <button
+                                                className='button button--secondary'
+                                                onClick={pasteSource}
+                                                type='button'
+                                            >
+                                                <ClipboardPaste
+                                                    aria-hidden='true'
+                                                    size={16}
+                                                />
+                                                Paste
+                                            </button>
+                                            <button
+                                                className='button button--secondary'
+                                                onClick={openFilePicker}
+                                                type='button'
+                                            >
+                                                <FolderOpen
+                                                    aria-hidden='true'
+                                                    size={16}
+                                                />
+                                                Open file
+                                            </button>
+                                        </div>
+                                    )}
+                                </label>
+                            </section>
                         </section>
 
                         <aside aria-label='Generated badge' className='output'>
                             <div className='panel-heading'>
                                 <h2>Output</h2>
-                                <span>{badgeSvg.length} bytes</span>
+                                <span>{formatKilobytes(badgeSvg.length)}</span>
                             </div>
                             <div className='output__showcase'>
                                 <div className='preview'>
@@ -757,6 +789,7 @@ export function App(): JSX.Element {
                                                 ? 'Copied animated SVG'
                                                 : 'Copy animated SVG'
                                         }
+                                        className='button button--primary'
                                         disabled={badgeSvg === ''}
                                         onClick={copySvg}
                                         title={
@@ -767,9 +800,13 @@ export function App(): JSX.Element {
                                         type='button'
                                     >
                                         <Copy aria-hidden='true' size={16} />
+                                        {copyState === 'copied'
+                                            ? 'Copied'
+                                            : 'Copy'}
                                     </button>
                                     <button
                                         aria-label='Download animated SVG'
+                                        className='button button--primary'
                                         disabled={badgeSvg === ''}
                                         onClick={downloadSvg}
                                         title='Download'
@@ -779,6 +816,7 @@ export function App(): JSX.Element {
                                             aria-hidden='true'
                                             size={16}
                                         />
+                                        Download
                                     </button>
                                 </div>
                             </div>
