@@ -396,8 +396,8 @@ export function App(): JSX.Element {
             ? defaultFrameSource
             : selectedFrame.source;
     const editorBadgeStyle = {
+        '--badge-edit-bg': selectedFrame.color,
         '--badge-edit-filter': getBadgeHoverFilter(selectedFrame.color),
-        'backgroundColor': selectedFrame.color,
         'color': selectedFrameInk,
     } as CSSProperties;
 

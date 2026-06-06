@@ -375,7 +375,6 @@ textarea {
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
     box-shadow: 0 var(--space-8) var(--space-32) var(--clr-shadow);
-    transition: filter 160ms ease;
 }
 
 .editable-badge__color,
@@ -390,19 +389,19 @@ textarea {
 .editable-badge__color {
     position: absolute;
     inset: 0;
+    z-index: 0;
+    background: var(--badge-edit-bg);
+    transition: filter 160ms ease;
 }
 
 .editable-badge__color:hover,
-.editable-badge__color[aria-pressed='true'] {
-    filter: var(--badge-edit-filter);
-}
-
-.editable-badge[data-editor-mode='color']:hover {
+.editable-badge[data-editor-mode='color']:hover .editable-badge__color {
     filter: var(--badge-edit-filter);
 }
 
 .editable-badge__content {
     position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     gap: var(--space-12);
