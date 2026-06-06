@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 interface BadgeState {
+    allCaps?: boolean;
     id: string;
     name: string;
     color: string;
@@ -203,6 +204,7 @@ const normalizeHexInput = (value: string): string | undefined => {
 
 const materializeState = (state: BadgeState, index: number): BadgeState => ({
     ...state,
+    allCaps: state.allCaps ?? true,
     color: state.color.trim() === '' ? emptyDraft.color : state.color.trim(),
     name:
         state.name.trim() === '' || /^frame$/iu.test(state.name.trim())
@@ -211,6 +213,9 @@ const materializeState = (state: BadgeState, index: number): BadgeState => ({
     source:
         state.source.trim() === '' ? defaultFrameSource : state.source.trim(),
 });
+
+const getDisplayName = (state: BadgeState): string =>
+    state.allCaps === false ? state.name : state.name.toUpperCase();
 
 const normalizeStates = (
     states: readonly BadgeState[]
@@ -280,7 +285,7 @@ const buildBadgeSvg = (states: readonly BadgeState[]): string => {
                     ? ` font-size="${textSize}" font-weight="700"`
                     : '';
 
-            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.color))}"/>${inlineSvgArtwork(state.source)}<text fill="${ink}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(state.name.toUpperCase())}</text>`;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.color))}"/>${inlineSvgArtwork(state.source)}<text fill="${ink}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
 
             if (visibleStates.length === 1) {
                 return content;
@@ -533,6 +538,15 @@ export function App(): JSX.Element {
         }
 
         updateSelectedFrameValue('color', rgbToHex(red, green, blue));
+    };
+
+    const updateSelectedFrameAllCaps = (allCaps: boolean): void => {
+        setStates((currentStates) =>
+            currentStates.map((state) =>
+                state.id === selectedFrame.id ? { ...state, allCaps } : state
+            )
+        );
+        setCopyState('idle');
     };
 
     const addState = (): void => {
@@ -1018,10 +1032,9 @@ export function App(): JSX.Element {
                                         }}
                                         type='button'
                                     >
-                                        {materializeState(
-                                            selectedFrame,
-                                            0
-                                        ).name.toUpperCase()}
+                                        {getDisplayName(
+                                            materializeState(selectedFrame, 0)
+                                        )}
                                     </button>
                                 </div>
                             </div>
@@ -1124,7 +1137,24 @@ export function App(): JSX.Element {
                                 ) : undefined}
 
                                 {editorMode === 'text' ? (
-                                    <div className='text-editor'>
+                                    <div className='editor-drawer__split editor-drawer__split--text'>
+                                        <div className='text-options'>
+                                            <label className='switch-field'>
+                                                <span>All Caps</span>
+                                                <input
+                                                    checked={
+                                                        selectedFrame.allCaps !==
+                                                        false
+                                                    }
+                                                    onChange={(event) => {
+                                                        updateSelectedFrameAllCaps(
+                                                            event.target.checked
+                                                        );
+                                                    }}
+                                                    type='checkbox'
+                                                />
+                                            </label>
+                                        </div>
                                         <label className='field'>
                                             <span>Text</span>
                                             <input
