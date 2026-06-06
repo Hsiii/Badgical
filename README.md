@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./public/badgical-spark.svg" alt="Badgical spark logo" width="96" height="96" />
+</p>
+
 # Badgical
 
 Created from the frontend template and ready to be turned into the animated badge builder.
