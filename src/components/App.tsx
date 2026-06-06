@@ -995,6 +995,7 @@ export function App(): JSX.Element {
 
                             <div
                                 className='editable-badge'
+                                data-editor-mode={editorMode}
                                 style={editorBadgeStyle}
                             >
                                 <button
