@@ -75,6 +75,24 @@ const minifySvgSource = (source: string): string =>
 const compactColor = (color: string): string =>
     color.replace(/^#([\dA-Fa-f])\1([\dA-Fa-f])\2([\dA-Fa-f])\3$/, '#$1$2$3');
 
+const inlineSvgArtwork = (source: string): string => {
+    const svgSource = minifySvgSource(source)
+        .replaceAll(/<\?xml[\S\s]*?\?>/g, '')
+        .replaceAll(/<!doctype[\S\s]*?>/gi, '');
+    const svgMatch = /^<svg\b([^>]*)>([\S\s]*)<\/svg>$/iu.exec(svgSource);
+
+    if (svgMatch === null) {
+        return `<image x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}" href="${escapeXml(toDataUri(source))}"/>`;
+    }
+
+    const [, attributes, content] = svgMatch;
+    const viewBox = /\bviewBox=(["'])(.*?)\1/u.exec(attributes)?.[2];
+    const viewBoxAttribute =
+        viewBox === undefined ? '' : ` viewBox="${escapeXml(viewBox)}"`;
+
+    return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}>${content}</svg>`;
+};
+
 const toDataUri = (source: string): string => {
     const encodedSource = encodeURIComponent(minifySvgSource(source))
         .replaceAll("'", '%27')
@@ -171,7 +189,7 @@ const buildBadgeSvg = (states: readonly BadgeState[]): string => {
                     ? ` font-size="${textSize}" font-weight="700"`
                     : '';
 
-            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.color))}"/><image x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}" href="${escapeXml(toDataUri(state.source))}"/><text fill="${ink}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(state.name.toUpperCase())}</text>`;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.color))}"/>${inlineSvgArtwork(state.source)}<text fill="${ink}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(state.name.toUpperCase())}</text>`;
 
             if (visibleStates.length === 1) {
                 return content;
