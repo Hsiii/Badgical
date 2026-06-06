@@ -439,9 +439,7 @@ export function App(): JSX.Element {
                                     type='button'
                                 >
                                     <Copy aria-hidden='true' size={16} />
-                                    {copyState === 'copied'
-                                        ? 'Copied'
-                                        : 'Copy SVG'}
+                                    {copyState === 'copied' ? 'Copied' : 'Copy'}
                                 </button>
                                 <button
                                     disabled={badgeSvg === ''}
@@ -453,13 +451,6 @@ export function App(): JSX.Element {
                                 </button>
                             </div>
                         </div>
-
-                        <textarea
-                            aria-label='Generated SVG source'
-                            className='output__source'
-                            readOnly
-                            value={badgeSvg}
-                        />
                     </aside>
                 </div>
             </section>

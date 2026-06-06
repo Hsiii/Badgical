@@ -157,7 +157,7 @@ textarea {
     gap: var(--space-8);
     min-height: 40px;
     border: 1px solid var(--clr-border);
-    border-radius: var(--space-4);
+    border-radius: var(--space-8);
     background: var(--clr-surface-raised);
     color: var(--clr-text);
     cursor: pointer;
@@ -171,13 +171,12 @@ textarea {
     justify-self: center;
     width: 40px;
     padding: 0;
-    border-radius: 999px;
 }
 
 .output {
     display: grid;
-    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
     gap: var(--space-16);
+    align-content: start;
     min-width: 0;
     border-width: 0;
 }
@@ -190,7 +189,7 @@ textarea {
 
 .preview {
     display: grid;
-    min-height: 112px;
+    min-height: 184px;
     place-items: center;
     border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
@@ -213,6 +212,7 @@ textarea {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-8);
+    width: min(360px, 100%);
 }
 
 .output__actions button,
@@ -226,7 +226,6 @@ textarea {
     opacity: 0.48;
 }
 
-.output__source,
 .field input,
 .dialog__source {
     width: 100%;
@@ -236,7 +235,6 @@ textarea {
     color: var(--clr-text);
 }
 
-.output__source,
 .dialog__source {
     min-height: calc(100vh - 96px);
     padding: var(--space-12);
@@ -352,10 +350,6 @@ textarea {
 
     .output {
         grid-template-columns: 1fr;
-    }
-
-    .output__source {
-        min-height: 320px;
     }
 }
 
