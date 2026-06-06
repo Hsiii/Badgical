@@ -158,7 +158,9 @@ textarea {
 }
 
 .frame-editor {
-    grid-template-rows: auto auto auto minmax(0, 1fr);
+    grid-template-rows:
+        auto minmax(calc(var(--space-40) * 7), 1fr)
+        minmax(0, auto);
     min-height: 100%;
 }
 
@@ -329,14 +331,10 @@ textarea {
     padding: 0 var(--space-12);
 }
 
-.field--color {
-    width: 72px;
-}
-
-.field--color input[type='color'] {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
+.field--color-swatch input[type='color'] {
+    width: var(--space-48);
+    min-width: var(--space-48);
+    height: var(--space-48);
     padding: 0;
     border: 0;
     border-radius: 50%;
@@ -345,20 +343,127 @@ textarea {
     cursor: pointer;
 }
 
-.field--color input[type='color']::-webkit-color-swatch-wrapper {
+.field--color-swatch input[type='color']::-webkit-color-swatch-wrapper {
     padding: 0;
 }
 
-.field--color input[type='color']::-webkit-color-swatch {
+.field--color-swatch input[type='color']::-webkit-color-swatch {
     border: 0;
     border-radius: 50%;
 }
 
-.editor-fields {
+.editable-badge {
+    position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 72px;
+    min-height: calc(var(--space-40) * 8);
+    overflow: hidden;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-8);
+    box-shadow: 0 var(--space-8) var(--space-32) var(--clr-shadow);
+}
+
+.editable-badge__color,
+.editable-badge__logo,
+.editable-badge__text {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.editable-badge__color {
+    position: absolute;
+    inset: 0;
+}
+
+.editable-badge__color:hover,
+.editable-badge__color[aria-pressed='true'] {
+    filter: var(--badge-edit-filter);
+}
+
+.editable-badge__content {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(calc(var(--space-24) * 4), 1fr) minmax(0, 3fr);
+    gap: var(--space-24);
+    align-items: center;
+    padding: var(--space-32);
+    pointer-events: none;
+}
+
+.editable-badge__logo,
+.editable-badge__text {
+    display: grid;
+    min-height: calc(var(--space-32) * 7);
+    place-items: center;
+    border-radius: var(--space-8);
+    pointer-events: auto;
+}
+
+.editable-badge__logo:hover,
+.editable-badge__logo[aria-pressed='true'],
+.editable-badge__text:hover,
+.editable-badge__text[aria-pressed='true'] {
+    backdrop-filter: var(--badge-edit-filter);
+    background: var(--clr-badge-edit-hover);
+    filter: var(--badge-edit-filter);
+}
+
+.editable-badge__logo img {
+    width: min(100%, calc(var(--space-32) * 4 + var(--space-8)));
+    max-height: calc(var(--space-32) * 4 + var(--space-8));
+    object-fit: contain;
+}
+
+.editable-badge__text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font: var(--font-display);
+    font-size: clamp(
+        calc(var(--space-16) * 2),
+        9vw,
+        calc(var(--space-16) * 4 + var(--space-8))
+    );
+    font-weight: var(--fw-bold);
+    line-height: 1;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.editor-drawer {
+    min-height: 0;
+}
+
+.editor-drawer__split {
+    display: grid;
+    gap: var(--space-16);
+    align-items: start;
+}
+
+.editor-drawer__split--color {
+    grid-template-columns: minmax(calc(var(--space-40) * 6), 1fr) minmax(0, 2fr);
+}
+
+.editor-drawer__split--source {
+    grid-template-columns: minmax(calc(var(--space-32) * 7), 1fr) minmax(0, 3fr);
+}
+
+.color-editor,
+.text-editor {
+    display: grid;
     gap: var(--space-12);
+}
+
+.color-editor {
+    grid-template-columns: var(--space-48) minmax(0, 1fr);
     align-items: end;
+}
+
+.color-editor__rgb {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-8);
 }
 
 .source-field {
@@ -367,7 +472,7 @@ textarea {
 }
 
 .source-field__textarea {
-    min-height: 200px;
+    min-height: calc(var(--space-32) * 7);
     padding: var(--space-12);
     font: var(--font-mono);
 }
@@ -581,12 +686,19 @@ textarea {
     }
 
     .source-empty,
-    .editor-fields {
+    .editor-drawer__split,
+    .color-editor,
+    .editable-badge__content {
         display: grid;
         grid-template-columns: 1fr;
     }
 
-    .field--color {
-        width: 100%;
+    .editable-badge {
+        min-height: calc(var(--space-40) * 9);
+    }
+
+    .editable-badge__logo,
+    .editable-badge__text {
+        min-height: calc(var(--space-32) * 4 + var(--space-8));
     }
 }

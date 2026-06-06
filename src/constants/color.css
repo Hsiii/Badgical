@@ -25,6 +25,7 @@
     --clr-guide-bg: var(--clr-bg-subtle);
     --clr-guide-accent: var(--clr-lavender-purple);
     --clr-warning: var(--clr-accent-strong);
+    --clr-badge-edit-hover: rgb(255 255 255 / 12%);
     --clr-backdrop: rgb(48 51 76 / 28%);
     --clr-shadow: rgb(89 104 201 / 12%);
 }
