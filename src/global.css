@@ -495,18 +495,17 @@ textarea {
 
 .output__showcase {
     display: grid;
-    grid-template-columns: fit-content(100%) minmax(0, 1fr);
     gap: var(--space-12);
-    align-items: start;
+    align-content: start;
+    justify-items: stretch;
     width: 100%;
     min-height: 100%;
 }
 
 .preview {
     display: grid;
-    width: fit-content;
+    width: 100%;
     min-height: 120px;
-    justify-self: start;
     place-items: center;
     border-radius: var(--space-4);
     background: var(--clr-control);
@@ -678,10 +677,6 @@ textarea {
 
     .output {
         order: -1;
-    }
-
-    .output__showcase {
-        grid-template-columns: 1fr;
     }
 }
 
