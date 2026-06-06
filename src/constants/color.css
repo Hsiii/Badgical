@@ -20,6 +20,9 @@
     --clr-brand: var(--clr-lavender-purple);
     --clr-brand-soft: var(--clr-lavender);
     --clr-control: #f4f3fb;
+    --clr-guide-bg: var(--clr-bg-subtle);
+    --clr-guide-accent: var(--clr-lavender-purple);
+    --clr-warning: var(--clr-accent-strong);
     --clr-backdrop: rgb(48 51 76 / 28%);
     --clr-shadow: rgb(89 104 201 / 12%);
 }

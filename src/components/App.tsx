@@ -5,8 +5,10 @@ import {
     Copy,
     Download,
     FolderOpen,
+    LoaderCircle,
     Pencil,
     Plus,
+    Search,
     X,
 } from 'lucide-react';
 
@@ -22,6 +24,19 @@ interface EditorDraft {
     name: string;
     source: string;
 }
+
+interface SvglRouteOptions {
+    readonly dark: string;
+    readonly light: string;
+}
+
+interface SvglResult {
+    readonly id: number;
+    readonly route: string | SvglRouteOptions;
+    readonly title: string;
+}
+
+type SvglStatus = 'idle' | 'loading' | 'error';
 
 const defaultStates: readonly BadgeState[] = [
     {
@@ -51,6 +66,7 @@ const textPadding = 16;
 const textSize = 10;
 const frameSeconds = 2.4;
 const maxFrames = 5;
+const maxSvglResults = 6;
 const githubUrl = 'https://github.com/Hsiii/Badgical';
 
 function GitHubMark(): JSX.Element {
@@ -237,11 +253,33 @@ const buildSingleBadgeSvg = (state: BadgeState, index: number): string =>
         },
     ]);
 
+const getSvglRoute = (route: string | SvglRouteOptions): string =>
+    typeof route === 'string' ? route : route.light;
+
+const getSvglSourceUrl = (route: string | SvglRouteOptions): string => {
+    const svgRoute = getSvglRoute(route);
+
+    try {
+        const { pathname } = new URL(svgRoute);
+        const svgName = pathname.split('/').at(-1) ?? '';
+
+        return `https://api.svgl.app/svg/${svgName}`;
+    } catch {
+        return svgRoute;
+    }
+};
+
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
     const [editingId, setEditingId] = useState<string | undefined>(undefined);
     const [draft, setDraft] = useState(emptyDraft);
+    const [svglQuery, setSvglQuery] = useState('');
+    const [svglResults, setSvglResults] = useState<readonly SvglResult[]>([]);
+    const [svglStatus, setSvglStatus] = useState<SvglStatus>('idle');
+    const [svglMessage, setSvglMessage] = useState(
+        'Search SVGL by product or framework name.'
+    );
     const fileInputReference = useRef<HTMLInputElement | undefined>(undefined);
     const badgeSvg = useMemo(() => buildBadgeSvg(states), [states]);
     const previewSource = useMemo(
@@ -262,6 +300,10 @@ export function App(): JSX.Element {
     const closeEditor = (): void => {
         setEditingId(undefined);
         setDraft(emptyDraft);
+        setSvglQuery('');
+        setSvglResults([]);
+        setSvglStatus('idle');
+        setSvglMessage('Search SVGL by product or framework name.');
     };
 
     const updateDraft = (
@@ -340,6 +382,74 @@ export function App(): JSX.Element {
             });
     };
 
+    const searchSvgl = (): void => {
+        const query = svglQuery.trim();
+
+        if (query === '') {
+            setSvglResults([]);
+            setSvglStatus('idle');
+            setSvglMessage('Enter a name to search SVGL.');
+            return;
+        }
+
+        setSvglStatus('loading');
+        setSvglMessage('Searching SVGL...');
+        fetch(`https://api.svgl.app?search=${encodeURIComponent(query)}`)
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new Error('SVGL search failed');
+                }
+
+                return (await response.json()) as readonly SvglResult[];
+            })
+            .then((results) => {
+                const visibleResults = results.slice(0, maxSvglResults);
+
+                setSvglResults(visibleResults);
+                setSvglStatus('idle');
+                setSvglMessage(
+                    visibleResults.length === 0
+                        ? 'No SVGL results found.'
+                        : 'Choose a logo to use its SVG source.'
+                );
+            })
+            .catch(() => {
+                setSvglResults([]);
+                setSvglStatus('error');
+                setSvglMessage('SVGL search is unavailable right now.');
+            });
+    };
+
+    const useSvglResult = (result: SvglResult): void => {
+        setSvglStatus('loading');
+        setSvglMessage(`Loading ${result.title} SVG...`);
+        fetch(getSvglSourceUrl(result.route))
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new Error('SVGL source failed');
+                }
+
+                return await response.text();
+            })
+            .then((source) => {
+                setDraft((currentDraft) => ({
+                    ...currentDraft,
+                    name:
+                        currentDraft.name === '' ||
+                        /^frame$/iu.test(currentDraft.name)
+                            ? result.title
+                            : currentDraft.name,
+                    source,
+                }));
+                setSvglStatus('idle');
+                setSvglMessage(`${result.title} SVG loaded.`);
+            })
+            .catch(() => {
+                setSvglStatus('error');
+                setSvglMessage('Could not load that SVG source.');
+            });
+    };
+
     const copySvg = (): void => {
         if (badgeSvg === '') {
             return;
@@ -404,109 +514,166 @@ export function App(): JSX.Element {
                 </header>
 
                 <div className='builder__workspace'>
-                    <section aria-label='Animation chain' className='chain'>
-                        {states.map((state, index) => {
-                            const singleBadgeSource = toDataUri(
-                                buildSingleBadgeSvg(state, index)
-                            );
-                            const badgeLabel =
-                                state.name === ''
-                                    ? `Frame ${index + 1}`
-                                    : state.name;
-
-                            return (
-                                <div className='chain__segment' key={state.id}>
-                                    <div className='chain__node'>
-                                        <img
-                                            alt={`${badgeLabel} badge`}
-                                            className='chain__badge'
-                                            src={singleBadgeSource}
-                                        />
-                                        <button
-                                            aria-label={`Edit frame ${index + 1}`}
-                                            className='icon-button'
-                                            onClick={() => {
-                                                openEditor(state);
-                                            }}
-                                            title='Edit frame'
-                                            type='button'
-                                        >
-                                            <Pencil
-                                                aria-hidden='true'
-                                                size={16}
-                                            />
-                                        </button>
-                                    </div>
-                                    <div
-                                        aria-hidden='true'
-                                        className='chain__line'
-                                    />
-                                </div>
-                            );
-                        })}
-
-                        <button
-                            aria-label='Add frame'
-                            className='chain__add'
-                            disabled={states.length >= maxFrames}
-                            onClick={addState}
-                            title={
-                                states.length >= maxFrames
-                                    ? 'Maximum 5 frames'
-                                    : 'Add frame'
-                            }
-                            type='button'
-                        >
-                            <Plus aria-hidden='true' size={16} />
-                        </button>
-                    </section>
-
-                    <aside aria-label='Generated badge' className='output'>
-                        <div className='output__showcase'>
-                            <div className='preview'>
-                                {previewSource === '' ? (
-                                    <span>
-                                        Add SVG artwork to start the animation
-                                        loop.
-                                    </span>
-                                ) : (
-                                    <img
-                                        alt='Generated animated badge preview'
-                                        src={previewSource}
-                                    />
-                                )}
-                            </div>
-
-                            <div className='output__actions'>
-                                <button
-                                    aria-label={
-                                        copyState === 'copied'
-                                            ? 'Copied animated SVG'
-                                            : 'Copy animated SVG'
-                                    }
-                                    disabled={badgeSvg === ''}
-                                    onClick={copySvg}
-                                    title={
-                                        copyState === 'copied'
-                                            ? 'Copied'
-                                            : 'Copy'
-                                    }
-                                    type='button'
-                                >
-                                    <Copy aria-hidden='true' size={16} />
-                                </button>
-                                <button
-                                    aria-label='Download animated SVG'
-                                    disabled={badgeSvg === ''}
-                                    onClick={downloadSvg}
-                                    title='Download'
-                                    type='button'
-                                >
-                                    <Download aria-hidden='true' size={16} />
-                                </button>
-                            </div>
+                    <section className='tool-panel'>
+                        <div className='tool-panel__intro'>
+                            <p>Animated status badges from SVG frames.</p>
                         </div>
-                    </aside>
+
+                        <section aria-label='Animation chain' className='chain'>
+                            {states.map((state, index) => {
+                                const singleBadgeSource = toDataUri(
+                                    buildSingleBadgeSvg(state, index)
+                                );
+                                const badgeLabel =
+                                    state.name === ''
+                                        ? `Frame ${index + 1}`
+                                        : state.name;
+
+                                return (
+                                    <div
+                                        className='chain__segment'
+                                        key={state.id}
+                                    >
+                                        <div className='chain__node'>
+                                            <span className='chain__index'>
+                                                {index + 1}
+                                            </span>
+                                            <img
+                                                alt={`${badgeLabel} badge`}
+                                                className='chain__badge'
+                                                src={singleBadgeSource}
+                                            />
+                                            <button
+                                                aria-label={`Edit frame ${index + 1}`}
+                                                className='icon-button'
+                                                onClick={() => {
+                                                    openEditor(state);
+                                                }}
+                                                title='Edit frame'
+                                                type='button'
+                                            >
+                                                <Pencil
+                                                    aria-hidden='true'
+                                                    size={16}
+                                                />
+                                            </button>
+                                        </div>
+                                        <div
+                                            aria-hidden='true'
+                                            className='chain__line'
+                                        />
+                                    </div>
+                                );
+                            })}
+
+                            <button
+                                aria-label='Add frame'
+                                className='chain__add'
+                                disabled={states.length >= maxFrames}
+                                onClick={addState}
+                                title={
+                                    states.length >= maxFrames
+                                        ? 'Maximum 5 frames'
+                                        : 'Add frame'
+                                }
+                                type='button'
+                            >
+                                <Plus aria-hidden='true' size={16} />
+                            </button>
+                        </section>
+
+                        <aside aria-label='Generated badge' className='output'>
+                            <div className='output__showcase'>
+                                <div className='preview'>
+                                    {previewSource === '' ? (
+                                        <span>
+                                            Add SVG artwork to start the
+                                            animation loop.
+                                        </span>
+                                    ) : (
+                                        <img
+                                            alt='Generated animated badge preview'
+                                            src={previewSource}
+                                        />
+                                    )}
+                                </div>
+
+                                <div className='output__meta'>
+                                    <span>{states.length} frames</span>
+                                    <span>{badgeSvg.length} bytes</span>
+                                </div>
+
+                                <div className='output__actions'>
+                                    <button
+                                        aria-label={
+                                            copyState === 'copied'
+                                                ? 'Copied animated SVG'
+                                                : 'Copy animated SVG'
+                                        }
+                                        disabled={badgeSvg === ''}
+                                        onClick={copySvg}
+                                        title={
+                                            copyState === 'copied'
+                                                ? 'Copied'
+                                                : 'Copy'
+                                        }
+                                        type='button'
+                                    >
+                                        <Copy aria-hidden='true' size={16} />
+                                    </button>
+                                    <button
+                                        aria-label='Download animated SVG'
+                                        disabled={badgeSvg === ''}
+                                        onClick={downloadSvg}
+                                        title='Download'
+                                        type='button'
+                                    >
+                                        <Download
+                                            aria-hidden='true'
+                                            size={16}
+                                        />
+                                    </button>
+                                </div>
+                            </div>
+                        </aside>
+                    </section>
+                </div>
+            </section>
+
+            <section aria-label='Usage guide' className='usage-guide'>
+                <div className='usage-guide__inner'>
+                    <div className='usage-guide__copy'>
+                        <h2>Usage guide</h2>
+                        <p>
+                            Build each frame as a tiny badge state, then export
+                            one animated SVG for README status, changelog
+                            signals, or release notes.
+                        </p>
+                    </div>
+
+                    <ol className='usage-steps'>
+                        <li>
+                            <span>1</span>
+                            <p>
+                                Edit a frame and paste, open, or search for SVG
+                                artwork.
+                            </p>
+                        </li>
+                        <li>
+                            <span>2</span>
+                            <p>
+                                Set the badge label and background color for
+                                that state.
+                            </p>
+                        </li>
+                        <li>
+                            <span>3</span>
+                            <p>
+                                Add up to five frames, then copy or download the
+                                generated SVG.
+                            </p>
+                        </li>
+                    </ol>
                 </div>
             </section>
 
@@ -555,38 +722,119 @@ export function App(): JSX.Element {
                             </label>
                         </div>
 
-                        <label className='field'>
-                            <span>SVG source</span>
-                            {draft.source === '' ? (
-                                <div className='source-empty'>
-                                    <button onClick={pasteSource} type='button'>
-                                        <ClipboardPaste
-                                            aria-hidden='true'
-                                            size={16}
+                        <div className='dialog__source-grid'>
+                            <label className='field'>
+                                <span>SVG source</span>
+                                {draft.source === '' ? (
+                                    <div className='source-empty'>
+                                        <button
+                                            onClick={pasteSource}
+                                            type='button'
+                                        >
+                                            <ClipboardPaste
+                                                aria-hidden='true'
+                                                size={16}
+                                            />
+                                            Paste
+                                        </button>
+                                        <button
+                                            onClick={openFilePicker}
+                                            type='button'
+                                        >
+                                            <FolderOpen
+                                                aria-hidden='true'
+                                                size={16}
+                                            />
+                                            Open file
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <textarea
+                                        className='dialog__source'
+                                        onChange={(event) => {
+                                            updateDraft('source', event);
+                                        }}
+                                        value={draft.source}
+                                    />
+                                )}
+                            </label>
+
+                            <section
+                                aria-label='Search SVGL logos'
+                                className='svgl-search'
+                            >
+                                <label className='field'>
+                                    <span>SVGL search</span>
+                                    <div className='svgl-search__bar'>
+                                        <input
+                                            onChange={(event) => {
+                                                setSvglQuery(
+                                                    event.target.value
+                                                );
+                                            }}
+                                            onKeyDown={(event) => {
+                                                if (event.key === 'Enter') {
+                                                    event.preventDefault();
+                                                    searchSvgl();
+                                                }
+                                            }}
+                                            placeholder='React, Vite, GitHub...'
+                                            value={svglQuery}
                                         />
-                                        Paste
-                                    </button>
-                                    <button
-                                        onClick={openFilePicker}
-                                        type='button'
-                                    >
-                                        <FolderOpen
-                                            aria-hidden='true'
-                                            size={16}
-                                        />
-                                        Open file
-                                    </button>
+                                        <button
+                                            aria-label='Search SVGL'
+                                            className='icon-button'
+                                            disabled={svglStatus === 'loading'}
+                                            onClick={searchSvgl}
+                                            title='Search SVGL'
+                                            type='button'
+                                        >
+                                            {svglStatus === 'loading' ? (
+                                                <LoaderCircle
+                                                    aria-hidden='true'
+                                                    className='spin'
+                                                    size={16}
+                                                />
+                                            ) : (
+                                                <Search
+                                                    aria-hidden='true'
+                                                    size={16}
+                                                />
+                                            )}
+                                        </button>
+                                    </div>
+                                </label>
+
+                                <p
+                                    className={
+                                        svglStatus === 'error'
+                                            ? 'svgl-search__message svgl-search__message--error'
+                                            : 'svgl-search__message'
+                                    }
+                                >
+                                    {svglMessage}
+                                </p>
+
+                                <div className='svgl-results'>
+                                    {svglResults.map((result) => (
+                                        <button
+                                            className='svgl-result'
+                                            key={result.id}
+                                            onClick={() => {
+                                                useSvglResult(result);
+                                            }}
+                                            type='button'
+                                        >
+                                            <img
+                                                alt=''
+                                                src={getSvglRoute(result.route)}
+                                            />
+                                            <span>{result.title}</span>
+                                        </button>
+                                    ))}
                                 </div>
-                            ) : (
-                                <textarea
-                                    className='dialog__source'
-                                    onChange={(event) => {
-                                        updateDraft('source', event);
-                                    }}
-                                    value={draft.source}
-                                />
-                            )}
-                        </label>
+                            </section>
+                        </div>
 
                         <div className='dialog__footer'>
                             <button
