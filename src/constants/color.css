@@ -1,10 +1,18 @@
 :root {
     accent-color: var(--clr-accent);
 
-    --clr-bg: #f7f4ee;
+    --clr-bg: #f7f5f1;
+    --clr-bg-subtle: #ece8e0;
     --clr-surface: #fffdf9;
+    --clr-surface-raised: #ffffff;
     --clr-text: #1f1d1a;
+    --clr-text-strong: #111111;
     --clr-text-muted: #66605a;
+    --clr-text-soft: #8a8178;
     --clr-border: #d9d1c7;
-    --clr-accent: #9f4b2e;
+    --clr-border-strong: #bdb4aa;
+    --clr-accent: #1f6f64;
+    --clr-accent-strong: #164f47;
+    --clr-control: #f2eee8;
+    --clr-shadow: rgb(31 29 26 / 10%);
 }
