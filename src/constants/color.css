@@ -1,18 +1,19 @@
 :root {
     accent-color: var(--clr-accent);
 
-    --clr-bg: #f7f5f1;
-    --clr-bg-subtle: #ece8e0;
-    --clr-surface: #fffdf9;
+    --clr-bg: #ffffff;
+    --clr-bg-subtle: #f8fafd;
+    --clr-surface: #ffffff;
     --clr-surface-raised: #ffffff;
-    --clr-text: #1f1d1a;
-    --clr-text-strong: #111111;
-    --clr-text-muted: #66605a;
-    --clr-text-soft: #8a8178;
-    --clr-border: #d9d1c7;
-    --clr-border-strong: #bdb4aa;
-    --clr-accent: #1f6f64;
-    --clr-accent-strong: #164f47;
-    --clr-control: #f2eee8;
-    --clr-shadow: rgb(31 29 26 / 10%);
+    --clr-text: #3c4043;
+    --clr-text-strong: #202124;
+    --clr-text-muted: #5f6368;
+    --clr-text-soft: #80868b;
+    --clr-border: #dadce0;
+    --clr-border-strong: #c4c7c5;
+    --clr-accent: #1a73e8;
+    --clr-accent-strong: #185abc;
+    --clr-control: #f1f3f4;
+    --clr-backdrop: rgb(32 33 36 / 20%);
+    --clr-shadow: rgb(60 64 67 / 10%);
 }

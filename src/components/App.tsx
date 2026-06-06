@@ -1,6 +1,14 @@
 import { useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, JSX } from 'react';
-import { Copy, Download, FolderOpen, Pencil, Plus, X } from 'lucide-react';
+import {
+    ClipboardPaste,
+    Copy,
+    Download,
+    FolderOpen,
+    Pencil,
+    Plus,
+    X,
+} from 'lucide-react';
 
 interface BadgeState {
     id: string;
@@ -327,12 +335,16 @@ export function App(): JSX.Element {
     return (
         <main className='app'>
             <section aria-labelledby='builder-title' className='builder'>
-                <div className='builder__intro'>
-                    <p className='builder__eyebrow'>Badgical</p>
+                <header className='topbar'>
+                    <p className='topbar__brand'>Badgical</p>
                     <h1 className='builder__title' id='builder-title'>
-                        Animated badge builder
+                        Badge animation
                     </h1>
-                </div>
+                    <p className='topbar__meta'>
+                        {states.length}{' '}
+                        {states.length === 1 ? 'frame' : 'frames'}
+                    </p>
+                </header>
 
                 <div className='builder__workspace'>
                     <section aria-label='Animation chain' className='chain'>
@@ -387,36 +399,41 @@ export function App(): JSX.Element {
                     </section>
 
                     <aside aria-label='Generated badge' className='output'>
-                        <div className='preview'>
-                            {previewSource === '' ? (
-                                <span>
-                                    Add SVG artwork to start the animation loop.
-                                </span>
-                            ) : (
-                                <img
-                                    alt='Generated animated badge preview'
-                                    src={previewSource}
-                                />
-                            )}
-                        </div>
+                        <div className='output__showcase'>
+                            <div className='preview'>
+                                {previewSource === '' ? (
+                                    <span>
+                                        Add SVG artwork to start the animation
+                                        loop.
+                                    </span>
+                                ) : (
+                                    <img
+                                        alt='Generated animated badge preview'
+                                        src={previewSource}
+                                    />
+                                )}
+                            </div>
 
-                        <div className='output__actions'>
-                            <button
-                                disabled={badgeSvg === ''}
-                                onClick={copySvg}
-                                type='button'
-                            >
-                                <Copy aria-hidden='true' size={16} />
-                                {copyState === 'copied' ? 'Copied' : 'Copy SVG'}
-                            </button>
-                            <button
-                                disabled={badgeSvg === ''}
-                                onClick={downloadSvg}
-                                type='button'
-                            >
-                                <Download aria-hidden='true' size={16} />
-                                Download
-                            </button>
+                            <div className='output__actions'>
+                                <button
+                                    disabled={badgeSvg === ''}
+                                    onClick={copySvg}
+                                    type='button'
+                                >
+                                    <Copy aria-hidden='true' size={16} />
+                                    {copyState === 'copied'
+                                        ? 'Copied'
+                                        : 'Copy SVG'}
+                                </button>
+                                <button
+                                    disabled={badgeSvg === ''}
+                                    onClick={downloadSvg}
+                                    type='button'
+                                >
+                                    <Download aria-hidden='true' size={16} />
+                                    Download
+                                </button>
+                            </div>
                         </div>
 
                         <textarea
@@ -479,6 +496,10 @@ export function App(): JSX.Element {
                             {draft.source === '' ? (
                                 <div className='source-empty'>
                                     <button onClick={pasteSource} type='button'>
+                                        <ClipboardPaste
+                                            aria-hidden='true'
+                                            size={16}
+                                        />
                                         Paste
                                     </button>
                                     <button
