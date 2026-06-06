@@ -1,11 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, JSX } from 'react';
-import { Copy, Download, Plus, Trash2 } from 'lucide-react';
+import { Copy, Download, FolderOpen, Pencil, Plus, X } from 'lucide-react';
 
 interface BadgeState {
     id: string;
     name: string;
     color: string;
+    source: string;
+}
+
+interface EditorDraft {
+    color: string;
+    name: string;
     source: string;
 }
 
@@ -16,13 +22,16 @@ const defaultStates: readonly BadgeState[] = [
         color: '#61dafb',
         source: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.2" fill="#1f2328"/><g fill="none" stroke="#1f2328" stroke-width="1.25"><ellipse cx="12" cy="12" rx="10" ry="4.2"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/></g></svg>',
     },
-    {
-        id: 'bun',
-        name: 'Bun',
-        color: '#f4d8ae',
-        source: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="9" fill="#1f2328"/><circle cx="9" cy="11" r="1.2" fill="#fff"/><circle cx="15" cy="11" r="1.2" fill="#fff"/><path d="M8.5 15c1.8 1.5 5.2 1.5 7 0" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><path d="M7.8 5.6 6 3.6M16.2 5.6 18 3.6" stroke="#1f2328" stroke-width="1.6" stroke-linecap="round"/></svg>',
-    },
 ];
+
+const emptyDraft: EditorDraft = {
+    color: '#000000',
+    name: 'Frame',
+    source: '',
+};
+
+const placeholderSource =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="#1f2328" stroke-width="1.75" stroke-linecap="round"/></svg>';
 
 const badgeHeight = 28;
 const logoSize = 16;
@@ -177,51 +186,113 @@ const buildBadgeSvg = (states: readonly BadgeState[]): string => {
 </svg>`;
 };
 
+const buildSingleBadgeSvg = (state: BadgeState, index: number): string =>
+    buildBadgeSvg([
+        {
+            ...state,
+            name: state.name === '' ? `Frame ${index + 1}` : state.name,
+            source: state.source === '' ? placeholderSource : state.source,
+        },
+    ]);
+
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+    const [editingId, setEditingId] = useState<string | undefined>(undefined);
+    const [draft, setDraft] = useState(emptyDraft);
+    const fileInputReference = useRef<HTMLInputElement | undefined>(undefined);
     const badgeSvg = useMemo(() => buildBadgeSvg(states), [states]);
     const previewSource = useMemo(
         () => (badgeSvg === '' ? '' : toDataUri(badgeSvg)),
         [badgeSvg]
     );
 
-    const updateState = (
-        id: string,
-        field: keyof Omit<BadgeState, 'id'>,
-        event: Readonly<ChangeEvent<HTMLInputElement | HTMLTextAreaElement>>
-    ): void => {
-        setStates((currentStates) =>
-            currentStates.map((state) =>
-                state.id === id
-                    ? {
-                          ...state,
-                          [field]: event.target.value,
-                      }
-                    : state
-            )
-        );
+    const openEditor = (state: BadgeState): void => {
+        setEditingId(state.id);
+        setDraft({
+            color: state.color,
+            name: state.name,
+            source: state.source,
+        });
         setCopyState('idle');
     };
 
-    const addState = (): void => {
-        setStates((currentStates) => [
-            ...currentStates,
-            {
-                id: crypto.randomUUID(),
-                name: 'Frame',
-                color: '#000000',
-                source: '',
-            },
-        ]);
+    const closeEditor = (): void => {
+        setEditingId(undefined);
+        setDraft(emptyDraft);
     };
 
-    const removeState = (id: string): void => {
+    const updateDraft = (
+        field: keyof EditorDraft,
+        event: Readonly<ChangeEvent<HTMLInputElement | HTMLTextAreaElement>>
+    ): void => {
+        setDraft((currentDraft) => ({
+            ...currentDraft,
+            [field]: event.target.value,
+        }));
+    };
+
+    const addState = (): void => {
+        const newState: BadgeState = {
+            id: crypto.randomUUID(),
+            ...emptyDraft,
+        };
+
+        setStates((currentStates) => [...currentStates, newState]);
+        openEditor(newState);
+    };
+
+    const saveDraft = (): void => {
+        if (editingId === undefined) {
+            return;
+        }
+
         setStates((currentStates) =>
-            currentStates.length > 1
-                ? currentStates.filter((state) => state.id !== id)
-                : currentStates
+            currentStates.map((state) =>
+                state.id === editingId ? { ...state, ...draft } : state
+            )
         );
+        closeEditor();
+    };
+
+    const pasteSource = (): void => {
+        navigator.clipboard
+            .readText()
+            .then((text) => {
+                setDraft((currentDraft) => ({
+                    ...currentDraft,
+                    source: text,
+                }));
+            })
+            .catch(() => undefined);
+    };
+
+    const openFilePicker = (): void => {
+        fileInputReference.current?.click();
+    };
+
+    const readSourceFile = (
+        event: Readonly<ChangeEvent<HTMLInputElement>>
+    ): void => {
+        const file = event.target.files?.[0];
+
+        if (file === undefined) {
+            return;
+        }
+
+        file.text()
+            .then((text) => {
+                setDraft((currentDraft) => ({
+                    ...currentDraft,
+                    source: text,
+                }));
+            })
+            .catch(() => undefined)
+            .finally(() => {
+                if (fileInputReference.current !== undefined) {
+                    fileInputReference.current.value = '';
+                }
+            });
     };
 
     const copySvg = (): void => {
@@ -265,79 +336,62 @@ export function App(): JSX.Element {
                 </div>
 
                 <div className='builder__workspace'>
-                    <form className='state-list'>
-                        {states.map((state, index) => (
-                            <fieldset className='state-card' key={state.id}>
-                                <legend>Frame {index + 1}</legend>
-                                <label className='field field--source'>
-                                    <span>SVG source</span>
-                                    <textarea
-                                        onChange={(event) => {
-                                            updateState(
-                                                state.id,
-                                                'source',
-                                                event
-                                            );
-                                        }}
-                                        value={state.source}
+                    <section aria-label='Animation chain' className='chain'>
+                        {states.map((state, index) => {
+                            const singleBadgeSource = toDataUri(
+                                buildSingleBadgeSvg(state, index)
+                            );
+                            const badgeLabel =
+                                state.name === ''
+                                    ? `Frame ${index + 1}`
+                                    : state.name;
+
+                            return (
+                                <div className='chain__segment' key={state.id}>
+                                    <div className='chain__node'>
+                                        <img
+                                            alt={`${badgeLabel} badge`}
+                                            className='chain__badge'
+                                            src={singleBadgeSource}
+                                        />
+                                        <button
+                                            aria-label={`Edit frame ${index + 1}`}
+                                            className='icon-button'
+                                            onClick={() => {
+                                                openEditor(state);
+                                            }}
+                                            title='Edit frame'
+                                            type='button'
+                                        >
+                                            <Pencil
+                                                aria-hidden='true'
+                                                size={16}
+                                            />
+                                        </button>
+                                    </div>
+                                    <div
+                                        aria-hidden='true'
+                                        className='chain__line'
                                     />
-                                </label>
-                                <label className='field'>
-                                    <span>Name</span>
-                                    <input
-                                        onChange={(event) => {
-                                            updateState(
-                                                state.id,
-                                                'name',
-                                                event
-                                            );
-                                        }}
-                                        value={state.name}
-                                    />
-                                </label>
-                                <label className='field'>
-                                    <span>Color</span>
-                                    <input
-                                        onChange={(event) => {
-                                            updateState(
-                                                state.id,
-                                                'color',
-                                                event
-                                            );
-                                        }}
-                                        type='color'
-                                        value={state.color}
-                                    />
-                                </label>
-                                <button
-                                    aria-label={`Remove frame ${index + 1}`}
-                                    className='icon-button state-card__remove'
-                                    onClick={() => {
-                                        removeState(state.id);
-                                    }}
-                                    title='Remove frame'
-                                    type='button'
-                                >
-                                    <Trash2 aria-hidden='true' size={16} />
-                                </button>
-                            </fieldset>
-                        ))}
+                                </div>
+                            );
+                        })}
 
                         <button
-                            className='add-state'
+                            aria-label='Add frame'
+                            className='chain__add'
                             onClick={addState}
                             type='button'
                         >
                             <Plus aria-hidden='true' size={16} />
-                            Add frame
                         </button>
-                    </form>
+                    </section>
 
                     <aside aria-label='Generated badge' className='output'>
                         <div className='preview'>
                             {previewSource === '' ? (
                                 <span>
-                                    Preview appears after one complete frame.
+                                    Add SVG artwork to start the animation loop.
                                 </span>
                             ) : (
                                 <img
@@ -375,6 +429,111 @@ export function App(): JSX.Element {
                     </aside>
                 </div>
             </section>
+
+            {editingId === undefined ? undefined : (
+                <div className='dialog-backdrop' role='presentation'>
+                    <section
+                        aria-labelledby='editor-title'
+                        aria-modal='true'
+                        className='dialog'
+                        role='dialog'
+                    >
+                        <div className='dialog__header'>
+                            <h2 className='dialog__title' id='editor-title'>
+                                Edit frame
+                            </h2>
+                            <button
+                                aria-label='Close editor'
+                                className='icon-button'
+                                onClick={closeEditor}
+                                title='Close editor'
+                                type='button'
+                            >
+                                <X aria-hidden='true' size={16} />
+                            </button>
+                        </div>
+
+                        <div className='dialog__row'>
+                            <label className='field'>
+                                <span>Name</span>
+                                <input
+                                    onChange={(event) => {
+                                        updateDraft('name', event);
+                                    }}
+                                    value={draft.name}
+                                />
+                            </label>
+                            <label className='field field--color'>
+                                <span>Color</span>
+                                <input
+                                    onChange={(event) => {
+                                        updateDraft('color', event);
+                                    }}
+                                    type='color'
+                                    value={draft.color}
+                                />
+                            </label>
+                        </div>
+
+                        <label className='field'>
+                            <span>SVG source</span>
+                            {draft.source === '' ? (
+                                <div className='source-empty'>
+                                    <button onClick={pasteSource} type='button'>
+                                        Paste
+                                    </button>
+                                    <button
+                                        onClick={openFilePicker}
+                                        type='button'
+                                    >
+                                        <FolderOpen
+                                            aria-hidden='true'
+                                            size={16}
+                                        />
+                                        Open file
+                                    </button>
+                                </div>
+                            ) : (
+                                <textarea
+                                    className='dialog__source'
+                                    onChange={(event) => {
+                                        updateDraft('source', event);
+                                    }}
+                                    value={draft.source}
+                                />
+                            )}
+                        </label>
+
+                        <div className='dialog__footer'>
+                            <button
+                                className='button button--secondary'
+                                onClick={closeEditor}
+                                type='button'
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className='button button--primary'
+                                onClick={saveDraft}
+                                type='button'
+                            >
+                                Save
+                            </button>
+                        </div>
+
+                        <input
+                            accept='.svg,image/svg+xml,text/plain'
+                            className='visually-hidden'
+                            onChange={readSourceFile}
+                            ref={(element) => {
+                                fileInputReference.current =
+                                    element ?? undefined;
+                            }}
+                            type='file'
+                        />
+                    </section>
+                </div>
+            )}
         </main>
     );
 }

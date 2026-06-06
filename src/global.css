@@ -60,7 +60,6 @@ textarea {
 }
 
 .builder__eyebrow,
-.state-card legend,
 .field span {
     color: var(--clr-text-muted);
     font: var(--font-label);
@@ -68,161 +67,116 @@ textarea {
     text-transform: uppercase;
 }
 
-.builder__title {
+.builder__title,
+.dialog__title {
     color: var(--clr-text-strong);
     font: var(--font-display);
 }
 
+.dialog__title {
+    font-size: 2rem;
+}
+
 .builder__workspace {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 392px;
+    grid-template-columns: 320px minmax(0, 1fr);
     gap: var(--space-24);
     align-items: start;
 }
 
-.state-list,
-.output {
-    display: grid;
-    gap: var(--space-16);
-}
-
-.state-card {
-    position: relative;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 160px 72px;
-    gap: var(--space-12);
-    align-items: end;
-    padding: var(--space-16) var(--space-48) var(--space-16) var(--space-16);
+.chain,
+.output,
+.dialog {
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
     background: var(--clr-surface);
-    box-shadow: 0 8px 24px var(--clr-shadow);
 }
 
-.state-card legend {
-    padding: 0 var(--space-4);
+.chain,
+.output {
+    padding: var(--space-16);
 }
 
-.field {
+.chain {
     display: grid;
+    gap: var(--space-8);
+    align-content: start;
+}
+
+.chain__segment {
+    display: grid;
+    justify-items: center;
     gap: var(--space-8);
 }
 
-.field input,
-.field textarea,
-.output__source {
+.chain__node {
+    display: grid;
+    grid-template-columns: 1fr 40px;
+    gap: var(--space-12);
+    align-items: center;
     width: 100%;
-    border: 1px solid var(--clr-border);
-    border-radius: var(--space-8);
-    background: var(--clr-surface-raised);
-    color: var(--clr-text);
 }
 
-.field input {
-    min-height: 40px;
-    padding: 0 var(--space-12);
+.chain__badge {
+    width: 100%;
+    min-height: 28px;
 }
 
-.field input[type='color'] {
-    min-width: 48px;
-    padding: var(--space-4);
-    cursor: pointer;
-}
-
-.field textarea {
-    min-height: 96px;
-    padding: var(--space-12);
-    font: var(--font-mono);
+.chain__line {
+    width: 1px;
+    height: 20px;
+    background: var(--clr-border);
 }
 
 .icon-button,
-.add-state,
-.output__actions button {
+.chain__add,
+.output__actions button,
+.dialog__footer button,
+.source-empty button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-8);
     min-height: 40px;
+    border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
+    background: var(--clr-surface-raised);
+    color: var(--clr-text);
     cursor: pointer;
 }
 
 .icon-button {
     width: 40px;
-    color: var(--clr-text-muted);
-    background: var(--clr-control);
 }
 
-.state-card__remove {
-    position: absolute;
-    right: var(--space-16);
-    top: var(--space-16);
-}
-
-.add-state,
-.output__actions button {
-    padding: 0 var(--space-16);
-    color: var(--clr-surface-raised);
-    background: var(--clr-accent);
-    font: var(--font-small);
-    font-weight: var(--fw-semibold);
-}
-
-.add-state:hover,
-.output__actions button:hover {
-    background: var(--clr-accent-strong);
-}
-
-.icon-button:hover {
-    color: var(--clr-text);
-    background: var(--clr-bg-subtle);
+.chain__add {
+    justify-self: center;
+    width: 40px;
+    padding: 0;
+    border-radius: 999px;
 }
 
 .output {
-    position: sticky;
-    top: var(--space-32);
-    padding: var(--space-16);
-    border: 1px solid var(--clr-border);
-    border-radius: var(--space-8);
-    background: var(--clr-surface);
-    box-shadow: 0 8px 24px var(--clr-shadow);
+    display: grid;
+    gap: var(--space-16);
 }
 
 .preview {
     display: grid;
-    min-height: 112px;
+    min-height: 160px;
     place-items: center;
-    border: 1px dashed var(--clr-border-strong);
+    border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
-    background:
-        linear-gradient(
-            45deg,
-            var(--clr-bg-subtle) 25%,
-            transparent 25%,
-            transparent 75%,
-            var(--clr-bg-subtle) 75%
-        ),
-        linear-gradient(
-            45deg,
-            var(--clr-bg-subtle) 25%,
-            transparent 25%,
-            transparent 75%,
-            var(--clr-bg-subtle) 75%
-        );
-    background-position:
-        0 0,
-        var(--space-8) var(--space-8);
-    background-size: var(--space-16) var(--space-16);
+    background: var(--clr-bg-subtle);
 }
 
 .preview img {
     width: auto;
     max-width: 100%;
-    image-rendering: auto;
 }
 
 .preview span {
-    padding: var(--space-16);
+    width: min(240px, 100%);
     color: var(--clr-text-soft);
     font: var(--font-small);
     text-align: center;
@@ -234,15 +188,125 @@ textarea {
     gap: var(--space-12);
 }
 
+.output__actions button,
+.dialog__footer .button--primary {
+    background: var(--clr-accent);
+    color: var(--clr-surface-raised);
+}
+
 .output__actions button:disabled {
     cursor: not-allowed;
     opacity: 0.48;
 }
 
-.output__source {
+.output__source,
+.field input,
+.dialog__source {
+    width: 100%;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-8);
+    background: var(--clr-surface-raised);
+    color: var(--clr-text);
+}
+
+.output__source,
+.dialog__source {
     min-height: 280px;
     padding: var(--space-12);
     font: var(--font-mono);
+}
+
+.field {
+    display: grid;
+    gap: var(--space-8);
+}
+
+.field input {
+    min-height: 40px;
+    padding: 0 var(--space-12);
+}
+
+.field--color {
+    width: 72px;
+}
+
+.field--color input[type='color'] {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 999px;
+    justify-self: start;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: var(--space-24);
+    background: rgb(17 17 17 / 18%);
+}
+
+.dialog {
+    display: grid;
+    gap: var(--space-16);
+    width: min(100%, 680px);
+    padding: var(--space-16);
+}
+
+.dialog__header,
+.dialog__row,
+.dialog__footer,
+.source-empty {
+    display: flex;
+    gap: var(--space-12);
+}
+
+.dialog__header,
+.dialog__footer {
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dialog__row {
+    align-items: end;
+}
+
+.dialog__row .field:first-child {
+    flex: 1;
+}
+
+.source-empty {
+    min-height: 220px;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-8);
+    align-items: center;
+    justify-content: center;
+    background: var(--clr-bg-subtle);
+}
+
+.dialog__footer {
+    justify-content: end;
+}
+
+.button--secondary {
+    background: var(--clr-surface-raised);
+    color: var(--clr-text);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 @media (max-width: 920px) {
@@ -250,12 +314,26 @@ textarea {
         padding: var(--space-24) var(--space-16);
     }
 
-    .builder__workspace,
-    .state-card {
+    .builder__workspace {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .dialog-backdrop {
+        padding: var(--space-16);
+    }
+
+    .dialog__row,
+    .output__actions,
+    .dialog__footer,
+    .source-empty,
+    .chain__node {
+        display: grid;
         grid-template-columns: 1fr;
     }
 
-    .output {
-        position: static;
+    .field--color {
+        width: 100%;
     }
 }
