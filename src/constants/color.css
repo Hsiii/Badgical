@@ -4,12 +4,14 @@
     --clr-slate-indigo: #5968c9;
     --clr-lavender-purple: #9972d3;
     --clr-lavender: #dbdaec;
+    --clr-mint: #dceee8;
+    --clr-graphite: #30334c;
 
     --clr-bg: #ffffff;
     --clr-bg-subtle: var(--clr-lavender);
     --clr-surface: #ffffff;
     --clr-surface-raised: #ffffff;
-    --clr-text: #30334c;
+    --clr-text: var(--clr-graphite);
     --clr-text-strong: #1f2238;
     --clr-text-muted: #5b607f;
     --clr-text-soft: #777b9b;
@@ -17,6 +19,7 @@
     --clr-border-strong: var(--clr-lavender-purple);
     --clr-accent: var(--clr-slate-indigo);
     --clr-accent-strong: #4654ad;
+    --clr-accent-soft: var(--clr-mint);
     --clr-brand: var(--clr-lavender-purple);
     --clr-brand-soft: var(--clr-lavender);
     --clr-control: #f4f3fb;
