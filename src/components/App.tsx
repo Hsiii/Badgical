@@ -55,10 +55,10 @@ const defaultFrameSource =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="#1f2328" stroke-width="1.75" stroke-linecap="round"/></svg>';
 
 const badgeHeight = 28;
-const logoSize = 15;
+const logoSize = 16;
 const logoX = 6;
-const logoY = 6.5;
-const textStart = 36;
+const logoY = 6;
+const textStart = 30;
 const minBadgeWidth = 90;
 const textPadding = 16;
 const textSize = 10;
