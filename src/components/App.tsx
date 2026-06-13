@@ -498,6 +498,17 @@ export function App(): JSX.Element {
     const [selectedSvglResult, setSelectedSvglResult] = useState<
         SvglResult | undefined
     >(undefined);
+    const [addFrameDialogOpen, setAddFrameDialogOpen] = useState(false);
+    const [addFrameQuery, setAddFrameQuery] = useState('');
+    const [addFrameResults, setAddFrameResults] = useState<
+        readonly SvglResult[]
+    >([]);
+    const [addFrameStatus, setAddFrameStatus] =
+        useState<SvglSearchStatus>('idle');
+    const [selectedAddFrameResult, setSelectedAddFrameResult] = useState<
+        SvglResult | undefined
+    >(undefined);
+    const [continueAddingFrames, setContinueAddingFrames] = useState(true);
     const [deleteCandidateId, setDeleteCandidateId] = useState<
         string | undefined
     >(undefined);
@@ -620,6 +631,89 @@ export function App(): JSX.Element {
         };
     }, [svglQuery]);
 
+    useEffect(() => {
+        if (!addFrameDialogOpen) {
+            return undefined;
+        }
+
+        const query = addFrameQuery.trim();
+
+        if (query === '') {
+            setAddFrameResults([]);
+            setAddFrameStatus('idle');
+            setSelectedAddFrameResult(undefined);
+            return undefined;
+        }
+
+        const abortController = new AbortController();
+        setAddFrameStatus('loading');
+        const timeoutId = globalThis.setTimeout(
+            () => {
+                fetch(
+                    `https://api.svgl.app?search=${encodeURIComponent(query)}`,
+                    {
+                        signal: abortController.signal,
+                    }
+                )
+                    .then(async (response) => {
+                        const payload = (await response.json()) as unknown;
+
+                        if (
+                            !response.ok &&
+                            isSvglApiError(payload) &&
+                            isSvglNotFoundResponse(response, payload)
+                        ) {
+                            return [];
+                        }
+
+                        if (!response.ok) {
+                            throw new Error('SVGL search failed');
+                        }
+
+                        if (!isSvglResultList(payload)) {
+                            throw new TypeError('SVGL search payload invalid');
+                        }
+
+                        return payload;
+                    })
+                    .then((results) => {
+                        const visibleResults = results.slice(0, maxSvglResults);
+
+                        setAddFrameResults(visibleResults);
+                        setAddFrameStatus(
+                            visibleResults.length === 0 ? 'empty' : 'ready'
+                        );
+                        setSelectedAddFrameResult((currentResult) =>
+                            visibleResults.some(
+                                (result) => result.id === currentResult?.id
+                            )
+                                ? currentResult
+                                : undefined
+                        );
+                    })
+                    .catch((error: unknown) => {
+                        if (
+                            error instanceof DOMException &&
+                            error.name === 'AbortError'
+                        ) {
+                            return;
+                        }
+
+                        setAddFrameResults([]);
+                        setAddFrameStatus('error');
+                        setSelectedAddFrameResult(undefined);
+                    });
+            },
+            320,
+            undefined
+        );
+
+        return (): void => {
+            abortController.abort();
+            globalThis.clearTimeout(timeoutId);
+        };
+    }, [addFrameDialogOpen, addFrameQuery]);
+
     const selectFrame = (state: BadgeState): void => {
         setSelectedFrameId(state.id);
         setCopyState('idle');
@@ -725,24 +819,74 @@ export function App(): JSX.Element {
         setCopyState('idle');
     };
 
-    const addState = (): void => {
+    const openAddFrameDialog = (): void => {
         if (states.length >= maxFrames) {
             return;
         }
 
-        const newState: BadgeState = {
-            id: crypto.randomUUID(),
-            ...defaultBadgeDraft,
-        };
+        setAddFrameDialogOpen(true);
+        setAddFrameQuery('');
+        setAddFrameResults([]);
+        setAddFrameStatus('idle');
+        setSelectedAddFrameResult(undefined);
+        setContinueAddingFrames(states.length + 1 < maxFrames);
+    };
 
-        setStates((currentStates) => [...currentStates, newState]);
-        setSelectedFrameId(newState.id);
-        setEditorMode('color');
-        setSvglQuery(newState.name);
-        setSvglResults([]);
-        setSvglStatus('idle');
-        setSelectedSvglResult(undefined);
-        setCopyState('idle');
+    const closeAddFrameDialog = (): void => {
+        setAddFrameDialogOpen(false);
+        setSelectedAddFrameResult(undefined);
+    };
+
+    const confirmAddFrame = (): void => {
+        if (
+            selectedAddFrameResult === undefined ||
+            states.length >= maxFrames
+        ) {
+            return;
+        }
+
+        fetch(getSvglSourceUrl(selectedAddFrameResult.route))
+            .then(async (response) => {
+                if (!response.ok) {
+                    throw new Error('SVGL source failed');
+                }
+
+                return await response.text();
+            })
+            .then((source) => {
+                const primaryColor = getPrimarySvgColor(source);
+                const newState: BadgeState = {
+                    color: primaryColor ?? defaultBadgeDraft.color,
+                    id: crypto.randomUUID(),
+                    name: selectedAddFrameResult.title,
+                    source,
+                };
+
+                setStates((currentStates) =>
+                    currentStates.length >= maxFrames
+                        ? currentStates
+                        : [...currentStates, newState]
+                );
+                setSelectedFrameId(newState.id);
+                setEditorMode('source');
+                setSvglQuery(newState.name);
+                setSvglResults([]);
+                setSvglStatus('idle');
+                setSelectedSvglResult(undefined);
+                setCopyState('idle');
+
+                if (continueAddingFrames && states.length + 1 < maxFrames) {
+                    setAddFrameQuery('');
+                    setAddFrameResults([]);
+                    setAddFrameStatus('idle');
+                    setSelectedAddFrameResult(undefined);
+                    return;
+                }
+
+                setAddFrameDialogOpen(false);
+                setSelectedAddFrameResult(undefined);
+            })
+            .catch(() => undefined);
     };
 
     const confirmDeleteState = (): void => {
@@ -1084,7 +1228,7 @@ export function App(): JSX.Element {
                                     aria-label='Add frame'
                                     className='button button--primary add-frame'
                                     disabled={states.length >= maxFrames}
-                                    onClick={addState}
+                                    onClick={openAddFrameDialog}
                                     type='button'
                                 >
                                     <Plus aria-hidden='true' size={16} />
@@ -1517,6 +1661,128 @@ export function App(): JSX.Element {
                     </section>
                 </div>
             )}
+
+            {addFrameDialogOpen ? (
+                <div className='confirm-backdrop' role='presentation'>
+                    <section
+                        aria-labelledby='add-frame-title'
+                        aria-modal='true'
+                        className='confirm-dialog add-frame-dialog'
+                        role='dialog'
+                    >
+                        <div className='panel-heading'>
+                            <h2 id='add-frame-title'>Add Frame</h2>
+                            <span>
+                                {states.length}/{maxFrames}
+                            </span>
+                        </div>
+
+                        <section
+                            aria-label='Search SVGL logos'
+                            className='svgl-search'
+                        >
+                            <label className='field'>
+                                <span>SVGL logo</span>
+                                <div className='svgl-search__bar'>
+                                    <Search aria-hidden='true' size={16} />
+                                    <input
+                                        autoFocus
+                                        onChange={(event) => {
+                                            setAddFrameQuery(
+                                                event.target.value
+                                            );
+                                        }}
+                                        placeholder='Search a brand or product'
+                                        value={addFrameQuery}
+                                    />
+                                </div>
+                            </label>
+
+                            <div className='svgl-results'>
+                                {addFrameResults.length === 0 ? (
+                                    <p>
+                                        {addFrameStatus === 'loading'
+                                            ? 'Searching SVGL...'
+                                            : undefined}
+                                        {addFrameStatus === 'empty'
+                                            ? `No SVGL logo titled "${addFrameQuery}". Try another search.`
+                                            : undefined}
+                                        {addFrameStatus === 'error'
+                                            ? 'SVGL search is unavailable right now. Try again.'
+                                            : undefined}
+                                        {addFrameStatus === 'idle'
+                                            ? 'Search SVGL to add a logo frame.'
+                                            : undefined}
+                                    </p>
+                                ) : (
+                                    addFrameResults.map((result) => (
+                                        <button
+                                            aria-current={
+                                                result.id ===
+                                                selectedAddFrameResult?.id
+                                                    ? 'true'
+                                                    : undefined
+                                            }
+                                            className='svgl-result'
+                                            key={result.id}
+                                            onClick={() => {
+                                                setSelectedAddFrameResult(
+                                                    result
+                                                );
+                                            }}
+                                            type='button'
+                                        >
+                                            <img
+                                                alt=''
+                                                src={getSvglRoute(result.route)}
+                                            />
+                                            <span>{result.title}</span>
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        </section>
+
+                        <label className='switch-field add-frame-dialog__continue'>
+                            <span>Continue adding next</span>
+                            <input
+                                checked={
+                                    continueAddingFrames &&
+                                    states.length + 1 < maxFrames
+                                }
+                                disabled={states.length + 1 >= maxFrames}
+                                onChange={(event) => {
+                                    setContinueAddingFrames(
+                                        event.target.checked
+                                    );
+                                }}
+                                type='checkbox'
+                            />
+                        </label>
+
+                        <div className='confirm-dialog__actions'>
+                            <button
+                                className='button button--secondary'
+                                onClick={closeAddFrameDialog}
+                                type='button'
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className='button button--primary'
+                                disabled={
+                                    selectedAddFrameResult === undefined ||
+                                    states.length >= maxFrames
+                                }
+                                onClick={confirmAddFrame}
+                                type='button'
+                            >
+                                Add frame
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            ) : undefined}
         </main>
     );
 }

@@ -832,6 +832,15 @@ textarea {
     background: var(--clr-surface);
 }
 
+.add-frame-dialog {
+    width: min(100%, calc(var(--space-48) * 12));
+}
+
+.add-frame-dialog__continue {
+    border-top: 1px solid var(--clr-border);
+    padding-top: var(--space-16);
+}
+
 .confirm-dialog p {
     color: var(--clr-text);
     font: var(--font-small);
