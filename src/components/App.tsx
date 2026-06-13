@@ -687,23 +687,6 @@ export function App(): JSX.Element {
         updateSelectedFrameValue('color', rgbToHex(red, green, blue));
     };
 
-    const updateSelectedFrameHue = (value: string): void => {
-        const nextHue = Number.parseInt(value, 10);
-
-        if (Number.isNaN(nextHue)) {
-            return;
-        }
-
-        updateSelectedFrameValue(
-            'color',
-            hsvToHex(
-                nextHue,
-                selectedFrameHsv.saturation,
-                selectedFrameHsv.value
-            )
-        );
-    };
-
     const updateSelectedFrameSaturationValue = (
         saturation: number,
         value: number
@@ -1286,24 +1269,6 @@ export function App(): JSX.Element {
                                                         }}
                                                     />
                                                 </button>
-                                                <label className='field'>
-                                                    <span>Hue</span>
-                                                    <input
-                                                        className='color-editor__hue'
-                                                        max='360'
-                                                        min='0'
-                                                        onChange={(event) => {
-                                                            updateSelectedFrameHue(
-                                                                event.target
-                                                                    .value
-                                                            );
-                                                        }}
-                                                        type='range'
-                                                        value={
-                                                            selectedFrameHsv.hue
-                                                        }
-                                                    />
-                                                </label>
                                             </div>
                                             <div className='color-editor__controls'>
                                                 <label className='field color-editor__field-row'>

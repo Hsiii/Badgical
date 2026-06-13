@@ -605,23 +605,6 @@ textarea {
     transform: translate(-50%, -50%);
 }
 
-.color-editor__hue {
-    min-height: var(--space-40);
-    padding: 0;
-    border: 0;
-    background: linear-gradient(
-        to right,
-        #f00,
-        #ff0,
-        #0f0,
-        #0ff,
-        #00f,
-        #f0f,
-        #f00
-    );
-    cursor: pointer;
-}
-
 .color-editor__controls {
     grid-template-rows: auto auto;
     min-width: 0;
