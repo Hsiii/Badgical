@@ -704,8 +704,10 @@ textarea {
 }
 
 .preview img {
-    width: auto;
+    width: min(100%, calc(var(--space-48) * 4));
     max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .preview span {
