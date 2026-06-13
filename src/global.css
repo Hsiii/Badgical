@@ -544,10 +544,12 @@ textarea {
 
 .switch-field input {
     position: relative;
+    display: block;
     width: var(--space-40);
     height: var(--space-24);
     flex: 0 0 auto;
     appearance: none;
+    margin: 0;
     border: 1px solid var(--clr-border);
     border-radius: var(--space-24);
     background: var(--clr-control);
