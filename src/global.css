@@ -86,13 +86,24 @@ textarea {
     font-weight: var(--fw-semibold);
 }
 
-.brand-badge > span:last-child {
+.brand-badge__word {
     display: inline-flex;
     min-height: 24px;
     align-items: center;
     font-weight: var(--fw-bold);
     line-height: 1;
-    transform: translateY(-1px);
+}
+
+.brand-badge__cap {
+    display: inline-grid;
+    height: 24px;
+    place-items: center;
+}
+
+.brand-badge__rest {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
 }
 
 .brand-badge__icon {
