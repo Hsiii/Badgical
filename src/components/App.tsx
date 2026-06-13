@@ -46,6 +46,7 @@ interface SvglSearchCopy {
     readonly errorMessage: string;
     readonly idleMessage: string;
     readonly label: string;
+    readonly mode: EditorMode;
     readonly placeholder: string;
 }
 
@@ -176,15 +177,6 @@ const getColorChannels = (
         red: Number.parseInt(normalizedColor.slice(0, 2), 16),
     };
 };
-
-const getColorLuminance = (color: string): number => {
-    const { blue, green, red } = getColorChannels(color);
-
-    return (red * 299 + green * 587 + blue * 114) / 1000;
-};
-
-const getBadgeHoverFilter = (color: string): string =>
-    getColorLuminance(color) > 225 ? 'brightness(0.96)' : 'brightness(1.08)';
 
 const clampColorChannel = (value: number): number =>
     Math.min(Math.max(Math.round(value), 0), 255);
@@ -499,7 +491,6 @@ const applySvglSourceToState = (
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);
     const [selectedFrameId, setSelectedFrameId] = useState(defaultStates[0].id);
-    const [editorMode, setEditorMode] = useState<EditorMode>('color');
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
     const [svglQuery, setSvglQuery] = useState(defaultStates[0].name);
     const [svglResults, setSvglResults] = useState<readonly SvglResult[]>([]);
@@ -532,27 +523,11 @@ export function App(): JSX.Element {
         [selectedFrameId, states]
     );
     const selectedMaterializedFrame = materializeState(selectedFrame, 0);
-    const selectedBadgeWidth = getBadgeWidth([selectedMaterializedFrame]);
     const selectedFrameHasSource = selectedFrame.source.trim() !== '';
     const selectedFrameChannels = getColorChannels(
         selectedMaterializedFrame.color
     );
     const selectedFrameHsv = getColorHsv(selectedMaterializedFrame.color);
-    const selectedFrameInk = getReadableInk(selectedMaterializedFrame.color);
-    const selectedFrameArtwork = selectedMaterializedFrame.source;
-    const editorBadgeStyle = {
-        '--badge-edit-bg': selectedMaterializedFrame.color,
-        '--badge-edit-filter': getBadgeHoverFilter(
-            selectedMaterializedFrame.color
-        ),
-        '--badge-logo-size-x': `${(logoSize / selectedBadgeWidth) * 100}%`,
-        '--badge-logo-size-y': `${(logoSize / badgeHeight) * 100}%`,
-        '--badge-logo-x': `${(logoX / selectedBadgeWidth) * 100}%`,
-        '--badge-logo-y': `${(logoY / badgeHeight) * 100}%`,
-        '--badge-text-left': `${(textStart / selectedBadgeWidth) * 100}%`,
-        'aspectRatio': `${selectedBadgeWidth} / ${badgeHeight}`,
-        'color': selectedFrameInk,
-    } as CSSProperties;
 
     useEffect(() => {
         setSvglQuery(selectedFrame.name);
@@ -877,7 +852,6 @@ export function App(): JSX.Element {
                         : [...currentStates, newState]
                 );
                 setSelectedFrameId(newState.id);
-                setEditorMode('source');
                 setSvglQuery(newState.name);
                 setSvglResults([]);
                 setSvglStatus('idle');
@@ -984,7 +958,7 @@ export function App(): JSX.Element {
         setSelectedSvglResult(undefined);
     };
 
-    const chooseSvglResult = (): void => {
+    const chooseSvglResult = (mode: EditorMode): void => {
         if (selectedSvglResult === undefined) {
             return;
         }
@@ -1005,7 +979,7 @@ export function App(): JSX.Element {
                                   state,
                                   selectedSvglResult,
                                   source,
-                                  editorMode
+                                  mode
                               )
                             : state
                     )
@@ -1062,6 +1036,7 @@ export function App(): JSX.Element {
         errorMessage,
         idleMessage,
         label,
+        mode,
         placeholder,
     }: SvglSearchCopy): JSX.Element => (
         <section aria-label={label} className='svgl-search'>
@@ -1125,7 +1100,9 @@ export function App(): JSX.Element {
                 <button
                     className='button button--primary'
                     disabled={selectedSvglResult === undefined}
-                    onClick={chooseSvglResult}
+                    onClick={() => {
+                        chooseSvglResult(mode);
+                    }}
                     type='button'
                 >
                     {chooseLabel}
@@ -1325,305 +1302,269 @@ export function App(): JSX.Element {
                                 <h2 id='frame-editor-title'>Edit Frame</h2>
                             </div>
 
-                            <div
-                                className='editable-badge'
-                                data-editor-mode={editorMode}
-                                style={editorBadgeStyle}
-                            >
-                                <button
-                                    aria-label='Edit badge color'
-                                    aria-pressed={editorMode === 'color'}
-                                    className='editable-badge__color'
-                                    onClick={() => {
-                                        setEditorMode('color');
-                                    }}
-                                    type='button'
-                                />
-                                <div className='editable-badge__content'>
-                                    <button
-                                        aria-label='Edit logo SVG source'
-                                        aria-pressed={editorMode === 'source'}
-                                        className='editable-badge__logo'
-                                        onClick={() => {
-                                            setEditorMode('source');
-                                        }}
-                                        type='button'
-                                    >
-                                        <img
-                                            alt=''
-                                            src={toDataUri(
-                                                selectedFrameArtwork
-                                            )}
-                                        />
-                                    </button>
-                                    <div className='editable-badge__text'>
-                                        <button
-                                            aria-label='Edit badge text'
-                                            aria-pressed={editorMode === 'text'}
-                                            className='editable-badge__text-hit'
-                                            onClick={() => {
-                                                setEditorMode('text');
-                                            }}
-                                            type='button'
-                                        />
-                                        <div
-                                            aria-hidden='true'
-                                            className='editable-badge__text-display'
-                                        >
-                                            {getDisplayName(
-                                                selectedMaterializedFrame
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <section className='editor-drawer'>
-                                {editorMode === 'color' ? (
-                                    <div className='editor-drawer__split editor-drawer__split--color'>
-                                        <div className='color-editor'>
-                                            <div className='color-editor__field-stack'>
-                                                <button
-                                                    aria-label='Saturation and brightness'
-                                                    className='color-field'
-                                                    onPointerDown={(event) => {
-                                                        event.currentTarget.setPointerCapture(
-                                                            event.pointerId
-                                                        );
-                                                        updateSelectedFrameFromColorField(
+                                <div className='editor-segments'>
+                                    <section className='editor-segment'>
+                                        <div className='editor-segment__heading'>
+                                            <h3>Color</h3>
+                                        </div>
+                                        <div className='editor-drawer__split editor-drawer__split--color'>
+                                            <div className='color-editor'>
+                                                <div className='color-editor__field-stack'>
+                                                    <button
+                                                        aria-label='Saturation and brightness'
+                                                        className='color-field'
+                                                        onPointerDown={(
                                                             event
-                                                        );
-                                                    }}
-                                                    onPointerMove={(event) => {
-                                                        if (
-                                                            event.buttons !== 1
-                                                        ) {
-                                                            return;
-                                                        }
+                                                        ) => {
+                                                            event.currentTarget.setPointerCapture(
+                                                                event.pointerId
+                                                            );
+                                                            updateSelectedFrameFromColorField(
+                                                                event
+                                                            );
+                                                        }}
+                                                        onPointerMove={(
+                                                            event
+                                                        ) => {
+                                                            if (
+                                                                event.buttons !==
+                                                                1
+                                                            ) {
+                                                                return;
+                                                            }
 
-                                                        updateSelectedFrameFromColorField(
-                                                            event
-                                                        );
-                                                    }}
-                                                    style={
-                                                        {
-                                                            '--color-field-hue':
-                                                                hsvToHex(
-                                                                    selectedFrameHsv.hue,
-                                                                    100,
-                                                                    100
-                                                                ),
-                                                        } as CSSProperties
-                                                    }
-                                                >
-                                                    <span
-                                                        aria-hidden='true'
-                                                        className='color-field__marker'
-                                                        style={{
-                                                            left: `${selectedFrameHsv.saturation}%`,
-                                                            top: `${100 - selectedFrameHsv.value}%`,
-                                                        }}
-                                                    />
-                                                </button>
-                                            </div>
-                                            <div className='color-editor__controls'>
-                                                <label className='field color-editor__field-row'>
-                                                    <span>Hex</span>
-                                                    <input
-                                                        onBlur={(event) => {
-                                                            updateSelectedFrameHex(
-                                                                event.target
-                                                                    .value
+                                                            updateSelectedFrameFromColorField(
+                                                                event
                                                             );
                                                         }}
-                                                        onChange={(event) => {
-                                                            updateSelectedFrameHex(
-                                                                event.target
-                                                                    .value
-                                                            );
-                                                        }}
-                                                        placeholder='#5968C9'
-                                                        value={
-                                                            selectedMaterializedFrame.color
+                                                        style={
+                                                            {
+                                                                '--color-field-hue':
+                                                                    hsvToHex(
+                                                                        selectedFrameHsv.hue,
+                                                                        100,
+                                                                        100
+                                                                    ),
+                                                            } as CSSProperties
                                                         }
-                                                    />
-                                                </label>
-                                                <div className='color-editor__rgb-row'>
+                                                    >
+                                                        <span
+                                                            aria-hidden='true'
+                                                            className='color-field__marker'
+                                                            style={{
+                                                                left: `${selectedFrameHsv.saturation}%`,
+                                                                top: `${100 - selectedFrameHsv.value}%`,
+                                                            }}
+                                                        />
+                                                    </button>
+                                                </div>
+                                                <div className='color-editor__controls'>
                                                     <label className='field color-editor__field-row'>
-                                                        <span>R</span>
+                                                        <span>Hex</span>
                                                         <input
-                                                            max='255'
-                                                            min='0'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateSelectedFrameChannel(
-                                                                    'red',
+                                                            onBlur={(event) => {
+                                                                updateSelectedFrameHex(
                                                                     event.target
                                                                         .value
                                                                 );
                                                             }}
-                                                            type='number'
-                                                            value={
-                                                                selectedFrameChannels.red
-                                                            }
-                                                        />
-                                                    </label>
-                                                    <label className='field color-editor__field-row'>
-                                                        <span>G</span>
-                                                        <input
-                                                            max='255'
-                                                            min='0'
                                                             onChange={(
                                                                 event
                                                             ) => {
-                                                                updateSelectedFrameChannel(
-                                                                    'green',
+                                                                updateSelectedFrameHex(
                                                                     event.target
                                                                         .value
                                                                 );
                                                             }}
-                                                            type='number'
+                                                            placeholder='#5968C9'
                                                             value={
-                                                                selectedFrameChannels.green
+                                                                selectedMaterializedFrame.color
                                                             }
                                                         />
                                                     </label>
-                                                    <label className='field color-editor__field-row'>
-                                                        <span>B</span>
-                                                        <input
-                                                            max='255'
-                                                            min='0'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateSelectedFrameChannel(
-                                                                    'blue',
-                                                                    event.target
-                                                                        .value
-                                                                );
-                                                            }}
-                                                            type='number'
-                                                            value={
-                                                                selectedFrameChannels.blue
-                                                            }
-                                                        />
-                                                    </label>
+                                                    <div className='color-editor__rgb-row'>
+                                                        <label className='field color-editor__field-row'>
+                                                            <span>R</span>
+                                                            <input
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateSelectedFrameChannel(
+                                                                        'red',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='number'
+                                                                value={
+                                                                    selectedFrameChannels.red
+                                                                }
+                                                            />
+                                                        </label>
+                                                        <label className='field color-editor__field-row'>
+                                                            <span>G</span>
+                                                            <input
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateSelectedFrameChannel(
+                                                                        'green',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='number'
+                                                                value={
+                                                                    selectedFrameChannels.green
+                                                                }
+                                                            />
+                                                        </label>
+                                                        <label className='field color-editor__field-row'>
+                                                            <span>B</span>
+                                                            <input
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateSelectedFrameChannel(
+                                                                        'blue',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='number'
+                                                                value={
+                                                                    selectedFrameChannels.blue
+                                                                }
+                                                            />
+                                                        </label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        {renderSvglSearch({
-                                            chooseLabel: 'Apply color',
-                                            emptyMessage: (query) =>
-                                                `No SVGL logo titled "${query}". Try another search.`,
-                                            errorMessage:
-                                                'SVGL search is unavailable right now. Enter a hex value or try again.',
-                                            idleMessage:
-                                                'Search SVGL to sample a logo color.',
-                                            label: 'Logo color',
-                                            placeholder:
-                                                'Search a brand or product',
-                                        })}
-                                    </div>
-                                ) : undefined}
+                                    </section>
 
-                                {editorMode === 'text' ? (
-                                    <div className='editor-drawer__split editor-drawer__split--text'>
-                                        <div className='text-options'>
-                                            <label className='switch-field'>
-                                                <span>All Caps</span>
+                                    <section className='editor-segment editor-segment--text'>
+                                        <div className='editor-segment__heading'>
+                                            <h3>Text</h3>
+                                        </div>
+                                        <div className='editor-drawer__split editor-drawer__split--text'>
+                                            <div className='text-options'>
+                                                <label className='switch-field'>
+                                                    <span>All Caps</span>
+                                                    <input
+                                                        checked={
+                                                            selectedFrame.allCaps !==
+                                                            false
+                                                        }
+                                                        onChange={(event) => {
+                                                            updateSelectedFrameAllCaps(
+                                                                event.target
+                                                                    .checked
+                                                            );
+                                                        }}
+                                                        type='checkbox'
+                                                    />
+                                                </label>
+                                            </div>
+                                            <label className='field'>
+                                                <span>Text</span>
                                                 <input
-                                                    checked={
-                                                        selectedFrame.allCaps !==
-                                                        false
-                                                    }
                                                     onChange={(event) => {
-                                                        updateSelectedFrameAllCaps(
-                                                            event.target.checked
+                                                        updateSelectedFrame(
+                                                            'name',
+                                                            event
                                                         );
                                                     }}
-                                                    type='checkbox'
+                                                    placeholder='Badge text'
+                                                    value={selectedFrame.name}
                                                 />
                                             </label>
                                         </div>
-                                        <label className='field'>
-                                            <span>Text</span>
-                                            <input
-                                                autoFocus
-                                                onChange={(event) => {
-                                                    updateSelectedFrame(
-                                                        'name',
-                                                        event
-                                                    );
-                                                }}
-                                                placeholder='Badge text'
-                                                value={selectedFrame.name}
-                                            />
-                                        </label>
-                                    </div>
-                                ) : undefined}
+                                    </section>
 
-                                {editorMode === 'source' ? (
-                                    <div className='editor-drawer__split editor-drawer__split--source'>
-                                        <label className='field source-field'>
-                                            <span>SVG source</span>
-                                            {selectedFrameHasSource ? (
-                                                <textarea
-                                                    className='source-field__textarea'
-                                                    onChange={(event) => {
-                                                        updateSelectedFrame(
-                                                            'source',
-                                                            event
-                                                        );
-                                                    }}
-                                                    value={selectedFrame.source}
-                                                />
-                                            ) : (
-                                                <div className='source-empty'>
-                                                    <p>
-                                                        Paste SVG markup or open
-                                                        an SVG file to restore
-                                                        the logo artwork.
-                                                    </p>
-                                                    <button
-                                                        className='button button--secondary'
-                                                        onClick={pasteSource}
-                                                        type='button'
-                                                    >
-                                                        <ClipboardPaste
-                                                            aria-hidden='true'
-                                                            size={16}
-                                                        />
-                                                        Paste
-                                                    </button>
-                                                    <button
-                                                        className='button button--secondary'
-                                                        onClick={openFilePicker}
-                                                        type='button'
-                                                    >
-                                                        <FolderOpen
-                                                            aria-hidden='true'
-                                                            size={16}
-                                                        />
-                                                        Open file
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </label>
-                                        {renderSvglSearch({
-                                            chooseLabel: 'Choose',
-                                            emptyMessage: (query) =>
-                                                `No SVGL logo titled "${query}". Try another search or paste SVG source.`,
-                                            errorMessage:
-                                                'SVGL search is unavailable right now. Paste SVG source or try again.',
-                                            idleMessage:
-                                                'Search SVGL to replace the logo artwork.',
-                                            label: 'Logo',
-                                            placeholder:
-                                                'Search a brand or product',
-                                        })}
-                                    </div>
-                                ) : undefined}
+                                    <section className='editor-segment editor-segment--logo'>
+                                        <div className='editor-segment__heading'>
+                                            <h3>Logo</h3>
+                                        </div>
+                                        <div className='editor-drawer__split editor-drawer__split--source'>
+                                            <label className='field source-field'>
+                                                <span>SVG source</span>
+                                                {selectedFrameHasSource ? (
+                                                    <textarea
+                                                        className='source-field__textarea'
+                                                        onChange={(event) => {
+                                                            updateSelectedFrame(
+                                                                'source',
+                                                                event
+                                                            );
+                                                        }}
+                                                        value={
+                                                            selectedFrame.source
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <div className='source-empty'>
+                                                        <p>
+                                                            Paste SVG markup or
+                                                            open an SVG file to
+                                                            restore the logo
+                                                            artwork.
+                                                        </p>
+                                                        <button
+                                                            className='button button--secondary'
+                                                            onClick={
+                                                                pasteSource
+                                                            }
+                                                            type='button'
+                                                        >
+                                                            <ClipboardPaste
+                                                                aria-hidden='true'
+                                                                size={16}
+                                                            />
+                                                            Paste
+                                                        </button>
+                                                        <button
+                                                            className='button button--secondary'
+                                                            onClick={
+                                                                openFilePicker
+                                                            }
+                                                            type='button'
+                                                        >
+                                                            <FolderOpen
+                                                                aria-hidden='true'
+                                                                size={16}
+                                                            />
+                                                            Open file
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </label>
+                                            {renderSvglSearch({
+                                                chooseLabel: 'Choose',
+                                                emptyMessage: (query) =>
+                                                    `No SVGL logo titled "${query}". Try another search or paste SVG source.`,
+                                                errorMessage:
+                                                    'SVGL search is unavailable right now. Paste SVG source or try again.',
+                                                idleMessage:
+                                                    'Search SVGL to replace the logo artwork.',
+                                                label: 'Logo',
+                                                mode: 'source',
+                                                placeholder:
+                                                    'Search a brand or product',
+                                            })}
+                                        </div>
+                                    </section>
+                                </div>
                             </section>
                         </section>
                     </section>
