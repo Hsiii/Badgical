@@ -819,6 +819,15 @@ textarea {
     white-space: nowrap;
 }
 
+.svgl-result small {
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--clr-text-soft);
+    font: var(--font-label);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .svgl-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -846,7 +855,21 @@ textarea {
 }
 
 .add-frame-dialog {
-    width: min(100%, calc(var(--space-48) * 12));
+    width: min(100%, calc(var(--space-48) * 14));
+}
+
+.add-frame-dialog .svgl-results {
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(calc(var(--space-40) * 3), 1fr)
+    );
+    max-height: calc(var(--space-48) * 6);
+}
+
+.add-frame-dialog .svgl-result {
+    grid-template-rows: var(--space-40) auto auto;
+    min-height: calc(var(--space-48) * 2);
+    padding: var(--space-12);
 }
 
 .add-frame-dialog__continue {

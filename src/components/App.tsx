@@ -30,6 +30,7 @@ interface SvglRouteOptions {
 }
 
 interface SvglResult {
+    readonly category?: readonly string[] | string;
     readonly id: number;
     readonly route: string | SvglRouteOptions;
     readonly title: string;
@@ -447,6 +448,14 @@ const getSvglSourceUrl = (route: string | SvglRouteOptions): string => {
     } catch {
         return svgRoute;
     }
+};
+
+const getSvglCategoryLabel = (result: SvglResult): string | undefined => {
+    if (typeof result.category === 'string') {
+        return result.category;
+    }
+
+    return result.category?.[0];
 };
 
 const formatKilobytes = (bytes: number): string =>
@@ -1742,6 +1751,14 @@ export function App(): JSX.Element {
                                                 src={getSvglRoute(result.route)}
                                             />
                                             <span>{result.title}</span>
+                                            {getSvglCategoryLabel(result) ===
+                                            undefined ? undefined : (
+                                                <small>
+                                                    {getSvglCategoryLabel(
+                                                        result
+                                                    )}
+                                                </small>
+                                            )}
                                         </button>
                                     ))
                                 )}
