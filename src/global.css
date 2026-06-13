@@ -278,6 +278,26 @@ textarea {
     opacity: 0.32;
 }
 
+.empty-state {
+    display: grid;
+    min-height: calc(var(--space-48) * 3);
+    place-items: center;
+    padding: var(--space-16);
+    border: 1px dashed var(--clr-border);
+    border-radius: var(--space-8);
+    color: var(--clr-text-muted);
+    font: var(--font-small);
+    text-align: center;
+}
+
+.frame-list__empty {
+    min-height: calc(var(--space-48) * 2);
+}
+
+.editor-empty {
+    min-height: calc(var(--space-48) * 6);
+}
+
 .button,
 .icon-button,
 .source-empty button {
