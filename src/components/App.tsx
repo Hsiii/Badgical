@@ -1684,8 +1684,10 @@ export function App(): JSX.Element {
                             aria-label='Search SVGL logos'
                             className='svgl-search'
                         >
-                            <label className='field'>
-                                <span>SVGL logo</span>
+                            <label
+                                aria-label='SVGL logo'
+                                className='field add-frame-dialog__search-field'
+                            >
                                 <div className='svgl-search__bar'>
                                     <Search aria-hidden='true' size={16} />
                                     <input
