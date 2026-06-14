@@ -358,19 +358,18 @@ textarea {
     align-content: center;
     justify-items: center;
     min-width: 0;
-    min-height: var(--space-48);
-    padding: var(--space-8);
-    border: 1px solid var(--clr-border);
-    border-radius: var(--space-8);
-    background: var(--clr-surface);
+    min-height: var(--space-32);
+    padding: 0;
+    border: 0;
+    border-radius: var(--space-4);
+    background: transparent;
     color: var(--clr-text);
     cursor: pointer;
 }
 
 .color-mode-option[aria-checked='true'] {
-    border-color: var(--clr-border-strong);
-    background: var(--clr-surface);
-    box-shadow: inset 0 0 0 1px var(--clr-border-strong);
+    outline: 2px solid var(--clr-border-strong);
+    box-shadow: 0 var(--space-4) var(--space-8) var(--clr-edge-shadow);
 }
 
 .color-mode-option img {
