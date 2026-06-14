@@ -27,4 +27,5 @@
     --clr-warning: var(--clr-accent-strong);
     --clr-danger: #b42318;
     --clr-backdrop: rgb(48 51 76 / 28%);
+    --clr-edge-shadow: rgb(48 51 76 / 16%);
 }
