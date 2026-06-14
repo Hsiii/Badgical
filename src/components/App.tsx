@@ -468,7 +468,9 @@ export function App(): JSX.Element {
         },
         0
     );
-    const draftLogoSource = toDataUri(materializedDraft.source);
+    const draftLogoSource = toDataUri(
+        buildSingleBadgeSvg(materializedDraft, 0, true)
+    );
 
     useEffect(() => {
         const abortController = new AbortController();
