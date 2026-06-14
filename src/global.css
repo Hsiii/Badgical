@@ -330,8 +330,8 @@ textarea {
     place-items: center;
     min-height: calc(var(--space-48) * 3);
     padding: var(--space-16);
-    border: 1px dashed var(--clr-border);
-    border-radius: var(--space-8);
+    border: 0;
+    background: transparent;
     color: var(--clr-text-muted);
     font: var(--font-small);
     text-align: center;
@@ -547,7 +547,6 @@ textarea {
 
 .frame-list__empty {
     min-height: 100%;
-    border: 0;
 }
 
 .frame-card {
