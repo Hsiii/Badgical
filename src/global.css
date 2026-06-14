@@ -549,6 +549,11 @@ textarea {
     align-content: start;
     min-height: 0;
     overflow: auto;
+    box-shadow:
+        inset 0 var(--space-4) var(--space-4) calc(var(--space-4) * -1)
+            var(--clr-edge-shadow),
+        inset 0 calc(var(--space-4) * -1) var(--space-4)
+            calc(var(--space-4) * -1) var(--clr-edge-shadow);
 }
 
 .frame-list--empty {
