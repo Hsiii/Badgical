@@ -274,27 +274,19 @@ textarea {
 }
 
 .brand-results {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(128px, 136px));
-    gap: var(--space-8);
-    align-content: start;
-    max-height: calc((128px * 2) + var(--space-8));
     min-height: 0;
     overflow: auto;
 }
 
-.brand-results--virtualized {
-    position: relative;
-    display: block;
-}
-
 .brand-results__canvas {
-    position: relative;
-    min-height: var(--result-canvas-height);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: var(--space-8);
+    align-content: start;
+    min-height: 100%;
 }
 
 .brand-result {
-    width: 136px;
     display: grid;
     grid-template-rows: var(--space-48) auto auto;
     gap: var(--space-8);
@@ -308,12 +300,6 @@ textarea {
     color: var(--clr-text);
     cursor: pointer;
     text-align: center;
-}
-
-.brand-results--virtualized .brand-result {
-    position: absolute;
-    top: 0;
-    left: 0;
 }
 
 .brand-result[aria-current='true'] {

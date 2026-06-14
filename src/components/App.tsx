@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, JSX } from 'react';
+import type { JSX } from 'react';
 import { Copy, Download, Pencil, Plus, Search, X } from 'lucide-react';
 
 interface BadgeState {
@@ -67,10 +67,6 @@ const frameSeconds = 2.4;
 const maxFrames = 20;
 const maxSvglResults = 8;
 const maxFileSizeBytes = 20 * 1024;
-const resultCardWidth = 136;
-const resultCardHeight = 128;
-const resultGap = 8;
-const resultOverscanRows = 2;
 const githubUrl = 'https://github.com/Hsiii/Badgical';
 const svglUrl = 'https://svgl.app';
 
@@ -452,11 +448,6 @@ export function App(): JSX.Element {
         string | undefined
     >(undefined);
     const resultsReference = useRef<HTMLDivElement | undefined>(undefined);
-    const [resultViewport, setResultViewport] = useState({
-        height: 0,
-        scrollTop: 0,
-        width: 0,
-    });
     const badgeSvg = useMemo(() => buildBadgeSvg(states), [states]);
     const previewSource = useMemo(
         () => (badgeSvg === '' ? '' : toDataUri(badgeSvg)),
@@ -599,38 +590,10 @@ export function App(): JSX.Element {
         const resultElement = resultsReference.current;
 
         if (resultElement === undefined) {
-            return undefined;
-        }
-
-        const updateResultViewport = (): void => {
-            setResultViewport({
-                height: resultElement.clientHeight,
-                scrollTop: resultElement.scrollTop,
-                width: resultElement.clientWidth,
-            });
-        };
-        const resizeObserver = new ResizeObserver(updateResultViewport);
-
-        updateResultViewport();
-        resizeObserver.observe(resultElement);
-
-        return (): void => {
-            resizeObserver.disconnect();
-        };
-    }, []);
-
-    useEffect(() => {
-        const resultElement = resultsReference.current;
-
-        if (resultElement === undefined) {
             return;
         }
 
         resultElement.scrollTop = 0;
-        setResultViewport((currentViewport) => ({
-            ...currentViewport,
-            scrollTop: 0,
-        }));
     }, [query]);
 
     const applyColorMode = (
@@ -819,35 +782,6 @@ export function App(): JSX.Element {
     const searchTerm = query.trim();
     const visibleResults = searchTerm === '' ? catalogResults : results;
     const resultStatus = searchTerm === '' ? catalogStatus : searchStatus;
-    const resultColumnCount = Math.max(
-        1,
-        Math.floor(
-            (resultViewport.width + resultGap) / (resultCardWidth + resultGap)
-        )
-    );
-    const resultRowStride = resultCardHeight + resultGap;
-    const resultRowCount = Math.ceil(visibleResults.length / resultColumnCount);
-    const startRow = Math.max(
-        0,
-        Math.floor(resultViewport.scrollTop / resultRowStride) -
-            resultOverscanRows
-    );
-    const endRow = Math.min(
-        resultRowCount,
-        Math.ceil(
-            (resultViewport.scrollTop + resultViewport.height) / resultRowStride
-        ) + resultOverscanRows
-    );
-    const startIndex = startRow * resultColumnCount;
-    const endIndex = Math.min(
-        visibleResults.length,
-        endRow * resultColumnCount
-    );
-    const virtualResults = visibleResults.slice(startIndex, endIndex);
-    const virtualHeight = Math.max(
-        0,
-        resultRowCount * resultRowStride - resultGap
-    );
     let searchMessage = 'Loading SVGL logos...';
 
     if (resultStatus === 'loading') {
@@ -973,17 +907,7 @@ export function App(): JSX.Element {
                                 </label>
 
                                 <div
-                                    className='brand-results brand-results--virtualized'
-                                    onScroll={(event) => {
-                                        setResultViewport(
-                                            (currentViewport) => ({
-                                                ...currentViewport,
-                                                scrollTop:
-                                                    event.currentTarget
-                                                        .scrollTop,
-                                            })
-                                        );
-                                    }}
+                                    className='brand-results'
                                     ref={(element) => {
                                         resultsReference.current =
                                             element ?? undefined;
@@ -997,70 +921,43 @@ export function App(): JSX.Element {
                                         <div
                                             aria-label='SVGL logos'
                                             className='brand-results__canvas'
-                                            style={
-                                                {
-                                                    '--result-canvas-height': `${virtualHeight}px`,
-                                                } as CSSProperties
-                                            }
                                         >
-                                            {virtualResults.map(
-                                                (result, offset) => {
-                                                    const resultIndex =
-                                                        startIndex + offset;
-                                                    const resultRow =
-                                                        Math.floor(
-                                                            resultIndex /
-                                                                resultColumnCount
+                                            {visibleResults.map((result) => (
+                                                <button
+                                                    aria-current={
+                                                        result.id ===
+                                                        selectedResult?.id
+                                                            ? 'true'
+                                                            : undefined
+                                                    }
+                                                    className='brand-result'
+                                                    key={result.id}
+                                                    onClick={() => {
+                                                        chooseSearchResult(
+                                                            result
                                                         );
-                                                    const resultColumn =
-                                                        resultIndex %
-                                                        resultColumnCount;
-
-                                                    return (
-                                                        <button
-                                                            aria-current={
-                                                                result.id ===
-                                                                selectedResult?.id
-                                                                    ? 'true'
-                                                                    : undefined
-                                                            }
-                                                            className='brand-result'
-                                                            key={result.id}
-                                                            onClick={() => {
-                                                                chooseSearchResult(
-                                                                    result
-                                                                );
-                                                            }}
-                                                            style={
-                                                                {
-                                                                    transform: `translate(${resultColumn * (resultCardWidth + resultGap)}px, ${resultRow * resultRowStride}px)`,
-                                                                } as CSSProperties
-                                                            }
-                                                            type='button'
-                                                        >
-                                                            <img
-                                                                alt=''
-                                                                src={getSvglRoute(
-                                                                    result.route
-                                                                )}
-                                                            />
-                                                            <span>
-                                                                {result.title}
-                                                            </span>
+                                                    }}
+                                                    type='button'
+                                                >
+                                                    <img
+                                                        alt=''
+                                                        src={getSvglRoute(
+                                                            result.route
+                                                        )}
+                                                    />
+                                                    <span>{result.title}</span>
+                                                    {getSvglCategoryLabel(
+                                                        result
+                                                    ) ===
+                                                    undefined ? undefined : (
+                                                        <small>
                                                             {getSvglCategoryLabel(
                                                                 result
-                                                            ) ===
-                                                            undefined ? undefined : (
-                                                                <small>
-                                                                    {getSvglCategoryLabel(
-                                                                        result
-                                                                    )}
-                                                                </small>
                                                             )}
-                                                        </button>
-                                                    );
-                                                }
-                                            )}
+                                                        </small>
+                                                    )}
+                                                </button>
+                                            ))}
                                         </div>
                                     )}
                                 </div>
