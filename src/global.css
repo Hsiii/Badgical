@@ -392,8 +392,8 @@ textarea {
 }
 
 .color-mode-option img {
-    max-width: min(100%, 160px);
-    height: 28px;
+    max-width: min(100%, calc(var(--space-48) * 4));
+    height: var(--space-40);
     object-fit: contain;
 }
 
