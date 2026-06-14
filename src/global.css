@@ -94,17 +94,6 @@ textarea {
     line-height: 1;
 }
 
-.brand-badge__cap,
-.brand-badge__rest {
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
-}
-
-.brand-badge__cap {
-    height: var(--space-24);
-}
-
 .brand-badge__icon,
 .brand-badge__icon img {
     width: var(--space-24);

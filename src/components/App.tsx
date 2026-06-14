@@ -852,10 +852,7 @@ export function App(): JSX.Element {
                         <span aria-hidden='true' className='brand-badge__icon'>
                             <img alt='' src='/badgical-spark.svg' />
                         </span>
-                        <span className='brand-badge__word'>
-                            <span className='brand-badge__cap'>B</span>
-                            <span className='brand-badge__rest'>adgical</span>
-                        </span>
+                        <span className='brand-badge__word'>Badgical</span>
                     </a>
                     <h1 className='visually-hidden' id='builder-title'>
                         Badgical badge builder
