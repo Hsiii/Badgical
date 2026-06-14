@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import { Copy, Download, Pencil, Plus, Search, X } from 'lucide-react';
+import { Check, Copy, Download, Pencil, Plus, Search, X } from 'lucide-react';
 
 interface BadgeState {
     allCaps?: boolean;
@@ -42,7 +42,7 @@ type ColorMode = 'brand' | 'inverse' | 'custom';
 type EditableColorTarget = 'badgeColor' | 'logoColor' | 'textColor';
 
 const defaultBadgeSource =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="badge-base" x1="5" x2="28" y1="28" y2="18" gradientUnits="userSpaceOnUse"><stop stop-color="#4654ad"/><stop offset="0.58" stop-color="#5968c9"/><stop offset="1" stop-color="#6f7fdd"/></linearGradient><linearGradient id="spark-fill" x1="8" x2="24" y1="22" y2="2" gradientUnits="userSpaceOnUse"><stop stop-color="#8550dd"/><stop offset="1" stop-color="#c6b7ff"/></linearGradient><path id="spark-shape" d="M15.52 2.24c.36-1.04 1.84-1.04 2.2 0l1.64 4.68a6.94 6.94 0 0 0 4.24 4.24l4.68 1.64c1.04.36 1.04 1.84 0 2.2l-4.68 1.64a6.94 6.94 0 0 0-4.24 4.24l-1.64 4.68c-.36 1.04-1.84 1.04-2.2 0l-1.64-4.68a6.94 6.94 0 0 0-4.24-4.24L4.96 15c-1.04-.36-1.04-1.84 0-2.2l4.68-1.64a6.94 6.94 0 0 0 4.24-4.24l1.64-4.68Z"/><g id="badge-shape"><rect x="3.2" y="20.8" width="26.8" height="9.2" rx="2.4"/><rect x="18.6" y="20.8" width="11.4" height="9.2" rx="2.4"/></g><mask id="base-cutout"><rect width="32" height="32" fill="#fff"/><use href="#spark-shape" stroke="#000" stroke-width="4.2"/></mask></defs><use href="#badge-shape" fill="url(#badge-base)" mask="url(#base-cutout)"/><use href="#spark-shape" fill="url(#spark-fill)"/></svg>';
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="spark-fill" x1="8" x2="24" y1="22" y2="2" gradientUnits="userSpaceOnUse"><stop stop-color="#7436d9"/><stop offset="1" stop-color="#ffc2f7"/></linearGradient><path id="spark-shape" d="M18 9C20.240000000000002 14.76 20.240000000000002 14.76 26 17C20.240000000000002 19.240000000000002 20.240000000000002 19.240000000000002 18 25C15.76 19.240000000000002 15.76 19.240000000000002 10 17C15.76 14.76 15.76 14.76 18 9Z"/><g id="badge-shape"><rect x="3.2" y="20.8" width="26.8" height="9.2" rx="2.4"/><rect x="18.6" y="20.8" width="11.4" height="9.2" rx="2.4"/></g></defs><use href="#badge-shape" fill="#112255" transform="translate(-2 -3.75)"/><use href="#spark-shape" fill="url(#spark-fill)"/></svg>';
 
 const defaultBadgeDraft: EditorDraft = {
     allCaps: false,
@@ -1016,6 +1016,15 @@ export function App(): JSX.Element {
                                                     role='radio'
                                                     type='button'
                                                 >
+                                                    <span
+                                                        aria-hidden='true'
+                                                        className='color-mode-option__check'
+                                                    >
+                                                        {colorMode ===
+                                                        modeOption.mode ? (
+                                                            <Check size={16} />
+                                                        ) : undefined}
+                                                    </span>
                                                     <img
                                                         alt=''
                                                         src={
