@@ -398,7 +398,7 @@ textarea {
 }
 
 .color-mode-option[aria-checked='true'] img {
-    outline: 2px solid var(--clr-border-strong);
+    outline: var(--space-4) solid var(--clr-border-strong);
     box-shadow: 0 var(--space-4) var(--space-8) var(--clr-edge-shadow);
 }
 
