@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { JSX } from 'react';
-import { Copy, Download, Plus, Search, X } from 'lucide-react';
+import { Copy, Download, Pencil, Plus, Search, X } from 'lucide-react';
 
 interface BadgeState {
     allCaps?: boolean;
@@ -66,6 +66,7 @@ const maxFrames = 20;
 const maxSvglResults = 8;
 const maxFileSizeBytes = 20 * 1024;
 const githubUrl = 'https://github.com/Hsiii/Badgical';
+const svglUrl = 'https://svgl.app';
 
 function GitHubMark(): JSX.Element {
     return (
@@ -353,13 +354,73 @@ const getSvglCategoryLabel = (result: SvglResult): string | undefined => {
 const formatKilobytes = (bytes: number): string =>
     `${(bytes / 1024).toFixed(1)} KB`;
 
+const sortCopy = <Value,>(
+    values: readonly Value[],
+    compare: (leftValue: Value, rightValue: Value) => number
+): readonly Value[] => {
+    const sortedValues = [...values];
+
+    // eslint-disable-next-line unicorn/no-array-sort
+    return sortedValues.sort(compare);
+};
+
+const getColorWeight = (color: string): number => {
+    const normalizedColor = normalizeHexInput(color);
+
+    if (normalizedColor === undefined) {
+        return -1;
+    }
+
+    const normalizedValue = normalizedColor.replace('#', '');
+    const red = Number.parseInt(normalizedValue.slice(0, 2), 16);
+    const green = Number.parseInt(normalizedValue.slice(2, 4), 16);
+    const blue = Number.parseInt(normalizedValue.slice(4, 6), 16);
+    const maxChannel = Math.max(red, green, blue);
+    const minChannel = Math.min(red, green, blue);
+    const saturation = maxChannel - minChannel;
+    const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+    const neutralPenalty =
+        luminance < 32 || luminance > 232 || saturation < 24 ? 255 : 0;
+
+    return saturation - neutralPenalty;
+};
+
 const getPrimarySvgColor = (source: string): string | undefined => {
     const colors = source.match(/#[\dA-Fa-f]{3}(?:[\dA-Fa-f]{3})?\b/gu) ?? [];
-    const primaryColor = colors.find(
-        (color) => !/^#(?:fff|ffffff|000|000000)$/iu.test(color)
+    const sortedColors = sortCopy(
+        [
+            ...new Set(
+                colors
+                    .map((color) => normalizeHexInput(color))
+                    .filter((color): color is string => color !== undefined)
+            ),
+        ],
+        (leftColor, rightColor) =>
+            getColorWeight(rightColor) - getColorWeight(leftColor)
     );
+    const primaryColor = sortedColors[0];
 
     return primaryColor;
+};
+
+const sortSvglResults = (
+    searchResults: readonly SvglResult[],
+    searchTerm: string
+): readonly SvglResult[] => {
+    const normalizedTerm = searchTerm.trim().toLowerCase();
+
+    return sortCopy(searchResults, (leftResult, rightResult) => {
+        const leftTitle = leftResult.title.trim().toLowerCase();
+        const rightTitle = rightResult.title.trim().toLowerCase();
+        const leftExact = leftTitle === normalizedTerm;
+        const rightExact = rightTitle === normalizedTerm;
+
+        if (leftExact !== rightExact) {
+            return leftExact ? -1 : 1;
+        }
+
+        return leftTitle.localeCompare(rightTitle);
+    });
 };
 
 export function App(): JSX.Element {
@@ -372,7 +433,10 @@ export function App(): JSX.Element {
         SvglResult | undefined
     >(undefined);
     const [draft, setDraft] = useState(defaultBadgeDraft);
+    const [brandColor, setBrandColor] = useState(defaultBadgeDraft.badgeColor);
     const [colorMode, setColorMode] = useState<ColorMode>('brand');
+    const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
+    const [sourceDraft, setSourceDraft] = useState(defaultBadgeDraft.source);
     const [deleteCandidateId, setDeleteCandidateId] = useState<
         string | undefined
     >(undefined);
@@ -436,10 +500,10 @@ export function App(): JSX.Element {
                         return payload;
                     })
                     .then((searchResults) => {
-                        const visibleResults = searchResults.slice(
-                            0,
-                            maxSvglResults
-                        );
+                        const visibleResults = sortSvglResults(
+                            searchResults,
+                            searchTerm
+                        ).slice(0, maxSvglResults);
 
                         setResults(visibleResults);
                         setSearchStatus(
@@ -477,17 +541,17 @@ export function App(): JSX.Element {
     }, [query]);
 
     const applyColorMode = (
-        brandColor: string,
+        nextBrandColor: string,
         mode: ColorMode
     ): Pick<EditorDraft, 'badgeColor' | 'logoColor' | 'textColor'> => {
-        const contrastColor = getReadableInk(brandColor);
+        const contrastColor = getReadableInk(nextBrandColor);
         const reverseContrastColor =
             contrastColor === '#ffffff' ? '#1f2328' : '#ffffff';
 
         if (mode === 'inverse') {
             return {
                 badgeColor: contrastColor,
-                logoColor: brandColor,
+                logoColor: nextBrandColor,
                 textColor: reverseContrastColor,
             };
         }
@@ -501,25 +565,25 @@ export function App(): JSX.Element {
         }
 
         return {
-            badgeColor: brandColor,
+            badgeColor: nextBrandColor,
             logoColor: contrastColor,
             textColor: contrastColor,
         };
     };
 
     const setDraftBrandColor = (
-        brandColor: string,
+        nextBrandColor: string,
         mode: ColorMode = colorMode
     ): void => {
         setDraft((currentDraft) => ({
             ...currentDraft,
-            ...applyColorMode(brandColor, mode),
+            ...applyColorMode(nextBrandColor, mode),
         }));
     };
 
     const selectColorMode = (mode: ColorMode): void => {
         setColorMode(mode);
-        setDraftBrandColor(draft.badgeColor, mode);
+        setDraftBrandColor(brandColor, mode);
     };
 
     const updateDraftColor = (
@@ -550,18 +614,39 @@ export function App(): JSX.Element {
                 return await response.text();
             })
             .then((source) => {
-                const brandColor =
+                const extractedBrandColor =
                     getPrimarySvgColor(source) ?? defaultBadgeDraft.badgeColor;
 
+                setBrandColor(extractedBrandColor);
                 setDraft((currentDraft) => ({
                     ...currentDraft,
-                    ...applyColorMode(brandColor, colorMode),
+                    ...applyColorMode(extractedBrandColor, colorMode),
                     name: result.title,
                     source,
                 }));
+                setSourceDraft(source);
                 setCopyState('idle');
             })
             .catch(() => undefined);
+    };
+
+    const openSourceDialog = (): void => {
+        setSourceDraft(draft.source);
+        setSourceDialogOpen(true);
+    };
+
+    const saveSourceDialog = (): void => {
+        const extractedBrandColor =
+            getPrimarySvgColor(sourceDraft) ?? defaultBadgeDraft.badgeColor;
+
+        setBrandColor(extractedBrandColor);
+        setDraft((currentDraft) => ({
+            ...currentDraft,
+            ...applyColorMode(extractedBrandColor, colorMode),
+            source: sourceDraft,
+        }));
+        setSourceDialogOpen(false);
+        setCopyState('idle');
     };
 
     const addDraftFrame = (): void => {
@@ -662,33 +747,43 @@ export function App(): JSX.Element {
     if (colorMode === 'custom') {
         colorModeOffset = 200;
     }
+    const getModePreviewSource = (mode: ColorMode): string => {
+        const colors = applyColorMode(brandColor, mode);
+
+        return toDataUri(
+            buildSingleBadgeSvg(
+                materializeState(
+                    {
+                        allCaps: true,
+                        ...draft,
+                        ...colors,
+                        id: `mode-${mode}`,
+                    },
+                    0
+                ),
+                0
+            )
+        );
+    };
     const colorModes: ReadonlyArray<{
         readonly label: string;
         readonly mode: ColorMode;
-        readonly swatches: readonly string[];
+        readonly previewSource: string;
     }> = [
         {
             label: 'Brand',
             mode: 'brand',
-            swatches: [
-                draft.badgeColor,
-                getReadableInk(draft.badgeColor),
-                getReadableInk(draft.badgeColor),
-            ],
+            previewSource: getModePreviewSource('brand'),
         },
         {
             label: 'Inverse',
             mode: 'inverse',
-            swatches: [
-                getReadableInk(draft.badgeColor),
-                draft.badgeColor,
-                getReadableInk(getReadableInk(draft.badgeColor)),
-            ],
+            previewSource: getModePreviewSource('inverse'),
         },
         {
             label: 'Custom',
             mode: 'custom',
-            swatches: [draft.badgeColor, draft.logoColor, draft.textColor],
+            previewSource: getModePreviewSource('custom'),
         },
     ];
     const colorFields: ReadonlyArray<{
@@ -738,7 +833,14 @@ export function App(): JSX.Element {
                             <div className='search-block'>
                                 <div className='panel-heading'>
                                     <h2 id='search-title'>Search</h2>
-                                    <span>SVGL</span>
+                                    <a
+                                        className='powered-by'
+                                        href={svglUrl}
+                                        rel='noreferrer'
+                                        target='_blank'
+                                    >
+                                        Powered by Svgl
+                                    </a>
                                 </div>
 
                                 <label
@@ -838,21 +940,12 @@ export function App(): JSX.Element {
                                                 type='button'
                                             >
                                                 <span>{modeOption.label}</span>
-                                                <span className='color-mode-option__swatches'>
-                                                    {modeOption.swatches.map(
-                                                        (color, index) => (
-                                                            <span
-                                                                aria-hidden='true'
-                                                                className='swatch'
-                                                                key={`${modeOption.mode}-${color}-${index}`}
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        color,
-                                                                }}
-                                                            />
-                                                        )
-                                                    )}
-                                                </span>
+                                                <img
+                                                    alt=''
+                                                    src={
+                                                        modeOption.previewSource
+                                                    }
+                                                />
                                             </button>
                                         ))}
                                     </div>
@@ -912,12 +1005,21 @@ export function App(): JSX.Element {
                                                 value={draft.name}
                                             />
                                         </label>
-                                        <div className='draft-preview'>
+                                        <button
+                                            aria-label='Edit SVG source'
+                                            className='draft-preview'
+                                            onClick={openSourceDialog}
+                                            type='button'
+                                        >
+                                            <Pencil
+                                                aria-hidden='true'
+                                                size={16}
+                                            />
                                             <img
                                                 alt='Draft badge preview'
                                                 src={draftPreviewSource}
                                             />
-                                        </div>
+                                        </button>
                                     </div>
 
                                     <button
@@ -948,7 +1050,13 @@ export function App(): JSX.Element {
                                     </span>
                                 </div>
 
-                                <div className='frame-list'>
+                                <div
+                                    className={
+                                        states.length === 0
+                                            ? 'frame-list frame-list--empty'
+                                            : 'frame-list'
+                                    }
+                                >
                                     {states.length === 0 ? (
                                         <div className='empty-state frame-list__empty'>
                                             <p>
@@ -1109,6 +1217,48 @@ export function App(): JSX.Element {
                     </section>
                 </div>
             )}
+
+            {sourceDialogOpen ? (
+                <div className='confirm-backdrop' role='presentation'>
+                    <section
+                        aria-labelledby='source-dialog-title'
+                        aria-modal='true'
+                        className='confirm-dialog source-dialog'
+                        role='dialog'
+                    >
+                        <div className='panel-heading'>
+                            <h2 id='source-dialog-title'>SVG Source</h2>
+                        </div>
+                        <label className='field source-dialog__field'>
+                            <span>Logo SVG</span>
+                            <textarea
+                                onChange={(event) => {
+                                    setSourceDraft(event.target.value);
+                                }}
+                                value={sourceDraft}
+                            />
+                        </label>
+                        <div className='confirm-dialog__actions'>
+                            <button
+                                className='button button--secondary'
+                                onClick={() => {
+                                    setSourceDialogOpen(false);
+                                }}
+                                type='button'
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className='button button--primary'
+                                onClick={saveSourceDialog}
+                                type='button'
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            ) : undefined}
         </main>
     );
 }
