@@ -297,7 +297,7 @@ textarea {
     padding: var(--space-12);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
-    background: var(--clr-control);
+    background: var(--clr-card);
     color: var(--clr-text);
     cursor: pointer;
     text-align: center;

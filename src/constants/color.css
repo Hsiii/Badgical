@@ -10,6 +10,7 @@
     --clr-bg-subtle: var(--clr-lavender);
     --clr-surface: #ffffff;
     --clr-surface-raised: #ffffff;
+    --clr-card: #f6f7f9;
     --clr-text: var(--clr-graphite);
     --clr-text-strong: #1f2238;
     --clr-text-muted: #5b607f;
@@ -28,4 +29,5 @@
     --clr-danger: #b42318;
     --clr-backdrop: rgb(48 51 76 / 28%);
     --clr-edge-shadow: rgb(48 51 76 / 16%);
+    --clr-edge-shadow-light: rgb(255 255 255 / 88%);
 }
