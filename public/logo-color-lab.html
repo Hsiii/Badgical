@@ -143,6 +143,13 @@
                 gap: var(--space-2);
             }
 
+            .range-row {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 72px;
+                gap: var(--space-2);
+                align-items: center;
+            }
+
             input[type='color'] {
                 width: 48px;
                 height: 40px;
@@ -152,6 +159,12 @@
                 background: var(--clr-control);
             }
 
+            input[type='range'] {
+                width: 100%;
+                accent-color: var(--clr-accent);
+            }
+
+            input[type='number'],
             input[type='text'] {
                 width: 100%;
                 height: 40px;
@@ -388,6 +401,138 @@
                         </div>
                     </div>
 
+                    <div class="field">
+                        <label for="sparkSizeRange">Spark size</label>
+                        <div class="range-row">
+                            <input
+                                id="sparkSizeRange"
+                                type="range"
+                                min="16"
+                                max="30"
+                                step="0.5"
+                                value="24"
+                            />
+                            <input
+                                id="sparkSizeNumber"
+                                type="number"
+                                min="16"
+                                max="30"
+                                step="0.5"
+                                value="24"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="sparkCurveRange">Spark curve</label>
+                        <div class="range-row">
+                            <input
+                                id="sparkCurveRange"
+                                type="range"
+                                min="0.2"
+                                max="0.8"
+                                step="0.02"
+                                value="0.48"
+                            />
+                            <input
+                                id="sparkCurveNumber"
+                                type="number"
+                                min="0.2"
+                                max="0.8"
+                                step="0.02"
+                                value="0.48"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="sparkXRange">Spark X offset</label>
+                        <div class="range-row">
+                            <input
+                                id="sparkXRange"
+                                type="range"
+                                min="-8"
+                                max="8"
+                                step="0.25"
+                                value="0"
+                            />
+                            <input
+                                id="sparkXNumber"
+                                type="number"
+                                min="-8"
+                                max="8"
+                                step="0.25"
+                                value="0"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="sparkYRange">Spark Y offset</label>
+                        <div class="range-row">
+                            <input
+                                id="sparkYRange"
+                                type="range"
+                                min="-8"
+                                max="8"
+                                step="0.25"
+                                value="0"
+                            />
+                            <input
+                                id="sparkYNumber"
+                                type="number"
+                                min="-8"
+                                max="8"
+                                step="0.25"
+                                value="0"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="badgeXRange">Badge X offset</label>
+                        <div class="range-row">
+                            <input
+                                id="badgeXRange"
+                                type="range"
+                                min="-8"
+                                max="8"
+                                step="0.25"
+                                value="0"
+                            />
+                            <input
+                                id="badgeXNumber"
+                                type="number"
+                                min="-8"
+                                max="8"
+                                step="0.25"
+                                value="0"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="badgeYRange">Badge Y offset</label>
+                        <div class="range-row">
+                            <input
+                                id="badgeYRange"
+                                type="range"
+                                min="-8"
+                                max="8"
+                                step="0.25"
+                                value="0"
+                            />
+                            <input
+                                id="badgeYNumber"
+                                type="number"
+                                min="-8"
+                                max="8"
+                                step="0.25"
+                                value="0"
+                            />
+                        </div>
+                    </div>
+
                     <div class="actions">
                         <button type="button" id="saveChoice">
                             Save Choice
@@ -420,6 +565,12 @@
                 sparkStart: '#8550dd',
                 sparkEnd: '#c6b7ff',
                 background: '#ffffff',
+                sparkSize: 24,
+                sparkCurve: 0.48,
+                sparkX: 0,
+                sparkY: 0,
+                badgeX: 0,
+                badgeY: 0,
             };
 
             const fields = {
@@ -427,6 +578,15 @@
                 sparkStart: ['sparkStartColor', 'sparkStartText'],
                 sparkEnd: ['sparkEndColor', 'sparkEndText'],
                 background: ['backgroundColor', 'backgroundText'],
+            };
+
+            const numberFields = {
+                sparkSize: ['sparkSizeRange', 'sparkSizeNumber'],
+                sparkCurve: ['sparkCurveRange', 'sparkCurveNumber'],
+                sparkX: ['sparkXRange', 'sparkXNumber'],
+                sparkY: ['sparkYRange', 'sparkYNumber'],
+                badgeX: ['badgeXRange', 'badgeXNumber'],
+                badgeY: ['badgeYRange', 'badgeYNumber'],
             };
 
             const state = {
@@ -460,6 +620,54 @@
                 return null;
             }
 
+            function clampNumber(value, min, max) {
+                const number = Number.parseFloat(value);
+
+                if (!Number.isFinite(number)) {
+                    return null;
+                }
+
+                return Math.min(max, Math.max(min, number));
+            }
+
+            function formatNumber(value) {
+                return Number.parseFloat(value.toFixed(2)).toString();
+            }
+
+            function getNumberBounds(key) {
+                const input = document.querySelector(
+                    `#${numberFields[key][0]}`
+                );
+
+                return {
+                    max: Number.parseFloat(input.max),
+                    min: Number.parseFloat(input.min),
+                };
+            }
+
+            function makeSparkPath(values) {
+                const radius = values.sparkSize / 2;
+                const centerX = 16 + values.sparkX;
+                const centerY = 16 + values.sparkY;
+                const handle = radius * values.sparkCurve;
+                const shoulder = radius * (1 - values.sparkCurve);
+                const top = centerY - radius;
+                const right = centerX + radius;
+                const bottom = centerY + radius;
+                const left = centerX - radius;
+
+                const commands = [
+                    `M${centerX} ${top}`,
+                    `C${centerX + handle} ${top + shoulder} ${right - shoulder} ${centerY - handle} ${right} ${centerY}`,
+                    `C${right - shoulder} ${centerY + handle} ${centerX + handle} ${bottom - shoulder} ${centerX} ${bottom}`,
+                    `C${centerX - handle} ${bottom - shoulder} ${left + shoulder} ${centerY + handle} ${left} ${centerY}`,
+                    `C${left + shoulder} ${centerY - handle} ${centerX - handle} ${top + shoulder} ${centerX} ${top}`,
+                    'Z',
+                ];
+
+                return commands.join('');
+            }
+
             function makeSvg(values) {
                 return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Badgical spark">
     <defs>
@@ -467,13 +675,13 @@
             <stop stop-color="${values.sparkStart}" />
             <stop offset="1" stop-color="${values.sparkEnd}" />
         </linearGradient>
-        <path id="spark-shape" d="M15.52 2.24c.36-1.04 1.84-1.04 2.2 0l1.64 4.68a6.94 6.94 0 0 0 4.24 4.24l4.68 1.64c1.04.36 1.04 1.84 0 2.2l-4.68 1.64a6.94 6.94 0 0 0-4.24 4.24l-1.64 4.68c-.36 1.04-1.84 1.04-2.2 0l-1.64-4.68a6.94 6.94 0 0 0-4.24-4.24L4.96 15c-1.04-.36-1.04-1.84 0-2.2l4.68-1.64a6.94 6.94 0 0 0 4.24-4.24l1.64-4.68Z" />
+        <path id="spark-shape" d="${makeSparkPath(values)}" />
         <g id="badge-shape">
             <rect x="3.2" y="20.8" width="26.8" height="9.2" rx="2.4" />
             <rect x="18.6" y="20.8" width="11.4" height="9.2" rx="2.4" />
         </g>
     </defs>
-    <use href="#badge-shape" fill="${values.badge}" />
+    <use href="#badge-shape" fill="${values.badge}" transform="translate(${values.badgeX} ${values.badgeY})" />
     <use href="#spark-shape" fill="url(#spark-fill)" />
 </svg>`;
             }
@@ -488,6 +696,20 @@
                             sparkGradientStart: state.sparkStart,
                             sparkGradientEnd: state.sparkEnd,
                             previewBackground: state.background,
+                        },
+                        geometry: {
+                            badgeOffset: {
+                                x: state.badgeX,
+                                y: state.badgeY,
+                            },
+                            spark: {
+                                curve: state.sparkCurve,
+                                offset: {
+                                    x: state.sparkX,
+                                    y: state.sparkY,
+                                },
+                                size: state.sparkSize,
+                            },
                         },
                         svg: makeSvg(state),
                     },
@@ -504,6 +726,12 @@
                         sparkStart: state.sparkStart,
                         sparkEnd: state.sparkEnd,
                         background: state.background,
+                        sparkSize: state.sparkSize,
+                        sparkCurve: state.sparkCurve,
+                        sparkX: state.sparkX,
+                        sparkY: state.sparkY,
+                        badgeX: state.badgeX,
+                        badgeY: state.badgeY,
                         saved: state.saved,
                     })
                 );
@@ -575,6 +803,14 @@
                         document.querySelector(`#${id}`).value = state[key];
                     });
                 });
+
+                Object.entries(numberFields).forEach(([key, ids]) => {
+                    ids.forEach((id) => {
+                        document.querySelector(`#${id}`).value = formatNumber(
+                            state[key]
+                        );
+                    });
+                });
             }
 
             function updateField(key, value) {
@@ -582,6 +818,21 @@
 
                 if (!normalized) {
                     setStatus('Use a 3 or 6 digit hex color.');
+                    return;
+                }
+
+                state[key] = normalized;
+                syncInputs();
+                render();
+                setStatus('');
+            }
+
+            function updateNumberField(key, value) {
+                const { max, min } = getNumberBounds(key);
+                const normalized = clampNumber(value, min, max);
+
+                if (normalized === null) {
+                    setStatus('Use a valid number.');
                     return;
                 }
 
@@ -611,10 +862,23 @@
                 try {
                     const parsed = JSON.parse(stored);
                     Object.keys(defaults).forEach((key) => {
-                        const color = normalizeHex(parsed[key] || '');
+                        if (fields[key]) {
+                            const color = normalizeHex(parsed[key] || '');
 
-                        if (color) {
-                            state[key] = color;
+                            if (color) {
+                                state[key] = color;
+                            }
+
+                            return;
+                        }
+
+                        if (numberFields[key]) {
+                            const { max, min } = getNumberBounds(key);
+                            const number = clampNumber(parsed[key], min, max);
+
+                            if (number !== null) {
+                                state[key] = number;
+                            }
                         }
                     });
                     state.saved = Array.isArray(parsed.saved)
@@ -631,6 +895,16 @@
                         .querySelector(`#${id}`)
                         .addEventListener('input', (event) => {
                             updateField(key, event.target.value);
+                        });
+                });
+            });
+
+            Object.entries(numberFields).forEach(([key, ids]) => {
+                ids.forEach((id) => {
+                    document
+                        .querySelector(`#${id}`)
+                        .addEventListener('input', (event) => {
+                            updateNumberField(key, event.target.value);
                         });
                 });
             });
@@ -668,6 +942,12 @@
                         sparkStart: state.sparkStart,
                         sparkEnd: state.sparkEnd,
                         background: state.background,
+                        sparkSize: state.sparkSize,
+                        sparkCurve: state.sparkCurve,
+                        sparkX: state.sparkX,
+                        sparkY: state.sparkY,
+                        badgeX: state.badgeX,
+                        badgeY: state.badgeY,
                     };
                     state.saved = [
                         choice,
