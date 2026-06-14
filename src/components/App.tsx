@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { JSX } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties, JSX } from 'react';
 import { Copy, Download, Pencil, Plus, Search, X } from 'lucide-react';
 
 interface BadgeState {
@@ -65,6 +65,10 @@ const frameSeconds = 2.4;
 const maxFrames = 20;
 const maxSvglResults = 8;
 const maxFileSizeBytes = 20 * 1024;
+const resultCardWidth = 136;
+const resultCardHeight = 128;
+const resultGap = 8;
+const resultOverscanRows = 2;
 const githubUrl = 'https://github.com/Hsiii/Badgical';
 const svglUrl = 'https://svgl.app';
 
@@ -427,8 +431,13 @@ export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
     const [query, setQuery] = useState('');
+    const [catalogResults, setCatalogResults] = useState<readonly SvglResult[]>(
+        []
+    );
     const [results, setResults] = useState<readonly SvglResult[]>([]);
-    const [searchStatus, setSearchStatus] = useState<SvglSearchStatus>('idle');
+    const [catalogStatus, setCatalogStatus] =
+        useState<SvglSearchStatus>('loading');
+    const [searchStatus, setSearchStatus] = useState<SvglSearchStatus>('ready');
     const [selectedResult, setSelectedResult] = useState<
         SvglResult | undefined
     >(undefined);
@@ -440,6 +449,12 @@ export function App(): JSX.Element {
     const [deleteCandidateId, setDeleteCandidateId] = useState<
         string | undefined
     >(undefined);
+    const resultsReference = useRef<HTMLDivElement | undefined>(undefined);
+    const [resultViewport, setResultViewport] = useState({
+        height: 0,
+        scrollTop: 0,
+        width: 0,
+    });
     const badgeSvg = useMemo(() => buildBadgeSvg(states), [states]);
     const previewSource = useMemo(
         () => (badgeSvg === '' ? '' : toDataUri(badgeSvg)),
@@ -459,11 +474,52 @@ export function App(): JSX.Element {
     );
 
     useEffect(() => {
+        const abortController = new AbortController();
+
+        setCatalogStatus('loading');
+        fetch('https://api.svgl.app', {
+            signal: abortController.signal,
+        })
+            .then(async (response) => {
+                const payload = (await response.json()) as unknown;
+
+                if (!response.ok) {
+                    throw new Error('SVGL catalog failed');
+                }
+
+                if (!isSvglResultList(payload)) {
+                    throw new TypeError('SVGL catalog payload invalid');
+                }
+
+                return payload;
+            })
+            .then((catalog) => {
+                setCatalogResults(sortSvglResults(catalog, ''));
+                setCatalogStatus(catalog.length === 0 ? 'empty' : 'ready');
+            })
+            .catch((error: unknown) => {
+                if (
+                    error instanceof DOMException &&
+                    error.name === 'AbortError'
+                ) {
+                    return;
+                }
+
+                setCatalogResults([]);
+                setCatalogStatus('error');
+            });
+
+        return (): void => {
+            abortController.abort();
+        };
+    }, []);
+
+    useEffect(() => {
         const searchTerm = query.trim();
 
         if (searchTerm === '') {
             setResults([]);
-            setSearchStatus('idle');
+            setSearchStatus('ready');
             setSelectedResult(undefined);
             return undefined;
         }
@@ -538,6 +594,44 @@ export function App(): JSX.Element {
             abortController.abort();
             globalThis.clearTimeout(timeoutId);
         };
+    }, [query]);
+
+    useEffect(() => {
+        const resultElement = resultsReference.current;
+
+        if (resultElement === undefined) {
+            return undefined;
+        }
+
+        const updateResultViewport = (): void => {
+            setResultViewport({
+                height: resultElement.clientHeight,
+                scrollTop: resultElement.scrollTop,
+                width: resultElement.clientWidth,
+            });
+        };
+        const resizeObserver = new ResizeObserver(updateResultViewport);
+
+        updateResultViewport();
+        resizeObserver.observe(resultElement);
+
+        return (): void => {
+            resizeObserver.disconnect();
+        };
+    }, []);
+
+    useEffect(() => {
+        const resultElement = resultsReference.current;
+
+        if (resultElement === undefined) {
+            return;
+        }
+
+        resultElement.scrollTop = 0;
+        setResultViewport((currentViewport) => ({
+            ...currentViewport,
+            scrollTop: 0,
+        }));
     }, [query]);
 
     const applyColorMode = (
@@ -724,17 +818,49 @@ export function App(): JSX.Element {
         );
     };
 
-    let searchMessage = 'Search for a brand to start.';
+    const searchTerm = query.trim();
+    const visibleResults = searchTerm === '' ? catalogResults : results;
+    const resultStatus = searchTerm === '' ? catalogStatus : searchStatus;
+    const resultColumnCount = Math.max(
+        1,
+        Math.floor(
+            (resultViewport.width + resultGap) / (resultCardWidth + resultGap)
+        )
+    );
+    const resultRowStride = resultCardHeight + resultGap;
+    const resultRowCount = Math.ceil(visibleResults.length / resultColumnCount);
+    const startRow = Math.max(
+        0,
+        Math.floor(resultViewport.scrollTop / resultRowStride) -
+            resultOverscanRows
+    );
+    const endRow = Math.min(
+        resultRowCount,
+        Math.ceil(
+            (resultViewport.scrollTop + resultViewport.height) / resultRowStride
+        ) + resultOverscanRows
+    );
+    const startIndex = startRow * resultColumnCount;
+    const endIndex = Math.min(
+        visibleResults.length,
+        endRow * resultColumnCount
+    );
+    const virtualResults = visibleResults.slice(startIndex, endIndex);
+    const virtualHeight = Math.max(
+        0,
+        resultRowCount * resultRowStride - resultGap
+    );
+    let searchMessage = 'Loading SVGL logos...';
 
-    if (searchStatus === 'loading') {
+    if (resultStatus === 'loading') {
         searchMessage = 'Searching SVGL...';
     }
 
-    if (searchStatus === 'empty') {
+    if (resultStatus === 'empty') {
         searchMessage = `No SVGL logo titled "${query}". Try another brand.`;
     }
 
-    if (searchStatus === 'error') {
+    if (resultStatus === 'error') {
         searchMessage = 'SVGL search is unavailable right now. Try again.';
     }
 
@@ -858,45 +984,96 @@ export function App(): JSX.Element {
                                     />
                                 </label>
 
-                                <div className='brand-results'>
-                                    {results.length === 0 ? (
+                                <div
+                                    className='brand-results brand-results--virtualized'
+                                    onScroll={(event) => {
+                                        setResultViewport(
+                                            (currentViewport) => ({
+                                                ...currentViewport,
+                                                scrollTop:
+                                                    event.currentTarget
+                                                        .scrollTop,
+                                            })
+                                        );
+                                    }}
+                                    ref={(element) => {
+                                        resultsReference.current =
+                                            element ?? undefined;
+                                    }}
+                                >
+                                    {visibleResults.length === 0 ? (
                                         <div className='empty-state search-empty'>
                                             <p>{searchMessage}</p>
                                         </div>
                                     ) : (
-                                        results.map((result) => (
-                                            <button
-                                                aria-current={
-                                                    result.id ===
-                                                    selectedResult?.id
-                                                        ? 'true'
-                                                        : undefined
+                                        <div
+                                            aria-label='SVGL logos'
+                                            className='brand-results__canvas'
+                                            style={
+                                                {
+                                                    '--result-canvas-height': `${virtualHeight}px`,
+                                                } as CSSProperties
+                                            }
+                                        >
+                                            {virtualResults.map(
+                                                (result, offset) => {
+                                                    const resultIndex =
+                                                        startIndex + offset;
+                                                    const resultRow =
+                                                        Math.floor(
+                                                            resultIndex /
+                                                                resultColumnCount
+                                                        );
+                                                    const resultColumn =
+                                                        resultIndex %
+                                                        resultColumnCount;
+
+                                                    return (
+                                                        <button
+                                                            aria-current={
+                                                                result.id ===
+                                                                selectedResult?.id
+                                                                    ? 'true'
+                                                                    : undefined
+                                                            }
+                                                            className='brand-result'
+                                                            key={result.id}
+                                                            onClick={() => {
+                                                                chooseSearchResult(
+                                                                    result
+                                                                );
+                                                            }}
+                                                            style={
+                                                                {
+                                                                    transform: `translate(${resultColumn * (resultCardWidth + resultGap)}px, ${resultRow * resultRowStride}px)`,
+                                                                } as CSSProperties
+                                                            }
+                                                            type='button'
+                                                        >
+                                                            <img
+                                                                alt=''
+                                                                src={getSvglRoute(
+                                                                    result.route
+                                                                )}
+                                                            />
+                                                            <span>
+                                                                {result.title}
+                                                            </span>
+                                                            {getSvglCategoryLabel(
+                                                                result
+                                                            ) ===
+                                                            undefined ? undefined : (
+                                                                <small>
+                                                                    {getSvglCategoryLabel(
+                                                                        result
+                                                                    )}
+                                                                </small>
+                                                            )}
+                                                        </button>
+                                                    );
                                                 }
-                                                className='brand-result'
-                                                key={result.id}
-                                                onClick={() => {
-                                                    chooseSearchResult(result);
-                                                }}
-                                                type='button'
-                                            >
-                                                <img
-                                                    alt=''
-                                                    src={getSvglRoute(
-                                                        result.route
-                                                    )}
-                                                />
-                                                <span>{result.title}</span>
-                                                {getSvglCategoryLabel(
-                                                    result
-                                                ) === undefined ? undefined : (
-                                                    <small>
-                                                        {getSvglCategoryLabel(
-                                                            result
-                                                        )}
-                                                    </small>
-                                                )}
-                                            </button>
-                                        ))
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>
