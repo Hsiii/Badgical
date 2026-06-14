@@ -77,7 +77,7 @@ textarea {
 
 .brand-badge {
     display: inline-flex;
-    gap: var(--space-4);
+    gap: var(--space-12);
     align-items: center;
     justify-self: start;
     min-height: var(--space-32);
@@ -88,23 +88,28 @@ textarea {
 
 .brand-badge__word {
     display: inline-flex;
-    min-height: var(--space-24);
+    min-height: var(--space-36);
     align-items: center;
     font-family: var(--ff-logo);
+    font-size: var(--fs-wordmark);
     font-weight: var(--fw-bold);
     line-height: 1;
 }
 
 .brand-badge__icon,
 .brand-badge__icon img {
-    width: var(--space-24);
-    height: var(--space-24);
+    width: var(--space-36);
+    height: var(--space-36);
 }
 
 .brand-badge__icon {
     display: grid;
     place-items: center;
     color: var(--clr-brand);
+}
+
+.brand-badge__icon img {
+    margin-top: calc(var(--space-4) * -1);
 }
 
 .builder__workspace {
