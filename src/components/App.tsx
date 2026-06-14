@@ -1045,10 +1045,17 @@ export function App(): JSX.Element {
                                         </div>
                                     ) : undefined}
 
-                                    <div className='quick-edit'>
+                                    <div className='panel-heading text-heading'>
+                                        <h2 id='text-title'>Text</h2>
+                                    </div>
+
+                                    <div
+                                        aria-labelledby='text-title'
+                                        className='quick-edit'
+                                    >
                                         <label className='field'>
-                                            <span>Text</span>
                                             <input
+                                                aria-label='Badge text'
                                                 onChange={(event) => {
                                                     setDraft(
                                                         (currentDraft) => ({
