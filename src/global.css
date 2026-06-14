@@ -470,7 +470,7 @@ textarea {
 .checkbox-field {
     display: inline-flex;
     gap: var(--space-8);
-    align-items: center;
+    align-items: baseline;
     justify-content: center;
     min-width: max-content;
     min-height: var(--space-40);
