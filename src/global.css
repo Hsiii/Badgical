@@ -247,8 +247,8 @@ textarea {
     grid-template-columns: var(--space-24) minmax(0, 1fr) max-content;
     gap: var(--space-12);
     align-items: center;
-    min-height: calc(var(--space-48) + var(--space-16));
-    padding: 0 var(--space-16);
+    min-height: var(--space-48);
+    padding: 0 var(--space-12);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
     background: var(--clr-surface-raised);
@@ -261,7 +261,7 @@ textarea {
 
 .search-field input {
     min-width: 0;
-    min-height: var(--space-48);
+    min-height: var(--space-40);
     border: 0;
     background: transparent;
     color: var(--clr-text-strong);

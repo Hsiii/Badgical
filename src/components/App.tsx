@@ -891,7 +891,7 @@ export function App(): JSX.Element {
                                         onChange={(event) => {
                                             setQuery(event.target.value);
                                         }}
-                                        placeholder='Search a brand'
+                                        placeholder='Search...'
                                         value={query}
                                     />
                                     <a
