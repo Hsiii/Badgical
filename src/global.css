@@ -297,7 +297,7 @@ textarea {
 .brand-result {
     display: grid;
     grid-template-rows: var(--space-48) auto auto;
-    gap: var(--space-8);
+    gap: var(--space-4);
     align-content: center;
     justify-items: center;
     min-height: 128px;
