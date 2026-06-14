@@ -428,7 +428,7 @@ textarea {
 
 .quick-edit {
     display: grid;
-    grid-template-columns: minmax(128px, 240px) max-content minmax(160px, 192px);
+    grid-template-columns: minmax(128px, 216px) max-content minmax(160px, 192px);
     gap: var(--space-12);
     align-items: end;
     justify-content: start;
