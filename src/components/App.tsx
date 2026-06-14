@@ -126,7 +126,11 @@ const colorizeSvgContent = (content: string, color: string): string =>
             )
         );
 
-const inlineSvgArtwork = (source: string, logoColor: string): string => {
+const inlineSvgArtwork = (
+    source: string,
+    logoColor: string,
+    preserveOriginalArtwork = false
+): string => {
     const svgSource = minifySvgSource(source)
         .replaceAll(/<\?xml[\S\s]*?\?>/g, '')
         .replaceAll(/<!doctype[\S\s]*?>/gi, '');
@@ -140,6 +144,10 @@ const inlineSvgArtwork = (source: string, logoColor: string): string => {
     const viewBox = /\bviewBox=(["'])(.*?)\1/u.exec(attributes)?.[2];
     const viewBoxAttribute =
         viewBox === undefined ? '' : ` viewBox="${escapeXml(viewBox)}"`;
+
+    if (preserveOriginalArtwork) {
+        return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}>${content}</svg>`;
+    }
 
     return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}><g fill="${escapeXml(logoColor)}" stroke="${escapeXml(logoColor)}" style="color:${escapeXml(logoColor)}">${colorizeSvgContent(content, logoColor)}</g></svg>`;
 };
@@ -260,7 +268,10 @@ const buildAnimationSteps = (stateCount: number): string => {
     }).join('');
 };
 
-const buildBadgeSvg = (states: readonly BadgeState[]): string => {
+const buildBadgeSvg = (
+    states: readonly BadgeState[],
+    preserveOriginalArtwork = false
+): string => {
     const visibleStates = normalizeStates(states);
 
     if (visibleStates.length === 0) {
@@ -286,7 +297,7 @@ const buildBadgeSvg = (states: readonly BadgeState[]): string => {
                     ? ` font-size="${textSize}" font-weight="700"`
                     : '';
 
-            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preserveOriginalArtwork)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
 
             if (visibleStates.length === 1) {
                 return content;
@@ -308,8 +319,12 @@ const buildBadgeSvg = (states: readonly BadgeState[]): string => {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${badgeHeight}" viewBox="0 0 ${width} ${badgeHeight}">${style}${body}</svg>`;
 };
 
-const buildSingleBadgeSvg = (state: BadgeState, index: number): string =>
-    buildBadgeSvg([materializeState(state, index)]);
+const buildSingleBadgeSvg = (
+    state: BadgeState,
+    index: number,
+    preserveOriginalArtwork = false
+): string =>
+    buildBadgeSvg([materializeState(state, index)], preserveOriginalArtwork);
 
 const getSvglRoute = (route: string | SvglRouteOptions): string =>
     typeof route === 'string' ? route : route.light;
@@ -801,7 +816,8 @@ export function App(): JSX.Element {
                     },
                     0
                 ),
-                0
+                0,
+                mode === 'brand'
             )
         );
     };
