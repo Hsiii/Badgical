@@ -328,7 +328,8 @@ textarea {
 }
 
 .brand-result span {
-    margin-bottom: calc(var(--space-8) * -1);
+    margin-top: var(--space-4);
+    margin-bottom: 0;
 }
 
 .brand-result small {
