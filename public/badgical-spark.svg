@@ -10,6 +10,8 @@
             <rect x="18.6" y="20.8" width="11.4" height="9.2" rx="2.4" />
         </g>
     </defs>
-    <use href="#badge-shape" fill="#112255" transform="translate(-2 -3.75)" />
-    <use href="#spark-shape" fill="url(#spark-fill)" />
+    <g transform="translate(1.4 -1.625)">
+        <use href="#badge-shape" fill="#112255" transform="translate(-2 -3.75)" />
+        <use href="#spark-shape" fill="url(#spark-fill)" />
+    </g>
 </svg>
