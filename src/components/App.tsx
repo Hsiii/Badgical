@@ -968,9 +968,6 @@ export function App(): JSX.Element {
                                 >
                                     <div className='panel-heading'>
                                         <h2 id='color-title'>Variants</h2>
-                                        <span className='panel-meta'>
-                                            {draft.name}
-                                        </span>
                                     </div>
 
                                     <div
