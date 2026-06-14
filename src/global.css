@@ -141,8 +141,7 @@ textarea {
 }
 
 .compose-panel,
-.frames,
-.output {
+.frame-rail {
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
     background: var(--clr-surface);
@@ -150,7 +149,7 @@ textarea {
 
 .compose-panel {
     display: grid;
-    grid-template-rows: minmax(0, 1fr) calc(var(--space-48) * 5);
+    grid-template-rows: minmax(0, 1fr) calc(var(--space-48) * 6);
     overflow: hidden;
 }
 
@@ -178,23 +177,29 @@ textarea {
 .color-block {
     height: 100%;
     min-height: 0;
-    overflow: auto;
+    align-content: start;
+    overflow: visible;
 }
 
 .frame-rail {
     display: grid;
     grid-template-rows: minmax(0, 1fr) calc(var(--space-48) * 5);
-    gap: var(--space-12);
+    gap: 0;
     overflow: hidden;
 }
 
 .frames {
     grid-template-rows: auto minmax(0, 1fr);
+    border: 0;
+    border-radius: 0;
     overflow: hidden;
 }
 
 .output {
     grid-template-rows: auto minmax(0, 1fr);
+    border: 0;
+    border-top: 1px solid var(--clr-border);
+    border-radius: 0;
 }
 
 .panel-heading {
