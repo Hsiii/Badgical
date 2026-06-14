@@ -188,7 +188,6 @@ textarea {
 .output {
     grid-template-rows: auto minmax(0, 1fr);
     border: 0;
-    border-top: 1px solid var(--clr-border);
     border-radius: 0;
 }
 
@@ -577,6 +576,7 @@ textarea {
 
 .frame-list--empty {
     align-content: stretch;
+    box-shadow: none;
 }
 
 .frame-list__empty {
