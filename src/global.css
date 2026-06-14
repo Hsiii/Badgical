@@ -357,6 +357,7 @@ textarea {
 
 .variant-controls {
     display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
     grid-row: 1 / span 2;
     gap: var(--space-12);
     align-content: start;
@@ -366,8 +367,10 @@ textarea {
 .color-mode-switch {
     display: grid;
     grid-template-columns: 1fr;
+    grid-template-rows: repeat(3, minmax(0, 1fr));
     gap: var(--space-16);
-    align-content: start;
+    align-content: stretch;
+    height: 100%;
 }
 
 .color-mode-option {
