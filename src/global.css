@@ -299,7 +299,7 @@ textarea {
     align-content: center;
     justify-items: center;
     min-height: 128px;
-    padding: var(--space-12);
+    padding: var(--space-8) var(--space-12);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
     background: var(--clr-card);
