@@ -170,9 +170,7 @@ textarea {
 }
 
 .color-block {
-    grid-template-columns:
-        minmax(calc(var(--space-48) * 4), calc(var(--space-48) * 5))
-        minmax(0, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: minmax(0, 1fr) auto;
     column-gap: var(--space-24);
     row-gap: var(--space-12);
@@ -370,10 +368,10 @@ textarea {
 .variant-controls {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    grid-row: 1 / span 2;
+    grid-column: 1;
+    grid-row: 1;
     gap: var(--space-12);
     align-content: start;
-    padding-right: var(--space-8);
 }
 
 .color-mode-switch {
@@ -466,10 +464,8 @@ textarea {
 
 .edit-controls {
     display: grid;
-    grid-template-columns:
-        minmax(calc(var(--space-48) * 3), max-content)
-        minmax(0, 1fr);
-    grid-column: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-column: 2 / -1;
     grid-row: 1;
     gap: var(--space-24);
     align-content: start;
@@ -485,8 +481,12 @@ textarea {
 .quick-edit {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows:
+        var(--space-40) minmax(0, 1fr)
+        calc(var(--space-40) + var(--space-4));
     gap: var(--space-8);
     align-items: start;
+    min-height: calc(var(--space-48) * 3 + var(--space-4));
 }
 
 .field {
@@ -500,8 +500,9 @@ textarea {
     gap: var(--space-8);
     align-items: center;
     justify-content: start;
+    grid-row: 3;
     min-width: max-content;
-    min-height: var(--space-24);
+    min-height: calc(var(--space-40) + var(--space-4));
     padding: 0;
     color: var(--clr-text);
     cursor: pointer;
@@ -528,22 +529,22 @@ textarea {
     justify-items: start;
 }
 
-.logo-field > span {
+.logo-field > span:first-child {
     color: var(--clr-text);
-    font: var(--font-small);
+    font: var(--font-body-md);
     font-weight: var(--fw-semibold);
 }
 
 .logo-field > img {
-    justify-self: center;
-    width: calc(var(--space-48) * 2);
+    justify-self: stretch;
+    width: 100%;
     height: calc(var(--space-48) * 2);
     object-fit: contain;
 }
 
 .logo-field__empty {
     display: grid;
-    width: calc(var(--space-48) * 2);
+    width: 100%;
     height: calc(var(--space-48) * 2);
     place-items: center;
     border: 1px solid var(--clr-border);
@@ -563,8 +564,8 @@ textarea {
     padding: 0 var(--space-12);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
-    background: var(--clr-surface);
-    color: var(--clr-text);
+    background: transparent;
+    color: var(--clr-text-strong);
     cursor: pointer;
 }
 
@@ -628,10 +629,11 @@ textarea {
 }
 
 .add-frame {
-    grid-column: 2;
+    grid-column: 1 / -1;
     grid-row: 2;
     align-self: end;
-    justify-self: stretch;
+    justify-self: center;
+    width: min(100%, calc(var(--space-48) * 5));
 }
 
 .frame-list {
