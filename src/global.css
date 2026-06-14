@@ -265,6 +265,10 @@ textarea {
     outline: 0;
 }
 
+.powered-by {
+    padding-right: var(--space-8);
+}
+
 .brand-results {
     min-height: 0;
     overflow: auto;
