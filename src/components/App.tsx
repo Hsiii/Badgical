@@ -108,6 +108,9 @@ const minifySvgSource = (source: string): string =>
         .replaceAll(/:\s+/g, ':')
         .replaceAll(/,\s+/g, ',');
 
+const isSvgSource = (source: string): boolean =>
+    /^<svg\b[\S\s]*<\/svg>$/iu.test(minifySvgSource(source));
+
 const compactColor = (color: string): string =>
     color.replace(/^#([\dA-Fa-f])\1([\dA-Fa-f])\2([\dA-Fa-f])\3$/, '#$1$2$3');
 
@@ -471,9 +474,10 @@ export function App(): JSX.Element {
         },
         0
     );
-    const draftLogoSource = toDataUri(
-        buildSingleBadgeSvg(materializedDraft, 0, true)
-    );
+    const draftLogoSource =
+        selectedResult === undefined || !isSvgSource(materializedDraft.source)
+            ? undefined
+            : toDataUri(materializedDraft.source);
 
     useEffect(() => {
         const abortController = new AbortController();
@@ -992,48 +996,63 @@ export function App(): JSX.Element {
                                             <h2 id='color-title'>Variants</h2>
                                         </div>
 
-                                        <div
-                                            aria-label='Color mode'
-                                            className='color-mode-switch'
-                                            role='radiogroup'
-                                        >
-                                            {colorModes.map((modeOption) => (
-                                                <button
-                                                    aria-checked={
-                                                        colorMode ===
-                                                        modeOption.mode
-                                                    }
-                                                    aria-label={
-                                                        modeOption.label
-                                                    }
-                                                    className='color-mode-option'
-                                                    key={modeOption.mode}
-                                                    onClick={() => {
-                                                        selectColorMode(
-                                                            modeOption.mode
-                                                        );
-                                                    }}
-                                                    role='radio'
-                                                    type='button'
-                                                >
-                                                    <span
-                                                        aria-hidden='true'
-                                                        className='color-mode-option__check'
-                                                    >
-                                                        {colorMode ===
-                                                        modeOption.mode ? (
-                                                            <Check size={16} />
-                                                        ) : undefined}
-                                                    </span>
-                                                    <img
-                                                        alt=''
-                                                        src={
-                                                            modeOption.previewSource
-                                                        }
-                                                    />
-                                                </button>
-                                            ))}
-                                        </div>
+                                        {selectedResult === undefined ? (
+                                            <div className='empty-state variant-empty'>
+                                                Pick a brand to preview
+                                                variants.
+                                            </div>
+                                        ) : (
+                                            <div
+                                                aria-label='Color mode'
+                                                className='color-mode-switch'
+                                                role='radiogroup'
+                                            >
+                                                {colorModes.map(
+                                                    (modeOption) => (
+                                                        <button
+                                                            aria-checked={
+                                                                colorMode ===
+                                                                modeOption.mode
+                                                            }
+                                                            aria-label={
+                                                                modeOption.label
+                                                            }
+                                                            className='color-mode-option'
+                                                            key={
+                                                                modeOption.mode
+                                                            }
+                                                            onClick={() => {
+                                                                selectColorMode(
+                                                                    modeOption.mode
+                                                                );
+                                                            }}
+                                                            role='radio'
+                                                            type='button'
+                                                        >
+                                                            <span
+                                                                aria-hidden='true'
+                                                                className='color-mode-option__check'
+                                                            >
+                                                                {colorMode ===
+                                                                modeOption.mode ? (
+                                                                    <Check
+                                                                        size={
+                                                                            16
+                                                                        }
+                                                                    />
+                                                                ) : undefined}
+                                                            </span>
+                                                            <img
+                                                                alt=''
+                                                                src={
+                                                                    modeOption.previewSource
+                                                                }
+                                                            />
+                                                        </button>
+                                                    )
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {colorMode === 'custom' ? (
@@ -1119,10 +1138,17 @@ export function App(): JSX.Element {
                                             </label>
                                             <div className='logo-field'>
                                                 <span>Logo</span>
-                                                <img
-                                                    alt=''
-                                                    src={draftLogoSource}
-                                                />
+                                                {draftLogoSource ===
+                                                undefined ? (
+                                                    <span className='logo-field__empty'>
+                                                        No logo
+                                                    </span>
+                                                ) : (
+                                                    <img
+                                                        alt=''
+                                                        src={draftLogoSource}
+                                                    />
+                                                )}
                                                 <button
                                                     aria-label='Edit SVG source'
                                                     className='logo-source-button'

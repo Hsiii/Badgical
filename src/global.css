@@ -355,6 +355,11 @@ textarea {
     min-height: calc(var(--space-48) * 5);
 }
 
+.variant-empty {
+    min-height: 100%;
+    padding: 0;
+}
+
 .variant-controls {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
@@ -515,6 +520,17 @@ textarea {
     width: var(--space-40);
     height: var(--space-40);
     object-fit: contain;
+}
+
+.logo-field__empty {
+    display: grid;
+    width: var(--space-40);
+    height: var(--space-40);
+    place-items: center;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-4);
+    color: var(--clr-text-soft);
+    font: var(--font-label);
 }
 
 .logo-source-button {
