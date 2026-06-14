@@ -879,8 +879,21 @@ export function App(): JSX.Element {
                             className='compose-panel'
                         >
                             <div className='search-block'>
-                                <div className='panel-heading'>
+                                <div className='visually-hidden'>
                                     <h2 id='search-title'>Search</h2>
+                                </div>
+
+                                <div className='search-field'>
+                                    <Search aria-hidden='true' size={24} />
+                                    <input
+                                        aria-label='Search brand'
+                                        autoFocus
+                                        onChange={(event) => {
+                                            setQuery(event.target.value);
+                                        }}
+                                        placeholder='Search a brand'
+                                        value={query}
+                                    />
                                     <a
                                         className='panel-meta powered-by'
                                         href={svglUrl}
@@ -890,21 +903,6 @@ export function App(): JSX.Element {
                                         Powered by Svgl
                                     </a>
                                 </div>
-
-                                <label
-                                    aria-label='Search brand'
-                                    className='search-field'
-                                >
-                                    <Search aria-hidden='true' size={24} />
-                                    <input
-                                        autoFocus
-                                        onChange={(event) => {
-                                            setQuery(event.target.value);
-                                        }}
-                                        placeholder='Search a brand'
-                                        value={query}
-                                    />
-                                </label>
 
                                 <div
                                     className='brand-results'

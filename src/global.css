@@ -164,7 +164,7 @@ textarea {
 }
 
 .search-block {
-    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     min-height: 0;
 }
 
@@ -244,7 +244,7 @@ textarea {
 
 .search-field {
     display: grid;
-    grid-template-columns: var(--space-24) minmax(0, 1fr);
+    grid-template-columns: var(--space-24) minmax(0, 1fr) max-content;
     gap: var(--space-12);
     align-items: center;
     min-height: calc(var(--space-48) + var(--space-16));
