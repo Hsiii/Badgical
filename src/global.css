@@ -293,7 +293,7 @@ textarea {
     padding: var(--space-12);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
-    background: var(--clr-surface);
+    background: var(--clr-control);
     color: var(--clr-text);
     cursor: pointer;
     text-align: center;
