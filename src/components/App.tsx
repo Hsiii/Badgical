@@ -1096,6 +1096,7 @@ export function App(): JSX.Element {
                                                 aria-hidden='true'
                                                 size={16}
                                             />
+                                            <span>Edit SVG</span>
                                             <img alt='' src={draftLogoSource} />
                                         </button>
                                     </div>
