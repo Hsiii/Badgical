@@ -637,7 +637,7 @@ textarea {
     min-height: 0;
     place-items: center;
     border-radius: var(--space-4);
-    background: var(--clr-control);
+    background: transparent;
 }
 
 .preview img {
