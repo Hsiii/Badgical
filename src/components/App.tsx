@@ -1186,15 +1186,17 @@ export function App(): JSX.Element {
                             >
                                 <div className='panel-heading'>
                                     <h2>Output</h2>
-                                    <span
-                                        className={
-                                            fileSizeWarning
-                                                ? 'panel-meta file-size file-size--warn'
-                                                : 'panel-meta file-size'
-                                        }
-                                    >
-                                        {formatKilobytes(badgeSvg.length)}
-                                    </span>
+                                    {badgeSvg === '' ? undefined : (
+                                        <span
+                                            className={
+                                                fileSizeWarning
+                                                    ? 'panel-meta file-size file-size--warn'
+                                                    : 'panel-meta file-size'
+                                            }
+                                        >
+                                            {formatKilobytes(badgeSvg.length)}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className='output__showcase'>
                                     <div className='preview'>
