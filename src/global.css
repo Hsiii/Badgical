@@ -178,7 +178,7 @@ textarea {
 
 .frame-rail {
     display: grid;
-    grid-template-rows: minmax(0, 1fr) calc(var(--space-48) * 5);
+    grid-template-rows: minmax(0, 1fr) calc(var(--space-48) * 6);
     gap: 0;
     overflow: hidden;
 }
@@ -193,6 +193,7 @@ textarea {
 .output {
     grid-template-rows: auto minmax(0, 1fr);
     border: 0;
+    border-top: 1px solid var(--clr-border);
     border-radius: 0;
 }
 
