@@ -945,40 +945,44 @@ export function App(): JSX.Element {
                                     aria-labelledby='color-title'
                                     className='color-block'
                                 >
-                                    <div className='panel-heading'>
-                                        <h2 id='color-title'>Variants</h2>
-                                    </div>
+                                    <div className='variant-controls'>
+                                        <div className='panel-heading'>
+                                            <h2 id='color-title'>Variants</h2>
+                                        </div>
 
-                                    <div
-                                        aria-label='Color mode'
-                                        className='color-mode-switch'
-                                        role='radiogroup'
-                                    >
-                                        {colorModes.map((modeOption) => (
-                                            <button
-                                                aria-checked={
-                                                    colorMode ===
-                                                    modeOption.mode
-                                                }
-                                                aria-label={modeOption.label}
-                                                className='color-mode-option'
-                                                key={modeOption.mode}
-                                                onClick={() => {
-                                                    selectColorMode(
+                                        <div
+                                            aria-label='Color mode'
+                                            className='color-mode-switch'
+                                            role='radiogroup'
+                                        >
+                                            {colorModes.map((modeOption) => (
+                                                <button
+                                                    aria-checked={
+                                                        colorMode ===
                                                         modeOption.mode
-                                                    );
-                                                }}
-                                                role='radio'
-                                                type='button'
-                                            >
-                                                <img
-                                                    alt=''
-                                                    src={
-                                                        modeOption.previewSource
                                                     }
-                                                />
-                                            </button>
-                                        ))}
+                                                    aria-label={
+                                                        modeOption.label
+                                                    }
+                                                    className='color-mode-option'
+                                                    key={modeOption.mode}
+                                                    onClick={() => {
+                                                        selectColorMode(
+                                                            modeOption.mode
+                                                        );
+                                                    }}
+                                                    role='radio'
+                                                    type='button'
+                                                >
+                                                    <img
+                                                        alt=''
+                                                        src={
+                                                            modeOption.previewSource
+                                                        }
+                                                    />
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
 
                                     {colorMode === 'custom' ? (

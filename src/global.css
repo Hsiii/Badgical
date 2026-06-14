@@ -164,6 +164,7 @@ textarea {
 }
 
 .color-block {
+    grid-template-columns: minmax(128px, 288px) minmax(0, 1fr);
     height: 100%;
     min-height: 0;
     align-content: start;
@@ -348,10 +349,17 @@ textarea {
     min-height: calc(var(--space-48) * 5);
 }
 
+.variant-controls {
+    display: grid;
+    gap: var(--space-8);
+    align-content: start;
+}
+
 .color-mode-switch {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--space-8);
+    align-content: start;
 }
 
 .color-mode-option {
@@ -369,14 +377,18 @@ textarea {
 }
 
 .color-mode-option[aria-checked='true'] {
-    outline: 2px solid var(--clr-border-strong);
-    box-shadow: 0 var(--space-4) var(--space-8) var(--clr-edge-shadow);
+    box-shadow: none;
 }
 
 .color-mode-option img {
     max-width: min(100%, 160px);
     height: 28px;
     object-fit: contain;
+}
+
+.color-mode-option[aria-checked='true'] img {
+    outline: 2px solid var(--clr-border-strong);
+    box-shadow: 0 var(--space-4) var(--space-8) var(--clr-edge-shadow);
 }
 
 .custom-colors {
