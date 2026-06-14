@@ -491,10 +491,30 @@ textarea {
     height: var(--space-16);
 }
 
-.logo-source-button {
+.logo-field {
     display: grid;
     grid-column: 1 / -1;
-    grid-template-columns: var(--space-16) max-content var(--space-24);
+    grid-template-columns: max-content var(--space-40) max-content;
+    gap: var(--space-8);
+    align-items: center;
+}
+
+.logo-field > span {
+    color: var(--clr-text);
+    font: var(--font-small);
+    font-weight: var(--fw-semibold);
+}
+
+.logo-field > img {
+    justify-self: center;
+    width: var(--space-40);
+    height: var(--space-40);
+    object-fit: contain;
+}
+
+.logo-source-button {
+    display: grid;
+    grid-template-columns: var(--space-16) max-content;
     gap: var(--space-8);
     align-items: center;
     justify-content: center;
@@ -511,13 +531,6 @@ textarea {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.logo-source-button img {
-    justify-self: center;
-    width: var(--space-24);
-    height: var(--space-24);
-    object-fit: contain;
 }
 
 .button,

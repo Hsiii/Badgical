@@ -1108,22 +1108,25 @@ export function App(): JSX.Element {
                                                 />
                                                 <span>All caps</span>
                                             </label>
-                                            <button
-                                                aria-label='Edit SVG source'
-                                                className='logo-source-button'
-                                                onClick={openSourceDialog}
-                                                type='button'
-                                            >
-                                                <Pencil
-                                                    aria-hidden='true'
-                                                    size={16}
-                                                />
-                                                <span>Edit SVG</span>
+                                            <div className='logo-field'>
+                                                <span>Logo</span>
                                                 <img
                                                     alt=''
                                                     src={draftLogoSource}
                                                 />
-                                            </button>
+                                                <button
+                                                    aria-label='Edit SVG source'
+                                                    className='logo-source-button'
+                                                    onClick={openSourceDialog}
+                                                    type='button'
+                                                >
+                                                    <Pencil
+                                                        aria-hidden='true'
+                                                        size={16}
+                                                    />
+                                                    <span>Edit</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
