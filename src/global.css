@@ -556,6 +556,9 @@ textarea {
 }
 
 .add-frame {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
     justify-self: stretch;
 }
 
