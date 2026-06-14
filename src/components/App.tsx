@@ -345,14 +345,6 @@ const getSvglSourceUrl = (route: string | SvglRouteOptions): string => {
     }
 };
 
-const getSvglCategoryLabel = (result: SvglResult): string | undefined => {
-    if (typeof result.category === 'string') {
-        return result.category;
-    }
-
-    return result.category?.[0];
-};
-
 const formatKilobytes = (bytes: number): string =>
     `${(bytes / 1024).toFixed(1)} KB`;
 
@@ -941,16 +933,6 @@ export function App(): JSX.Element {
                                                         )}
                                                     />
                                                     <span>{result.title}</span>
-                                                    {getSvglCategoryLabel(
-                                                        result
-                                                    ) ===
-                                                    undefined ? undefined : (
-                                                        <small>
-                                                            {getSvglCategoryLabel(
-                                                                result
-                                                            )}
-                                                        </small>
-                                                    )}
                                                 </button>
                                             ))}
                                         </div>
