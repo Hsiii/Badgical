@@ -11,10 +11,9 @@
     --clr-surface: #ffffff;
     --clr-surface-raised: #ffffff;
     --clr-card: #f6f7f9;
-    --clr-text: var(--clr-graphite);
-    --clr-text-strong: #1f2238;
-    --clr-text-muted: #5b607f;
-    --clr-text-soft: #777b9b;
+    --clr-text-on-primary: #ffffff;
+    --clr-text: #1f2238;
+    --clr-text-muted: var(--clr-graphite);
     --clr-border: var(--clr-lavender);
     --clr-border-strong: var(--clr-lavender-purple);
     --clr-accent: var(--clr-slate-indigo);

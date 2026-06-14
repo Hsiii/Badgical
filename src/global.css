@@ -81,7 +81,7 @@ textarea {
     align-items: center;
     justify-self: start;
     min-height: var(--space-32);
-    color: var(--clr-text-strong);
+    color: var(--clr-text);
     font: var(--font-body-md);
     font-weight: var(--fw-semibold);
 }
@@ -211,7 +211,7 @@ textarea {
 
 .panel-heading h2 {
     overflow: hidden;
-    color: var(--clr-text-strong);
+    color: var(--clr-text);
     font: var(--font-body-md);
     font-weight: var(--fw-semibold);
     text-overflow: ellipsis;
@@ -236,7 +236,7 @@ textarea {
 
 .panel-meta {
     overflow: hidden;
-    color: var(--clr-text-soft);
+    color: var(--clr-text-muted);
     font: var(--font-body-md);
     font-weight: var(--fw-semibold);
     letter-spacing: 0;
@@ -255,7 +255,7 @@ textarea {
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
     background: var(--clr-surface-raised);
-    color: var(--clr-text-soft);
+    color: var(--clr-text-muted);
 }
 
 .search-field:focus-within {
@@ -267,7 +267,7 @@ textarea {
     min-height: var(--space-40);
     border: 0;
     background: transparent;
-    color: var(--clr-text-strong);
+    color: var(--clr-text);
     font: var(--font-display);
 }
 
@@ -339,7 +339,7 @@ textarea {
 }
 
 .brand-result small {
-    color: var(--clr-text-soft);
+    color: var(--clr-text-muted);
     font: var(--font-label);
 }
 
@@ -549,7 +549,7 @@ textarea {
     place-items: center;
     border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
-    color: var(--clr-text-soft);
+    color: var(--clr-text-muted);
     font: var(--font-label);
 }
 
@@ -565,7 +565,7 @@ textarea {
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
     background: transparent;
-    color: var(--clr-text-strong);
+    color: var(--clr-text);
     cursor: pointer;
 }
 
@@ -597,7 +597,7 @@ textarea {
 .button--primary {
     border-color: var(--clr-accent);
     background: var(--clr-accent);
-    color: var(--clr-surface);
+    color: var(--clr-text-on-primary);
 }
 
 .button--secondary {
@@ -615,7 +615,7 @@ textarea {
     height: calc(var(--space-40) + var(--space-4));
     border: 0;
     background: transparent;
-    color: var(--clr-text-strong);
+    color: var(--clr-text);
 }
 
 .icon-button svg {
@@ -723,7 +723,7 @@ textarea {
 
 .preview span {
     width: min(240px, 100%);
-    color: var(--clr-text-soft);
+    color: var(--clr-text-muted);
     font: var(--font-small);
     text-align: center;
 }
