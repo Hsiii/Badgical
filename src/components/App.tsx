@@ -13,6 +13,7 @@ interface BadgeState {
 }
 
 interface EditorDraft {
+    allCaps: boolean;
     badgeColor: string;
     logoColor: string;
     name: string;
@@ -44,6 +45,7 @@ const defaultBadgeSource =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="badge-base" x1="5" x2="28" y1="28" y2="18" gradientUnits="userSpaceOnUse"><stop stop-color="#4654ad"/><stop offset="0.58" stop-color="#5968c9"/><stop offset="1" stop-color="#6f7fdd"/></linearGradient><linearGradient id="spark-fill" x1="8" x2="24" y1="22" y2="2" gradientUnits="userSpaceOnUse"><stop stop-color="#8550dd"/><stop offset="1" stop-color="#c6b7ff"/></linearGradient><path id="spark-shape" d="M15.52 2.24c.36-1.04 1.84-1.04 2.2 0l1.64 4.68a6.94 6.94 0 0 0 4.24 4.24l4.68 1.64c1.04.36 1.04 1.84 0 2.2l-4.68 1.64a6.94 6.94 0 0 0-4.24 4.24l-1.64 4.68c-.36 1.04-1.84 1.04-2.2 0l-1.64-4.68a6.94 6.94 0 0 0-4.24-4.24L4.96 15c-1.04-.36-1.04-1.84 0-2.2l4.68-1.64a6.94 6.94 0 0 0 4.24-4.24l1.64-4.68Z"/><g id="badge-shape"><rect x="3.2" y="20.8" width="26.8" height="9.2" rx="2.4"/><rect x="18.6" y="20.8" width="11.4" height="9.2" rx="2.4"/></g><mask id="base-cutout"><rect width="32" height="32" fill="#fff"/><use href="#spark-shape" stroke="#000" stroke-width="4.2"/></mask></defs><use href="#badge-shape" fill="url(#badge-base)" mask="url(#base-cutout)"/><use href="#spark-shape" fill="url(#spark-fill)"/></svg>';
 
 const defaultBadgeDraft: EditorDraft = {
+    allCaps: false,
     badgeColor: '#5968c9',
     logoColor: '#ffffff',
     name: 'Badgical',
@@ -197,7 +199,7 @@ const materializeState = (state: BadgeState, _index: number): BadgeState => {
 
     return {
         ...state,
-        allCaps: state.allCaps ?? true,
+        allCaps: state.allCaps ?? false,
         badgeColor,
         logoColor:
             state.logoColor.trim() === '' ? defaultInk : state.logoColor.trim(),
@@ -215,7 +217,7 @@ const materializeState = (state: BadgeState, _index: number): BadgeState => {
 };
 
 const getDisplayName = (state: BadgeState): string =>
-    state.allCaps === false ? state.name : state.name.toUpperCase();
+    state.allCaps === true ? state.name.toUpperCase() : state.name;
 
 const normalizeStates = (
     states: readonly BadgeState[]
@@ -463,15 +465,12 @@ export function App(): JSX.Element {
     const fileSizeWarning = badgeSvg.length > maxFileSizeBytes;
     const materializedDraft = materializeState(
         {
-            allCaps: true,
             ...draft,
             id: 'draft-frame',
         },
         0
     );
-    const draftPreviewSource = toDataUri(
-        buildSingleBadgeSvg(materializedDraft, 0)
-    );
+    const draftLogoSource = toDataUri(materializedDraft.source);
 
     useEffect(() => {
         const abortController = new AbortController();
@@ -750,7 +749,6 @@ export function App(): JSX.Element {
 
         const nextState = materializeState(
             {
-                allCaps: true,
                 ...draft,
                 id: crypto.randomUUID(),
             },
@@ -864,15 +862,6 @@ export function App(): JSX.Element {
         searchMessage = 'SVGL search is unavailable right now. Try again.';
     }
 
-    let colorModeOffset = 0;
-
-    if (colorMode === 'inverse') {
-        colorModeOffset = 100;
-    }
-
-    if (colorMode === 'custom') {
-        colorModeOffset = 200;
-    }
     const getModePreviewSource = (mode: ColorMode): string => {
         const colors = applyColorMode(brandColor, mode);
 
@@ -880,7 +869,6 @@ export function App(): JSX.Element {
             buildSingleBadgeSvg(
                 materializeState(
                     {
-                        allCaps: true,
                         ...draft,
                         ...colors,
                         id: `mode-${mode}`,
@@ -960,7 +948,7 @@ export function App(): JSX.Element {
                                 <div className='panel-heading'>
                                     <h2 id='search-title'>Search</h2>
                                     <a
-                                        className='powered-by'
+                                        className='panel-meta powered-by'
                                         href={svglUrl}
                                         rel='noreferrer'
                                         target='_blank'
@@ -1085,7 +1073,9 @@ export function App(): JSX.Element {
                                 >
                                     <div className='panel-heading'>
                                         <h2 id='color-title'>Color</h2>
-                                        <span>{draft.name}</span>
+                                        <span className='panel-meta'>
+                                            {draft.name}
+                                        </span>
                                     </div>
 
                                     <div
@@ -1093,13 +1083,6 @@ export function App(): JSX.Element {
                                         className='color-mode-switch'
                                         role='radiogroup'
                                     >
-                                        <span
-                                            aria-hidden='true'
-                                            className='color-mode-switch__thumb'
-                                            style={{
-                                                transform: `translateX(${colorModeOffset}%)`,
-                                            }}
-                                        />
                                         {colorModes.map((modeOption) => (
                                             <button
                                                 aria-checked={
@@ -1116,13 +1099,13 @@ export function App(): JSX.Element {
                                                 role='radio'
                                                 type='button'
                                             >
-                                                <span>{modeOption.label}</span>
                                                 <img
                                                     alt=''
                                                     src={
                                                         modeOption.previewSource
                                                     }
                                                 />
+                                                <span>{modeOption.label}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -1182,9 +1165,26 @@ export function App(): JSX.Element {
                                                 value={draft.name}
                                             />
                                         </label>
+                                        <label className='checkbox-field'>
+                                            <input
+                                                checked={draft.allCaps}
+                                                onChange={(event) => {
+                                                    setDraft(
+                                                        (currentDraft) => ({
+                                                            ...currentDraft,
+                                                            allCaps:
+                                                                event.target
+                                                                    .checked,
+                                                        })
+                                                    );
+                                                }}
+                                                type='checkbox'
+                                            />
+                                            <span>All caps</span>
+                                        </label>
                                         <button
                                             aria-label='Edit SVG source'
-                                            className='draft-preview'
+                                            className='logo-source-button'
                                             onClick={openSourceDialog}
                                             type='button'
                                         >
@@ -1192,10 +1192,7 @@ export function App(): JSX.Element {
                                                 aria-hidden='true'
                                                 size={16}
                                             />
-                                            <img
-                                                alt='Draft badge preview'
-                                                src={draftPreviewSource}
-                                            />
+                                            <img alt='' src={draftLogoSource} />
                                         </button>
                                     </div>
 
@@ -1222,7 +1219,7 @@ export function App(): JSX.Element {
                             <section className='frames'>
                                 <div className='panel-heading'>
                                     <h2 id='frames-title'>Frames</h2>
-                                    <span>
+                                    <span className='panel-meta'>
                                         {states.length}/{maxFrames}
                                     </span>
                                 </div>
@@ -1292,8 +1289,8 @@ export function App(): JSX.Element {
                                     <span
                                         className={
                                             fileSizeWarning
-                                                ? 'file-size file-size--warn'
-                                                : 'file-size'
+                                                ? 'panel-meta file-size file-size--warn'
+                                                : 'panel-meta file-size'
                                         }
                                     >
                                         {formatKilobytes(badgeSvg.length)}
