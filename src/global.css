@@ -329,6 +329,10 @@ textarea {
     white-space: nowrap;
 }
 
+.brand-result span {
+    margin-bottom: calc(var(--space-8) * -1);
+}
+
 .brand-result small {
     color: var(--clr-text-soft);
     font: var(--font-label);
