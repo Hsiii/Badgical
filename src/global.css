@@ -219,6 +219,10 @@ textarea {
     white-space: nowrap;
 }
 
+.text-heading {
+    margin-bottom: calc(var(--space-8) * -1);
+}
+
 .field span,
 .checkbox-field span,
 .custom-color-field span {
