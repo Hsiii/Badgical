@@ -969,7 +969,7 @@ export function App(): JSX.Element {
                                     className='color-block'
                                 >
                                     <div className='panel-heading'>
-                                        <h2 id='color-title'>Color</h2>
+                                        <h2 id='color-title'>Variants</h2>
                                         <span className='panel-meta'>
                                             {draft.name}
                                         </span>
@@ -986,6 +986,7 @@ export function App(): JSX.Element {
                                                     colorMode ===
                                                     modeOption.mode
                                                 }
+                                                aria-label={modeOption.label}
                                                 className='color-mode-option'
                                                 key={modeOption.mode}
                                                 onClick={() => {
@@ -1002,7 +1003,6 @@ export function App(): JSX.Element {
                                                         modeOption.previewSource
                                                     }
                                                 />
-                                                <span>{modeOption.label}</span>
                                             </button>
                                         ))}
                                     </div>

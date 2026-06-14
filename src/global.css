@@ -350,12 +350,10 @@ textarea {
 
 .color-mode-option {
     display: grid;
-    grid-template-rows: var(--space-32) auto;
-    gap: var(--space-8);
     align-content: center;
     justify-items: center;
     min-width: 0;
-    min-height: calc(var(--space-48) + var(--space-24));
+    min-height: var(--space-48);
     padding: var(--space-8);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
@@ -368,15 +366,6 @@ textarea {
     border-color: var(--clr-border-strong);
     background: var(--clr-control);
     box-shadow: inset 0 0 0 1px var(--clr-border-strong);
-}
-
-.color-mode-option span {
-    max-width: 100%;
-    overflow: hidden;
-    font: var(--font-label);
-    text-overflow: ellipsis;
-    text-transform: uppercase;
-    white-space: nowrap;
 }
 
 .color-mode-option img {
