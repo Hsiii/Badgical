@@ -1041,60 +1041,66 @@ export function App(): JSX.Element {
                                         </div>
                                     ) : undefined}
 
-                                    <div className='panel-heading text-heading'>
-                                        <h2 id='text-title'>Text</h2>
-                                    </div>
+                                    <div className='edit-controls'>
+                                        <div className='panel-heading text-heading'>
+                                            <h2 id='text-title'>Text</h2>
+                                        </div>
 
-                                    <div
-                                        aria-labelledby='text-title'
-                                        className='quick-edit'
-                                    >
-                                        <label className='field'>
-                                            <input
-                                                aria-label='Badge text'
-                                                onChange={(event) => {
-                                                    setDraft(
-                                                        (currentDraft) => ({
-                                                            ...currentDraft,
-                                                            name: event.target
-                                                                .value,
-                                                        })
-                                                    );
-                                                }}
-                                                placeholder='Badge text'
-                                                value={draft.name}
-                                            />
-                                        </label>
-                                        <label className='checkbox-field'>
-                                            <input
-                                                checked={draft.allCaps}
-                                                onChange={(event) => {
-                                                    setDraft(
-                                                        (currentDraft) => ({
-                                                            ...currentDraft,
-                                                            allCaps:
-                                                                event.target
-                                                                    .checked,
-                                                        })
-                                                    );
-                                                }}
-                                                type='checkbox'
-                                            />
-                                            <span>All caps</span>
-                                        </label>
-                                        <button
-                                            aria-label='Edit SVG source'
-                                            className='logo-source-button'
-                                            onClick={openSourceDialog}
-                                            type='button'
+                                        <div
+                                            aria-labelledby='text-title'
+                                            className='quick-edit'
                                         >
-                                            <Pencil
-                                                aria-hidden='true'
-                                                size={16}
-                                            />
-                                            <span>Edit SVG</span>
-                                            <img alt='' src={draftLogoSource} />
-                                        </button>
+                                            <label className='field'>
+                                                <input
+                                                    aria-label='Badge text'
+                                                    onChange={(event) => {
+                                                        setDraft(
+                                                            (currentDraft) => ({
+                                                                ...currentDraft,
+                                                                name: event
+                                                                    .target
+                                                                    .value,
+                                                            })
+                                                        );
+                                                    }}
+                                                    placeholder='Badge text'
+                                                    value={draft.name}
+                                                />
+                                            </label>
+                                            <label className='checkbox-field'>
+                                                <input
+                                                    checked={draft.allCaps}
+                                                    onChange={(event) => {
+                                                        setDraft(
+                                                            (currentDraft) => ({
+                                                                ...currentDraft,
+                                                                allCaps:
+                                                                    event.target
+                                                                        .checked,
+                                                            })
+                                                        );
+                                                    }}
+                                                    type='checkbox'
+                                                />
+                                                <span>All caps</span>
+                                            </label>
+                                            <button
+                                                aria-label='Edit SVG source'
+                                                className='logo-source-button'
+                                                onClick={openSourceDialog}
+                                                type='button'
+                                            >
+                                                <Pencil
+                                                    aria-hidden='true'
+                                                    size={16}
+                                                />
+                                                <span>Edit SVG</span>
+                                                <img
+                                                    alt=''
+                                                    src={draftLogoSource}
+                                                />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <button

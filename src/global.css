@@ -435,12 +435,19 @@ textarea {
     color: var(--clr-text);
 }
 
+.edit-controls {
+    display: grid;
+    grid-column: 2;
+    grid-row: 1;
+    gap: var(--space-8);
+    align-content: start;
+}
+
 .quick-edit {
     display: grid;
-    grid-template-columns: minmax(128px, 216px) max-content minmax(160px, 192px);
-    gap: var(--space-12);
-    align-items: end;
-    justify-content: start;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    align-items: stretch;
 }
 
 .field {
