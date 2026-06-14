@@ -330,6 +330,7 @@ textarea {
 .brand-result span {
     margin-top: var(--space-4);
     margin-bottom: 0;
+    font: var(--font-small);
 }
 
 .brand-result small {
