@@ -656,12 +656,8 @@ textarea {
 
 .output__actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: var(--space-8);
-}
-
-.file-size--warn {
-    color: var(--clr-danger);
 }
 
 .visually-hidden {
@@ -700,15 +696,40 @@ textarea {
     width: min(100%, calc(var(--space-48) * 14));
 }
 
+.export-dialog {
+    width: min(100%, calc(var(--space-48) * 16));
+}
+
+.export-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-12);
+}
+
+.export-copy-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    gap: var(--space-8);
+}
+
+.export-field textarea,
 .source-dialog__field textarea {
     width: 100%;
-    min-height: calc(var(--space-48) * 7);
     padding: var(--space-12);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
     color: var(--clr-text);
     font: var(--font-mono);
+}
+
+.source-dialog__field textarea {
+    min-height: calc(var(--space-48) * 7);
+}
+
+.export-field textarea {
+    min-height: calc(var(--space-48) * 2);
+    resize: none;
 }
 
 .confirm-dialog p {
@@ -720,6 +741,10 @@ textarea {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-8);
+}
+
+.export-dialog__actions {
+    grid-template-columns: 1fr 1fr 1fr;
 }
 
 @media (max-width: 920px) {
@@ -759,7 +784,13 @@ textarea {
 
     .brand-results,
     .custom-colors,
+    .export-dialog__actions,
+    .export-fields,
     .quick-edit {
+        grid-template-columns: 1fr;
+    }
+
+    .export-copy-row {
         grid-template-columns: 1fr;
     }
 }

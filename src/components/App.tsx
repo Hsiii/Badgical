@@ -66,9 +66,11 @@ const textSize = 10;
 const frameSeconds = 2.4;
 const maxFrames = 20;
 const maxSvglResults = 8;
-const maxFileSizeBytes = 20 * 1024;
 const githubUrl = 'https://github.com/Hsiii/Badgical';
 const svglUrl = 'https://svgl.app';
+const defaultExportFolder = 'assets/badges/';
+const defaultExportRepo = 'username/repo';
+const exportFileName = 'animated-badge.svg';
 
 function GitHubMark(): JSX.Element {
     return (
@@ -360,9 +362,6 @@ const getSvglSourceUrl = (route: string | SvglRouteOptions): string => {
     }
 };
 
-const formatKilobytes = (bytes: number): string =>
-    `${(bytes / 1024).toFixed(1)} KB`;
-
 const sortCopy = <Value,>(
     values: readonly Value[],
     compare: (leftValue: Value, rightValue: Value) => number
@@ -434,7 +433,9 @@ const sortSvglResults = (
 
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);
-    const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+    const [exportCopyState, setExportCopyState] = useState<
+        'idle' | 'link' | 'markup'
+    >('idle');
     const [query, setQuery] = useState('');
     const [catalogResults, setCatalogResults] = useState<readonly SvglResult[]>(
         []
@@ -450,6 +451,9 @@ export function App(): JSX.Element {
     const [brandColor, setBrandColor] = useState(defaultBadgeDraft.badgeColor);
     const [colorMode, setColorMode] = useState<ColorMode>('brand');
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
+    const [exportDialogOpen, setExportDialogOpen] = useState(false);
+    const [exportFolder, setExportFolder] = useState(defaultExportFolder);
+    const [exportRepo, setExportRepo] = useState(defaultExportRepo);
     const [sourceDraft, setSourceDraft] = useState(defaultBadgeDraft.source);
     const [deleteCandidateId, setDeleteCandidateId] = useState<
         string | undefined
@@ -460,7 +464,6 @@ export function App(): JSX.Element {
         () => (badgeSvg === '' ? '' : toDataUri(badgeSvg)),
         [badgeSvg]
     );
-    const fileSizeWarning = badgeSvg.length > maxFileSizeBytes;
     const materializedDraft = materializeState(
         {
             ...draft,
@@ -690,7 +693,7 @@ export function App(): JSX.Element {
                     source,
                 }));
                 setSourceDraft(source);
-                setCopyState('idle');
+                setExportCopyState('idle');
             })
             .catch(() => undefined);
     };
@@ -711,7 +714,7 @@ export function App(): JSX.Element {
             source: sourceDraft,
         }));
         setSourceDialogOpen(false);
-        setCopyState('idle');
+        setExportCopyState('idle');
     };
 
     const addDraftFrame = (): void => {
@@ -732,7 +735,7 @@ export function App(): JSX.Element {
                 ? currentStates
                 : [...currentStates, nextState]
         );
-        setCopyState('idle');
+        setExportCopyState('idle');
     };
 
     const confirmDeleteState = (): void => {
@@ -746,23 +749,8 @@ export function App(): JSX.Element {
 
         setStates(remainingStates);
 
-        setCopyState('idle');
+        setExportCopyState('idle');
         setDeleteCandidateId(undefined);
-    };
-
-    const copySvg = (): void => {
-        if (badgeSvg === '') {
-            return;
-        }
-
-        navigator.clipboard
-            .writeText(badgeSvg)
-            .then(() => {
-                setCopyState('copied');
-            })
-            .catch(() => {
-                setCopyState('idle');
-            });
     };
 
     const downloadSvg = (): void => {
@@ -786,6 +774,42 @@ export function App(): JSX.Element {
             0,
             url
         );
+    };
+
+    const normalizedExportFolder = exportFolder
+        .trim()
+        .replace(/^\/+/u, '')
+        .replaceAll(/\/{2,}/gu, '/');
+    const exportPath =
+        normalizedExportFolder === ''
+            ? exportFileName
+            : `${normalizedExportFolder.replace(/\/?$/u, '/')}${exportFileName}`;
+    const trimmedExportRepo = exportRepo.trim();
+    const normalizedExportRepo =
+        trimmedExportRepo === '' ? defaultExportRepo : trimmedExportRepo;
+    const rawGithubUrl = `https://raw.githubusercontent.com/${normalizedExportRepo}/HEAD/${exportPath}`;
+    const readmeMarkup = `<img src="${rawGithubUrl}" alt="Animated badge" />`;
+
+    const copyRawGithubUrl = (): void => {
+        navigator.clipboard
+            .writeText(rawGithubUrl)
+            .then(() => {
+                setExportCopyState('link');
+            })
+            .catch(() => {
+                setExportCopyState('idle');
+            });
+    };
+
+    const copyReadmeMarkup = (): void => {
+        navigator.clipboard
+            .writeText(readmeMarkup)
+            .then(() => {
+                setExportCopyState('markup');
+            })
+            .catch(() => {
+                setExportCopyState('idle');
+            });
     };
 
     const searchTerm = query.trim();
@@ -1187,23 +1211,9 @@ export function App(): JSX.Element {
                                 </div>
                             </section>
 
-                            <section
-                                aria-label='Generated badge'
-                                className='output'
-                            >
+                            <section aria-label='Preview' className='output'>
                                 <div className='panel-heading'>
-                                    <h2>Output</h2>
-                                    {badgeSvg === '' ? undefined : (
-                                        <span
-                                            className={
-                                                fileSizeWarning
-                                                    ? 'panel-meta file-size file-size--warn'
-                                                    : 'panel-meta file-size'
-                                            }
-                                        >
-                                            {formatKilobytes(badgeSvg.length)}
-                                        </span>
-                                    )}
+                                    <h2>Preview</h2>
                                 </div>
                                 <div className='output__showcase'>
                                     <div className='preview'>
@@ -1222,42 +1232,20 @@ export function App(): JSX.Element {
 
                                     <div className='output__actions'>
                                         <button
-                                            aria-label={
-                                                copyState === 'copied'
-                                                    ? 'Copied animated SVG'
-                                                    : 'Copy animated SVG'
-                                            }
+                                            aria-label='Export animated SVG'
                                             className='button button--primary'
                                             disabled={badgeSvg === ''}
-                                            onClick={copySvg}
-                                            title={
-                                                copyState === 'copied'
-                                                    ? 'Copied'
-                                                    : 'Copy'
-                                            }
-                                            type='button'
-                                        >
-                                            <Copy
-                                                aria-hidden='true'
-                                                size={16}
-                                            />
-                                            {copyState === 'copied'
-                                                ? 'Copied'
-                                                : 'Copy'}
-                                        </button>
-                                        <button
-                                            aria-label='Download animated SVG'
-                                            className='button button--primary'
-                                            disabled={badgeSvg === ''}
-                                            onClick={downloadSvg}
-                                            title='Download'
+                                            onClick={() => {
+                                                setExportDialogOpen(true);
+                                            }}
+                                            title='Export'
                                             type='button'
                                         >
                                             <Download
                                                 aria-hidden='true'
                                                 size={16}
                                             />
-                                            Download
+                                            Export
                                         </button>
                                     </div>
                                 </div>
@@ -1337,6 +1325,98 @@ export function App(): JSX.Element {
                                 type='button'
                             >
                                 Save
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            ) : undefined}
+
+            {exportDialogOpen ? (
+                <div className='confirm-backdrop' role='presentation'>
+                    <section
+                        aria-labelledby='export-dialog-title'
+                        aria-modal='true'
+                        className='confirm-dialog export-dialog'
+                        role='dialog'
+                    >
+                        <div className='panel-heading'>
+                            <h2 id='export-dialog-title'>Export Badge</h2>
+                        </div>
+
+                        <div className='export-fields'>
+                            <label className='field'>
+                                <span>Repository</span>
+                                <input
+                                    onChange={(event) => {
+                                        setExportRepo(event.target.value);
+                                        setExportCopyState('idle');
+                                    }}
+                                    placeholder='username/repo'
+                                    value={exportRepo}
+                                />
+                            </label>
+                            <label className='field'>
+                                <span>Folder</span>
+                                <input
+                                    onChange={(event) => {
+                                        setExportFolder(event.target.value);
+                                        setExportCopyState('idle');
+                                    }}
+                                    placeholder={defaultExportFolder}
+                                    value={exportFolder}
+                                />
+                            </label>
+                        </div>
+
+                        <label className='field export-field'>
+                            <span>Raw GitHub URL</span>
+                            <div className='export-copy-row'>
+                                <input readOnly value={rawGithubUrl} />
+                                <button
+                                    className='button button--secondary'
+                                    onClick={copyRawGithubUrl}
+                                    type='button'
+                                >
+                                    <Copy aria-hidden='true' size={16} />
+                                    {exportCopyState === 'link'
+                                        ? 'Copied'
+                                        : 'Copy'}
+                                </button>
+                            </div>
+                        </label>
+
+                        <label className='field export-field'>
+                            <span>README HTML</span>
+                            <textarea readOnly value={readmeMarkup} />
+                        </label>
+
+                        <div className='confirm-dialog__actions export-dialog__actions'>
+                            <button
+                                className='button button--secondary'
+                                onClick={() => {
+                                    setExportDialogOpen(false);
+                                }}
+                                type='button'
+                            >
+                                Close
+                            </button>
+                            <button
+                                className='button button--primary'
+                                onClick={copyReadmeMarkup}
+                                type='button'
+                            >
+                                <Copy aria-hidden='true' size={16} />
+                                {exportCopyState === 'markup'
+                                    ? 'Copied'
+                                    : 'Copy HTML'}
+                            </button>
+                            <button
+                                className='button button--primary'
+                                onClick={downloadSvg}
+                                type='button'
+                            >
+                                <Download aria-hidden='true' size={16} />
+                                Download SVG
                             </button>
                         </div>
                     </section>
