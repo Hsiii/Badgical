@@ -25,5 +25,6 @@
     --clr-guide-bg: var(--clr-bg-subtle);
     --clr-guide-accent: var(--clr-lavender-purple);
     --clr-warning: var(--clr-accent-strong);
+    --clr-danger: #b42318;
     --clr-backdrop: rgb(48 51 76 / 28%);
 }

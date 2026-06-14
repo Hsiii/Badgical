@@ -1,27 +1,23 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ChangeEvent, CSSProperties, JSX, PointerEvent } from 'react';
-import {
-    ClipboardPaste,
-    Copy,
-    Download,
-    FolderOpen,
-    Plus,
-    Search,
-    X,
-} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import type { JSX } from 'react';
+import { Copy, Download, Plus, Search, X } from 'lucide-react';
 
 interface BadgeState {
     allCaps?: boolean;
+    badgeColor: string;
     id: string;
+    logoColor: string;
     name: string;
-    color: string;
     source: string;
+    textColor: string;
 }
 
 interface EditorDraft {
-    color: string;
+    badgeColor: string;
+    logoColor: string;
     name: string;
     source: string;
+    textColor: string;
 }
 
 interface SvglRouteOptions {
@@ -40,26 +36,19 @@ interface SvglApiError {
     readonly error?: string;
 }
 
-interface SvglSearchCopy {
-    readonly chooseLabel: string;
-    readonly emptyMessage: (query: string) => string;
-    readonly errorMessage: string;
-    readonly idleMessage: string;
-    readonly label: string;
-    readonly mode: EditorMode;
-    readonly placeholder: string;
-}
-
 type SvglSearchStatus = 'idle' | 'loading' | 'empty' | 'ready' | 'error';
-type EditorMode = 'color' | 'text' | 'source';
+type ColorMode = 'brand' | 'inverse' | 'custom';
+type EditableColorTarget = 'badgeColor' | 'logoColor' | 'textColor';
 
 const defaultBadgeSource =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="badge-base" x1="5" x2="28" y1="28" y2="18" gradientUnits="userSpaceOnUse"><stop stop-color="#4654ad"/><stop offset="0.58" stop-color="#5968c9"/><stop offset="1" stop-color="#6f7fdd"/></linearGradient><linearGradient id="spark-fill" x1="8" x2="24" y1="22" y2="2" gradientUnits="userSpaceOnUse"><stop stop-color="#8550dd"/><stop offset="1" stop-color="#c6b7ff"/></linearGradient><path id="spark-shape" d="M15.52 2.24c.36-1.04 1.84-1.04 2.2 0l1.64 4.68a6.94 6.94 0 0 0 4.24 4.24l4.68 1.64c1.04.36 1.04 1.84 0 2.2l-4.68 1.64a6.94 6.94 0 0 0-4.24 4.24l-1.64 4.68c-.36 1.04-1.84 1.04-2.2 0l-1.64-4.68a6.94 6.94 0 0 0-4.24-4.24L4.96 15c-1.04-.36-1.04-1.84 0-2.2l4.68-1.64a6.94 6.94 0 0 0 4.24-4.24l1.64-4.68Z"/><g id="badge-shape"><rect x="3.2" y="20.8" width="26.8" height="9.2" rx="2.4"/><rect x="18.6" y="20.8" width="11.4" height="9.2" rx="2.4"/></g><mask id="base-cutout"><rect width="32" height="32" fill="#fff"/><use href="#spark-shape" stroke="#000" stroke-width="4.2"/></mask></defs><use href="#badge-shape" fill="url(#badge-base)" mask="url(#base-cutout)"/><use href="#spark-shape" fill="url(#spark-fill)"/></svg>';
 
 const defaultBadgeDraft: EditorDraft = {
-    color: '#5968c9',
+    badgeColor: '#5968c9',
+    logoColor: '#ffffff',
     name: 'Badgical',
     source: defaultBadgeSource,
+    textColor: '#ffffff',
 };
 
 const defaultStates: readonly BadgeState[] = [];
@@ -73,8 +62,9 @@ const minBadgeWidth = 90;
 const textPadding = 16;
 const textSize = 10;
 const frameSeconds = 2.4;
-const maxFrames = 5;
+const maxFrames = 20;
 const maxSvglResults = 8;
+const maxFileSizeBytes = 20 * 1024;
 const githubUrl = 'https://github.com/Hsiii/Badgical';
 
 function GitHubMark(): JSX.Element {
@@ -116,7 +106,24 @@ const minifySvgSource = (source: string): string =>
 const compactColor = (color: string): string =>
     color.replace(/^#([\dA-Fa-f])\1([\dA-Fa-f])\2([\dA-Fa-f])\3$/, '#$1$2$3');
 
-const inlineSvgArtwork = (source: string): string => {
+const colorizeSvgContent = (content: string, color: string): string =>
+    content
+        .replaceAll(
+            /\sfill=(["'])(?!none|transparent|currentColor)(.*?)\1/giu,
+            ` fill="${escapeXml(color)}"`
+        )
+        .replaceAll(
+            /\sstroke=(["'])(?!none|transparent|currentColor)(.*?)\1/giu,
+            ` stroke="${escapeXml(color)}"`
+        )
+        .replaceAll(/<stop\b[^>]*>/giu, (match) =>
+            match.replaceAll(
+                /\sstop-color=(["'])(.*?)\1/giu,
+                ` stop-color="${escapeXml(color)}"`
+            )
+        );
+
+const inlineSvgArtwork = (source: string, logoColor: string): string => {
     const svgSource = minifySvgSource(source)
         .replaceAll(/<\?xml[\S\s]*?\?>/g, '')
         .replaceAll(/<!doctype[\S\s]*?>/gi, '');
@@ -131,7 +138,7 @@ const inlineSvgArtwork = (source: string): string => {
     const viewBoxAttribute =
         viewBox === undefined ? '' : ` viewBox="${escapeXml(viewBox)}"`;
 
-    return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}>${content}</svg>`;
+    return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}><g fill="${escapeXml(logoColor)}" stroke="${escapeXml(logoColor)}" style="color:${escapeXml(logoColor)}">${colorizeSvgContent(content, logoColor)}</g></svg>`;
 };
 
 const toDataUri = (source: string): string => {
@@ -154,36 +161,8 @@ const getReadableInk = (color: string): string => {
     const blue = Number.parseInt(normalizedColor.slice(4, 6), 16);
     const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
 
-    return luminance > 150 ? '#1f2328' : '#fff';
+    return luminance > 150 ? '#1f2328' : '#ffffff';
 };
-
-const getColorChannels = (
-    color: string
-): { readonly blue: number; readonly green: number; readonly red: number } => {
-    const normalizedColor = color.trim().replace('#', '');
-
-    if (!/^[\dA-Fa-f]{6}$/.test(normalizedColor)) {
-        return { blue: 0, green: 0, red: 0 };
-    }
-
-    return {
-        blue: Number.parseInt(normalizedColor.slice(4, 6), 16),
-        green: Number.parseInt(normalizedColor.slice(2, 4), 16),
-        red: Number.parseInt(normalizedColor.slice(0, 2), 16),
-    };
-};
-
-const clampColorChannel = (value: number): number =>
-    Math.min(Math.max(Math.round(value), 0), 255);
-
-const clampPercentage = (value: number): number =>
-    Math.min(Math.max(value, 0), 100);
-
-const channelToHex = (value: number): string =>
-    clampColorChannel(value).toString(16).padStart(2, '0');
-
-const rgbToHex = (red: number, green: number, blue: number): string =>
-    `#${channelToHex(red)}${channelToHex(green)}${channelToHex(blue)}`;
 
 const normalizeHexInput = (value: string): string | undefined => {
     const normalizedValue = value.trim();
@@ -204,108 +183,31 @@ const normalizeHexInput = (value: string): string | undefined => {
     return `#${hexValue[0]}${hexValue[0]}${hexValue[1]}${hexValue[1]}${hexValue[2]}${hexValue[2]}`;
 };
 
-const rgbToHsv = (
-    red: number,
-    green: number,
-    blue: number
-): {
-    readonly hue: number;
-    readonly saturation: number;
-    readonly value: number;
-} => {
-    const normalizedRed = red / 255;
-    const normalizedGreen = green / 255;
-    const normalizedBlue = blue / 255;
-    const maxChannel = Math.max(normalizedRed, normalizedGreen, normalizedBlue);
-    const minChannel = Math.min(normalizedRed, normalizedGreen, normalizedBlue);
-    const delta = maxChannel - minChannel;
-    let hue = 0;
-
-    if (delta !== 0) {
-        if (maxChannel === normalizedRed) {
-            hue = ((normalizedGreen - normalizedBlue) / delta) % 6;
-        } else if (maxChannel === normalizedGreen) {
-            hue = (normalizedBlue - normalizedRed) / delta + 2;
-        } else {
-            hue = (normalizedRed - normalizedGreen) / delta + 4;
-        }
-    }
+const materializeState = (state: BadgeState, _index: number): BadgeState => {
+    const badgeColor =
+        state.badgeColor.trim() === ''
+            ? defaultBadgeDraft.badgeColor
+            : state.badgeColor.trim();
+    const defaultInk = getReadableInk(badgeColor);
 
     return {
-        hue: Math.round((hue * 60 + 360) % 360),
-        saturation:
-            maxChannel === 0 ? 0 : Math.round((delta / maxChannel) * 100),
-        value: Math.round(maxChannel * 100),
+        ...state,
+        allCaps: state.allCaps ?? true,
+        badgeColor,
+        logoColor:
+            state.logoColor.trim() === '' ? defaultInk : state.logoColor.trim(),
+        name:
+            state.name.trim() === '' || /^frame$/iu.test(state.name.trim())
+                ? defaultBadgeDraft.name
+                : state.name.trim(),
+        source:
+            state.source.trim() === ''
+                ? defaultBadgeDraft.source
+                : state.source.trim(),
+        textColor:
+            state.textColor.trim() === '' ? defaultInk : state.textColor.trim(),
     };
 };
-
-const hsvToHex = (hue: number, saturation: number, value: number): string => {
-    const normalizedHue = ((hue % 360) + 360) % 360;
-    const normalizedSaturation = clampPercentage(saturation) / 100;
-    const normalizedValue = clampPercentage(value) / 100;
-    const chroma = normalizedValue * normalizedSaturation;
-    const huePrime = normalizedHue / 60;
-    const secondary = chroma * (1 - Math.abs((huePrime % 2) - 1));
-    const match = normalizedValue - chroma;
-    let red = 0;
-    let green = 0;
-    let blue = 0;
-
-    if (huePrime >= 0 && huePrime < 1) {
-        red = chroma;
-        green = secondary;
-    } else if (huePrime < 2) {
-        red = secondary;
-        green = chroma;
-    } else if (huePrime < 3) {
-        green = chroma;
-        blue = secondary;
-    } else if (huePrime < 4) {
-        green = secondary;
-        blue = chroma;
-    } else if (huePrime < 5) {
-        red = secondary;
-        blue = chroma;
-    } else {
-        red = chroma;
-        blue = secondary;
-    }
-
-    return rgbToHex(
-        (red + match) * 255,
-        (green + match) * 255,
-        (blue + match) * 255
-    );
-};
-
-const getColorHsv = (
-    color: string
-): {
-    readonly hue: number;
-    readonly saturation: number;
-    readonly value: number;
-} => {
-    const { blue, green, red } = getColorChannels(color);
-
-    return rgbToHsv(red, green, blue);
-};
-
-const materializeState = (state: BadgeState, _index: number): BadgeState => ({
-    ...state,
-    allCaps: state.allCaps ?? true,
-    color:
-        state.color.trim() === ''
-            ? defaultBadgeDraft.color
-            : state.color.trim(),
-    name:
-        state.name.trim() === '' || /^frame$/iu.test(state.name.trim())
-            ? defaultBadgeDraft.name
-            : state.name.trim(),
-    source:
-        state.source.trim() === ''
-            ? defaultBadgeDraft.source
-            : state.source.trim(),
-});
 
 const getDisplayName = (state: BadgeState): string =>
     state.allCaps === false ? state.name : state.name.toUpperCase();
@@ -317,7 +219,11 @@ const normalizeStates = (
         .map((state, index) => materializeState(state, index))
         .filter(
             (state) =>
-                state.name !== '' && state.color !== '' && state.source !== ''
+                state.name !== '' &&
+                state.badgeColor !== '' &&
+                state.logoColor !== '' &&
+                state.source !== '' &&
+                state.textColor !== ''
         );
 
 const getBadgeWidth = (states: readonly BadgeState[]): number => {
@@ -372,13 +278,12 @@ const buildBadgeSvg = (states: readonly BadgeState[]): string => {
     const slots = animatedStates
         .map((state, index) => {
             const slotY = index * badgeHeight;
-            const ink = getReadableInk(state.color);
             const textAttributes =
                 visibleStates.length === 1
                     ? ` font-size="${textSize}" font-weight="700"`
                     : '';
 
-            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.color))}"/>${inlineSvgArtwork(state.source)}<text fill="${ink}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
 
             if (visibleStates.length === 1) {
                 return content;
@@ -457,114 +362,54 @@ const getPrimarySvgColor = (source: string): string | undefined => {
     return primaryColor;
 };
 
-const applySvglSourceToState = (
-    state: BadgeState,
-    result: SvglResult,
-    source: string,
-    editorMode: EditorMode
-): BadgeState => {
-    const primaryColor = getPrimarySvgColor(source);
-
-    if (editorMode === 'color') {
-        return {
-            ...state,
-            color: primaryColor ?? state.color,
-        };
-    }
-
-    return {
-        ...state,
-        color: primaryColor ?? state.color,
-        name:
-            state.name === '' || /^frame$/iu.test(state.name)
-                ? result.title
-                : state.name,
-        source,
-    };
-};
-
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);
-    const [selectedFrameId, setSelectedFrameId] = useState<string | undefined>(
-        undefined
-    );
     const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
-    const [svglQuery, setSvglQuery] = useState('');
-    const [svglResults, setSvglResults] = useState<readonly SvglResult[]>([]);
-    const [svglStatus, setSvglStatus] = useState<SvglSearchStatus>('idle');
-    const [selectedSvglResult, setSelectedSvglResult] = useState<
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState<readonly SvglResult[]>([]);
+    const [searchStatus, setSearchStatus] = useState<SvglSearchStatus>('idle');
+    const [selectedResult, setSelectedResult] = useState<
         SvglResult | undefined
     >(undefined);
-    const [addFrameDialogOpen, setAddFrameDialogOpen] = useState(false);
-    const [addFrameQuery, setAddFrameQuery] = useState('');
-    const [addFrameResults, setAddFrameResults] = useState<
-        readonly SvglResult[]
-    >([]);
-    const [addFrameStatus, setAddFrameStatus] =
-        useState<SvglSearchStatus>('idle');
-    const [selectedAddFrameResult, setSelectedAddFrameResult] = useState<
-        SvglResult | undefined
-    >(undefined);
-    const [continueAddingFrames, setContinueAddingFrames] = useState(true);
+    const [draft, setDraft] = useState(defaultBadgeDraft);
+    const [colorMode, setColorMode] = useState<ColorMode>('brand');
     const [deleteCandidateId, setDeleteCandidateId] = useState<
         string | undefined
     >(undefined);
-    const fileInputReference = useRef<HTMLInputElement | undefined>(undefined);
     const badgeSvg = useMemo(() => buildBadgeSvg(states), [states]);
     const previewSource = useMemo(
         () => (badgeSvg === '' ? '' : toDataUri(badgeSvg)),
         [badgeSvg]
     );
-    const selectedFrame = useMemo<BadgeState | undefined>(
-        () =>
-            states.find((state) => state.id === selectedFrameId) ??
-            (states.length === 0 ? undefined : states[0]),
-        [selectedFrameId, states]
-    );
-    const selectedMaterializedFrame = materializeState(
-        selectedFrame ?? {
-            ...defaultBadgeDraft,
-            id: 'empty-frame',
+    const fileSizeWarning = badgeSvg.length > maxFileSizeBytes;
+    const materializedDraft = materializeState(
+        {
+            allCaps: true,
+            ...draft,
+            id: 'draft-frame',
         },
         0
     );
-    const selectedFrameHasSource = selectedFrame?.source.trim() !== '';
-    const selectedFrameChannels = getColorChannels(
-        selectedMaterializedFrame.color
+    const draftPreviewSource = toDataUri(
+        buildSingleBadgeSvg(materializedDraft, 0)
     );
-    const selectedFrameHsv = getColorHsv(selectedMaterializedFrame.color);
 
     useEffect(() => {
-        if (selectedFrame === undefined) {
-            setSvglQuery('');
-            setSvglResults([]);
-            setSvglStatus('idle');
-            setSelectedSvglResult(undefined);
-            return;
-        }
+        const searchTerm = query.trim();
 
-        setSvglQuery(selectedFrame.name);
-        setSvglResults([]);
-        setSvglStatus('idle');
-        setSelectedSvglResult(undefined);
-    }, [selectedFrame]);
-
-    useEffect(() => {
-        const query = svglQuery.trim();
-
-        if (query === '') {
-            setSvglResults([]);
-            setSvglStatus('idle');
-            setSelectedSvglResult(undefined);
+        if (searchTerm === '') {
+            setResults([]);
+            setSearchStatus('idle');
+            setSelectedResult(undefined);
             return undefined;
         }
 
         const abortController = new AbortController();
-        setSvglStatus('loading');
+        setSearchStatus('loading');
         const timeoutId = globalThis.setTimeout(
             () => {
                 fetch(
-                    `https://api.svgl.app?search=${encodeURIComponent(query)}`,
+                    `https://api.svgl.app?search=${encodeURIComponent(searchTerm)}`,
                     {
                         signal: abortController.signal,
                     }
@@ -590,14 +435,17 @@ export function App(): JSX.Element {
 
                         return payload;
                     })
-                    .then((results) => {
-                        const visibleResults = results.slice(0, maxSvglResults);
+                    .then((searchResults) => {
+                        const visibleResults = searchResults.slice(
+                            0,
+                            maxSvglResults
+                        );
 
-                        setSvglResults(visibleResults);
-                        setSvglStatus(
+                        setResults(visibleResults);
+                        setSearchStatus(
                             visibleResults.length === 0 ? 'empty' : 'ready'
                         );
-                        setSelectedSvglResult((currentResult) =>
+                        setSelectedResult((currentResult) =>
                             visibleResults.some(
                                 (result) => result.id === currentResult?.id
                             )
@@ -613,9 +461,9 @@ export function App(): JSX.Element {
                             return;
                         }
 
-                        setSvglResults([]);
-                        setSvglStatus('error');
-                        setSelectedSvglResult(undefined);
+                        setResults([]);
+                        setSearchStatus('error');
+                        setSelectedResult(undefined);
                     });
             },
             320,
@@ -626,231 +474,74 @@ export function App(): JSX.Element {
             abortController.abort();
             globalThis.clearTimeout(timeoutId);
         };
-    }, [svglQuery]);
+    }, [query]);
 
-    useEffect(() => {
-        if (!addFrameDialogOpen) {
-            return undefined;
+    const applyColorMode = (
+        brandColor: string,
+        mode: ColorMode
+    ): Pick<EditorDraft, 'badgeColor' | 'logoColor' | 'textColor'> => {
+        const contrastColor = getReadableInk(brandColor);
+        const reverseContrastColor =
+            contrastColor === '#ffffff' ? '#1f2328' : '#ffffff';
+
+        if (mode === 'inverse') {
+            return {
+                badgeColor: contrastColor,
+                logoColor: brandColor,
+                textColor: reverseContrastColor,
+            };
         }
 
-        const query = addFrameQuery.trim();
-
-        if (query === '') {
-            setAddFrameResults([]);
-            setAddFrameStatus('idle');
-            setSelectedAddFrameResult(undefined);
-            return undefined;
+        if (mode === 'custom') {
+            return {
+                badgeColor: draft.badgeColor,
+                logoColor: draft.logoColor,
+                textColor: draft.textColor,
+            };
         }
 
-        const abortController = new AbortController();
-        setAddFrameStatus('loading');
-        const timeoutId = globalThis.setTimeout(
-            () => {
-                fetch(
-                    `https://api.svgl.app?search=${encodeURIComponent(query)}`,
-                    {
-                        signal: abortController.signal,
-                    }
-                )
-                    .then(async (response) => {
-                        const payload = (await response.json()) as unknown;
-
-                        if (
-                            !response.ok &&
-                            isSvglApiError(payload) &&
-                            isSvglNotFoundResponse(response, payload)
-                        ) {
-                            return [];
-                        }
-
-                        if (!response.ok) {
-                            throw new Error('SVGL search failed');
-                        }
-
-                        if (!isSvglResultList(payload)) {
-                            throw new TypeError('SVGL search payload invalid');
-                        }
-
-                        return payload;
-                    })
-                    .then((results) => {
-                        const visibleResults = results.slice(0, maxSvglResults);
-
-                        setAddFrameResults(visibleResults);
-                        setAddFrameStatus(
-                            visibleResults.length === 0 ? 'empty' : 'ready'
-                        );
-                        setSelectedAddFrameResult((currentResult) =>
-                            visibleResults.some(
-                                (result) => result.id === currentResult?.id
-                            )
-                                ? currentResult
-                                : undefined
-                        );
-                    })
-                    .catch((error: unknown) => {
-                        if (
-                            error instanceof DOMException &&
-                            error.name === 'AbortError'
-                        ) {
-                            return;
-                        }
-
-                        setAddFrameResults([]);
-                        setAddFrameStatus('error');
-                        setSelectedAddFrameResult(undefined);
-                    });
-            },
-            320,
-            undefined
-        );
-
-        return (): void => {
-            abortController.abort();
-            globalThis.clearTimeout(timeoutId);
+        return {
+            badgeColor: brandColor,
+            logoColor: contrastColor,
+            textColor: contrastColor,
         };
-    }, [addFrameDialogOpen, addFrameQuery]);
-
-    const selectFrame = (state: BadgeState): void => {
-        setSelectedFrameId(state.id);
-        setCopyState('idle');
     };
 
-    const updateSelectedFrameValue = (
-        field: keyof EditorDraft,
+    const setDraftBrandColor = (
+        brandColor: string,
+        mode: ColorMode = colorMode
+    ): void => {
+        setDraft((currentDraft) => ({
+            ...currentDraft,
+            ...applyColorMode(brandColor, mode),
+        }));
+    };
+
+    const selectColorMode = (mode: ColorMode): void => {
+        setColorMode(mode);
+        setDraftBrandColor(draft.badgeColor, mode);
+    };
+
+    const updateDraftColor = (
+        field: EditableColorTarget,
         value: string
     ): void => {
-        if (selectedFrame === undefined) {
-            return;
-        }
-
-        setStates((currentStates) =>
-            currentStates.map((state) =>
-                state.id === selectedFrame.id
-                    ? {
-                          ...state,
-                          [field]: value,
-                      }
-                    : state
-            )
-        );
-        if (field === 'name') {
-            setSvglQuery(value);
-        }
-        setCopyState('idle');
-    };
-
-    const updateSelectedFrame = (
-        field: keyof EditorDraft,
-        event: Readonly<ChangeEvent<HTMLInputElement | HTMLTextAreaElement>>
-    ): void => {
-        updateSelectedFrameValue(field, event.target.value);
-    };
-
-    const updateSelectedFrameHex = (value: string): void => {
         const normalizedColor = normalizeHexInput(value);
 
-        if (normalizedColor !== undefined) {
-            updateSelectedFrameValue('color', normalizedColor);
-        }
-    };
-
-    const updateSelectedFrameChannel = (
-        channel: 'blue' | 'green' | 'red',
-        value: string
-    ): void => {
-        const numericValue = Number.parseInt(value, 10);
-
-        if (Number.isNaN(numericValue)) {
+        if (normalizedColor === undefined) {
             return;
         }
 
-        let { blue, green, red } = selectedFrameChannels;
-
-        if (channel === 'blue') {
-            blue = clampColorChannel(numericValue);
-        }
-
-        if (channel === 'green') {
-            green = clampColorChannel(numericValue);
-        }
-
-        if (channel === 'red') {
-            red = clampColorChannel(numericValue);
-        }
-
-        updateSelectedFrameValue('color', rgbToHex(red, green, blue));
+        setDraft((currentDraft) => ({
+            ...currentDraft,
+            [field]: normalizedColor,
+        }));
+        setColorMode('custom');
     };
 
-    const updateSelectedFrameSaturationValue = (
-        saturation: number,
-        value: number
-    ): void => {
-        updateSelectedFrameValue(
-            'color',
-            hsvToHex(selectedFrameHsv.hue, saturation, value)
-        );
-    };
-
-    const updateSelectedFrameFromColorField = (
-        event: PointerEvent<HTMLButtonElement>
-    ): void => {
-        const bounds = event.currentTarget.getBoundingClientRect();
-        const horizontalRatio = Math.min(
-            Math.max((event.clientX - bounds.left) / bounds.width, 0),
-            1
-        );
-        const verticalRatio = Math.min(
-            Math.max((event.clientY - bounds.top) / bounds.height, 0),
-            1
-        );
-
-        updateSelectedFrameSaturationValue(
-            horizontalRatio * 100,
-            (1 - verticalRatio) * 100
-        );
-    };
-
-    const updateSelectedFrameAllCaps = (allCaps: boolean): void => {
-        if (selectedFrame === undefined) {
-            return;
-        }
-
-        setStates((currentStates) =>
-            currentStates.map((state) =>
-                state.id === selectedFrame.id ? { ...state, allCaps } : state
-            )
-        );
-        setCopyState('idle');
-    };
-
-    const openAddFrameDialog = (): void => {
-        if (states.length >= maxFrames) {
-            return;
-        }
-
-        setAddFrameDialogOpen(true);
-        setAddFrameQuery('');
-        setAddFrameResults([]);
-        setAddFrameStatus('idle');
-        setSelectedAddFrameResult(undefined);
-        setContinueAddingFrames(states.length + 1 < maxFrames);
-    };
-
-    const closeAddFrameDialog = (): void => {
-        setAddFrameDialogOpen(false);
-        setSelectedAddFrameResult(undefined);
-    };
-
-    const confirmAddFrame = (): void => {
-        if (
-            selectedAddFrameResult === undefined ||
-            states.length >= maxFrames
-        ) {
-            return;
-        }
-
-        fetch(getSvglSourceUrl(selectedAddFrameResult.route))
+    const chooseSearchResult = (result: SvglResult): void => {
+        setSelectedResult(result);
+        fetch(getSvglSourceUrl(result.route))
             .then(async (response) => {
                 if (!response.ok) {
                     throw new Error('SVGL source failed');
@@ -859,38 +550,40 @@ export function App(): JSX.Element {
                 return await response.text();
             })
             .then((source) => {
-                const primaryColor = getPrimarySvgColor(source);
-                const newState: BadgeState = {
-                    color: primaryColor ?? defaultBadgeDraft.color,
-                    id: crypto.randomUUID(),
-                    name: selectedAddFrameResult.title,
+                const brandColor =
+                    getPrimarySvgColor(source) ?? defaultBadgeDraft.badgeColor;
+
+                setDraft((currentDraft) => ({
+                    ...currentDraft,
+                    ...applyColorMode(brandColor, colorMode),
+                    name: result.title,
                     source,
-                };
-
-                setStates((currentStates) =>
-                    currentStates.length >= maxFrames
-                        ? currentStates
-                        : [...currentStates, newState]
-                );
-                setSelectedFrameId(newState.id);
-                setSvglQuery(newState.name);
-                setSvglResults([]);
-                setSvglStatus('idle');
-                setSelectedSvglResult(undefined);
+                }));
                 setCopyState('idle');
-
-                if (continueAddingFrames && states.length + 1 < maxFrames) {
-                    setAddFrameQuery('');
-                    setAddFrameResults([]);
-                    setAddFrameStatus('idle');
-                    setSelectedAddFrameResult(undefined);
-                    return;
-                }
-
-                setAddFrameDialogOpen(false);
-                setSelectedAddFrameResult(undefined);
             })
             .catch(() => undefined);
+    };
+
+    const addDraftFrame = (): void => {
+        if (selectedResult === undefined || states.length >= maxFrames) {
+            return;
+        }
+
+        const nextState = materializeState(
+            {
+                allCaps: true,
+                ...draft,
+                id: crypto.randomUUID(),
+            },
+            states.length
+        );
+
+        setStates((currentStates) =>
+            currentStates.length >= maxFrames
+                ? currentStates
+                : [...currentStates, nextState]
+        );
+        setCopyState('idle');
     };
 
     const confirmDeleteState = (): void => {
@@ -900,129 +593,12 @@ export function App(): JSX.Element {
         }
 
         const stateId = deleteCandidateId;
-        const removedIndex = states.findIndex((state) => state.id === stateId);
         const remainingStates = states.filter((state) => state.id !== stateId);
 
         setStates(remainingStates);
 
-        if (stateId === selectedFrame?.id) {
-            if (remainingStates.length === 0) {
-                setSelectedFrameId(undefined);
-                setSvglQuery('');
-                setSvglResults([]);
-                setSvglStatus('idle');
-                setSelectedSvglResult(undefined);
-            } else {
-                const nextIndex = Math.min(
-                    Math.max(removedIndex, 0),
-                    remainingStates.length - 1
-                );
-                const nextState = remainingStates[nextIndex];
-
-                setSelectedFrameId(nextState.id);
-                setSvglQuery(nextState.name);
-                setSvglResults([]);
-                setSvglStatus('idle');
-                setSelectedSvglResult(undefined);
-            }
-        }
-
         setCopyState('idle');
         setDeleteCandidateId(undefined);
-    };
-
-    const pasteSource = (): void => {
-        if (selectedFrame === undefined) {
-            return;
-        }
-
-        navigator.clipboard
-            .readText()
-            .then((text) => {
-                setStates((currentStates) =>
-                    currentStates.map((state) =>
-                        state.id === selectedFrame.id
-                            ? { ...state, source: text }
-                            : state
-                    )
-                );
-                setCopyState('idle');
-            })
-            .catch(() => undefined);
-    };
-
-    const openFilePicker = (): void => {
-        fileInputReference.current?.click();
-    };
-
-    const readSourceFile = (
-        event: Readonly<ChangeEvent<HTMLInputElement>>
-    ): void => {
-        if (selectedFrame === undefined) {
-            return;
-        }
-
-        const file = event.target.files?.[0];
-
-        if (file === undefined) {
-            return;
-        }
-
-        file.text()
-            .then((text) => {
-                setStates((currentStates) =>
-                    currentStates.map((state) =>
-                        state.id === selectedFrame.id
-                            ? { ...state, source: text }
-                            : state
-                    )
-                );
-                setCopyState('idle');
-            })
-            .catch(() => undefined)
-            .finally(() => {
-                if (fileInputReference.current !== undefined) {
-                    fileInputReference.current.value = '';
-                }
-            });
-    };
-
-    const cancelSvglSelection = (): void => {
-        setSelectedSvglResult(undefined);
-    };
-
-    const chooseSvglResult = (mode: EditorMode): void => {
-        if (selectedFrame === undefined || selectedSvglResult === undefined) {
-            return;
-        }
-
-        fetch(getSvglSourceUrl(selectedSvglResult.route))
-            .then(async (response) => {
-                if (!response.ok) {
-                    throw new Error('SVGL source failed');
-                }
-
-                return await response.text();
-            })
-            .then((source) => {
-                setStates((currentStates) =>
-                    currentStates.map((state) =>
-                        state.id === selectedFrame.id
-                            ? applySvglSourceToState(
-                                  state,
-                                  selectedSvglResult,
-                                  source,
-                                  mode
-                              )
-                            : state
-                    )
-                );
-                setCopyState('idle');
-                setSvglResults([]);
-                setSvglStatus('idle');
-                setSelectedSvglResult(undefined);
-            })
-            .catch(() => undefined);
     };
 
     const copySvg = (): void => {
@@ -1063,86 +639,67 @@ export function App(): JSX.Element {
         );
     };
 
-    const renderSvglSearch = ({
-        chooseLabel,
-        emptyMessage,
-        errorMessage,
-        idleMessage,
-        label,
-        mode,
-        placeholder,
-    }: SvglSearchCopy): JSX.Element => (
-        <section aria-label={label} className='svgl-search'>
-            <label className='field'>
-                <span>{label}</span>
-                <div className='svgl-search__bar'>
-                    <Search aria-hidden='true' size={16} />
-                    <input
-                        onChange={(event) => {
-                            setSvglQuery(event.target.value);
-                        }}
-                        placeholder={placeholder}
-                        value={svglQuery}
-                    />
-                </div>
-            </label>
+    let searchMessage = 'Search for a brand to start.';
 
-            <div className='svgl-results'>
-                {svglResults.length === 0 ? (
-                    <p>
-                        {svglStatus === 'loading'
-                            ? 'Searching SVGL...'
-                            : undefined}
-                        {svglStatus === 'empty'
-                            ? emptyMessage(svglQuery)
-                            : undefined}
-                        {svglStatus === 'error' ? errorMessage : undefined}
-                        {svglStatus === 'idle' ? idleMessage : undefined}
-                    </p>
-                ) : (
-                    svglResults.map((result) => (
-                        <button
-                            aria-current={
-                                result.id === selectedSvglResult?.id
-                                    ? 'true'
-                                    : undefined
-                            }
-                            className='svgl-result'
-                            key={result.id}
-                            onClick={() => {
-                                setSelectedSvglResult(result);
-                            }}
-                            type='button'
-                        >
-                            <img alt='' src={getSvglRoute(result.route)} />
-                            <span>{result.title}</span>
-                        </button>
-                    ))
-                )}
-            </div>
+    if (searchStatus === 'loading') {
+        searchMessage = 'Searching SVGL...';
+    }
 
-            <div className='svgl-actions'>
-                <button
-                    className='button button--secondary'
-                    disabled={selectedSvglResult === undefined}
-                    onClick={cancelSvglSelection}
-                    type='button'
-                >
-                    Cancel
-                </button>
-                <button
-                    className='button button--primary'
-                    disabled={selectedSvglResult === undefined}
-                    onClick={() => {
-                        chooseSvglResult(mode);
-                    }}
-                    type='button'
-                >
-                    {chooseLabel}
-                </button>
-            </div>
-        </section>
-    );
+    if (searchStatus === 'empty') {
+        searchMessage = `No SVGL logo titled "${query}". Try another brand.`;
+    }
+
+    if (searchStatus === 'error') {
+        searchMessage = 'SVGL search is unavailable right now. Try again.';
+    }
+
+    let colorModeOffset = 0;
+
+    if (colorMode === 'inverse') {
+        colorModeOffset = 100;
+    }
+
+    if (colorMode === 'custom') {
+        colorModeOffset = 200;
+    }
+    const colorModes: ReadonlyArray<{
+        readonly label: string;
+        readonly mode: ColorMode;
+        readonly swatches: readonly string[];
+    }> = [
+        {
+            label: 'Brand',
+            mode: 'brand',
+            swatches: [
+                draft.badgeColor,
+                getReadableInk(draft.badgeColor),
+                getReadableInk(draft.badgeColor),
+            ],
+        },
+        {
+            label: 'Inverse',
+            mode: 'inverse',
+            swatches: [
+                getReadableInk(draft.badgeColor),
+                draft.badgeColor,
+                getReadableInk(getReadableInk(draft.badgeColor)),
+            ],
+        },
+        {
+            label: 'Custom',
+            mode: 'custom',
+            swatches: [draft.badgeColor, draft.logoColor, draft.textColor],
+        },
+    ];
+    const colorFields: ReadonlyArray<{
+        readonly field: EditableColorTarget;
+        readonly label: string;
+        readonly value: string;
+    }> = [
+        { field: 'badgeColor', label: 'Badge', value: draft.badgeColor },
+        { field: 'logoColor', label: 'Logo', value: draft.logoColor },
+        { field: 'textColor', label: 'Text', value: draft.textColor },
+    ];
 
     return (
         <main className='app'>
@@ -1175,13 +732,215 @@ export function App(): JSX.Element {
                 <div className='builder__workspace'>
                     <section className='tool-panel'>
                         <section
+                            aria-labelledby='search-title'
+                            className='compose-panel'
+                        >
+                            <div className='search-block'>
+                                <div className='panel-heading'>
+                                    <h2 id='search-title'>Search</h2>
+                                    <span>SVGL</span>
+                                </div>
+
+                                <label
+                                    aria-label='Search brand'
+                                    className='search-field'
+                                >
+                                    <Search aria-hidden='true' size={24} />
+                                    <input
+                                        autoFocus
+                                        onChange={(event) => {
+                                            setQuery(event.target.value);
+                                        }}
+                                        placeholder='Search a brand'
+                                        value={query}
+                                    />
+                                </label>
+
+                                <div className='brand-results'>
+                                    {results.length === 0 ? (
+                                        <div className='empty-state search-empty'>
+                                            <p>{searchMessage}</p>
+                                        </div>
+                                    ) : (
+                                        results.map((result) => (
+                                            <button
+                                                aria-current={
+                                                    result.id ===
+                                                    selectedResult?.id
+                                                        ? 'true'
+                                                        : undefined
+                                                }
+                                                className='brand-result'
+                                                key={result.id}
+                                                onClick={() => {
+                                                    chooseSearchResult(result);
+                                                }}
+                                                type='button'
+                                            >
+                                                <img
+                                                    alt=''
+                                                    src={getSvglRoute(
+                                                        result.route
+                                                    )}
+                                                />
+                                                <span>{result.title}</span>
+                                                {getSvglCategoryLabel(
+                                                    result
+                                                ) === undefined ? undefined : (
+                                                    <small>
+                                                        {getSvglCategoryLabel(
+                                                            result
+                                                        )}
+                                                    </small>
+                                                )}
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className='compose-bottom'>
+                                <section
+                                    aria-labelledby='color-title'
+                                    className='color-block'
+                                >
+                                    <div className='panel-heading'>
+                                        <h2 id='color-title'>Color</h2>
+                                        <span>{draft.name}</span>
+                                    </div>
+
+                                    <div
+                                        aria-label='Color mode'
+                                        className='color-mode-switch'
+                                        role='radiogroup'
+                                    >
+                                        <span
+                                            aria-hidden='true'
+                                            className='color-mode-switch__thumb'
+                                            style={{
+                                                transform: `translateX(${colorModeOffset}%)`,
+                                            }}
+                                        />
+                                        {colorModes.map((modeOption) => (
+                                            <button
+                                                aria-checked={
+                                                    colorMode ===
+                                                    modeOption.mode
+                                                }
+                                                className='color-mode-option'
+                                                key={modeOption.mode}
+                                                onClick={() => {
+                                                    selectColorMode(
+                                                        modeOption.mode
+                                                    );
+                                                }}
+                                                role='radio'
+                                                type='button'
+                                            >
+                                                <span>{modeOption.label}</span>
+                                                <span className='color-mode-option__swatches'>
+                                                    {modeOption.swatches.map(
+                                                        (color, index) => (
+                                                            <span
+                                                                aria-hidden='true'
+                                                                className='swatch'
+                                                                key={`${modeOption.mode}-${color}-${index}`}
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        color,
+                                                                }}
+                                                            />
+                                                        )
+                                                    )}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {colorMode === 'custom' ? (
+                                        <div className='custom-colors'>
+                                            {colorFields.map((colorField) => (
+                                                <label
+                                                    className='custom-color-field'
+                                                    key={colorField.field}
+                                                >
+                                                    <span>
+                                                        {colorField.label}
+                                                    </span>
+                                                    <input
+                                                        aria-label={`${colorField.label} color`}
+                                                        onChange={(event) => {
+                                                            updateDraftColor(
+                                                                colorField.field,
+                                                                event.target
+                                                                    .value
+                                                            );
+                                                        }}
+                                                        type='color'
+                                                        value={colorField.value}
+                                                    />
+                                                    <input
+                                                        aria-label={`${colorField.label} hex`}
+                                                        onChange={(event) => {
+                                                            updateDraftColor(
+                                                                colorField.field,
+                                                                event.target
+                                                                    .value
+                                                            );
+                                                        }}
+                                                        value={colorField.value}
+                                                    />
+                                                </label>
+                                            ))}
+                                        </div>
+                                    ) : undefined}
+
+                                    <div className='quick-edit'>
+                                        <label className='field'>
+                                            <span>Text</span>
+                                            <input
+                                                onChange={(event) => {
+                                                    setDraft(
+                                                        (currentDraft) => ({
+                                                            ...currentDraft,
+                                                            name: event.target
+                                                                .value,
+                                                        })
+                                                    );
+                                                }}
+                                                placeholder='Badge text'
+                                                value={draft.name}
+                                            />
+                                        </label>
+                                        <div className='draft-preview'>
+                                            <img
+                                                alt='Draft badge preview'
+                                                src={draftPreviewSource}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        className='button button--primary add-frame'
+                                        disabled={
+                                            selectedResult === undefined ||
+                                            states.length >= maxFrames
+                                        }
+                                        onClick={addDraftFrame}
+                                        type='button'
+                                    >
+                                        <Plus aria-hidden='true' size={16} />
+                                        Add Frame
+                                    </button>
+                                </section>
+                            </div>
+                        </section>
+
+                        <aside
                             aria-labelledby='frames-title'
                             className='frame-rail'
                         >
-                            <section
-                                aria-labelledby='frames-title'
-                                className='frames'
-                            >
+                            <section className='frames'>
                                 <div className='panel-heading'>
                                     <h2 id='frames-title'>Frames</h2>
                                     <span>
@@ -1192,43 +951,33 @@ export function App(): JSX.Element {
                                 <div className='frame-list'>
                                     {states.length === 0 ? (
                                         <div className='empty-state frame-list__empty'>
-                                            <p>No frames yet.</p>
+                                            <p>
+                                                Pick a brand and add the first
+                                                frame.
+                                            </p>
                                         </div>
                                     ) : undefined}
                                     {states.map((state, index) => {
+                                        const materializedState =
+                                            materializeState(state, index);
                                         const frameBadge = toDataUri(
-                                            buildSingleBadgeSvg(state, index)
+                                            buildSingleBadgeSvg(
+                                                materializedState,
+                                                index
+                                            )
                                         );
-                                        const frameLabel = materializeState(
-                                            state,
-                                            index
-                                        ).name;
 
                                         return (
                                             <div
-                                                aria-current={
-                                                    state.id ===
-                                                    selectedFrame?.id
-                                                        ? 'true'
-                                                        : undefined
-                                                }
                                                 className='frame-card'
                                                 key={state.id}
                                             >
+                                                <img
+                                                    alt={`${materializedState.name} badge`}
+                                                    src={frameBadge}
+                                                />
                                                 <button
-                                                    className='frame-card__select'
-                                                    onClick={() => {
-                                                        selectFrame(state);
-                                                    }}
-                                                    type='button'
-                                                >
-                                                    <img
-                                                        alt={`${frameLabel} badge`}
-                                                        src={frameBadge}
-                                                    />
-                                                </button>
-                                                <button
-                                                    aria-label={`Delete ${frameLabel}`}
+                                                    aria-label={`Delete ${materializedState.name}`}
                                                     className='frame-card__delete'
                                                     onClick={() => {
                                                         setDeleteCandidateId(
@@ -1247,26 +996,21 @@ export function App(): JSX.Element {
                                         );
                                     })}
                                 </div>
-
-                                <button
-                                    aria-label='Add frame'
-                                    className='button button--primary add-frame'
-                                    disabled={states.length >= maxFrames}
-                                    onClick={openAddFrameDialog}
-                                    type='button'
-                                >
-                                    <Plus aria-hidden='true' size={16} />
-                                    Add frame
-                                </button>
                             </section>
 
-                            <aside
+                            <section
                                 aria-label='Generated badge'
                                 className='output'
                             >
                                 <div className='panel-heading'>
                                     <h2>Output</h2>
-                                    <span>
+                                    <span
+                                        className={
+                                            fileSizeWarning
+                                                ? 'file-size file-size--warn'
+                                                : 'file-size'
+                                        }
+                                    >
                                         {formatKilobytes(badgeSvg.length)}
                                     </span>
                                 </div>
@@ -1274,8 +1018,8 @@ export function App(): JSX.Element {
                                     <div className='preview'>
                                         {previewSource === '' ? (
                                             <span>
-                                                Add a frame to preview the
-                                                generated badge.
+                                                Add frames to preview the
+                                                animated badge.
                                             </span>
                                         ) : (
                                             <img
@@ -1326,314 +1070,10 @@ export function App(): JSX.Element {
                                         </button>
                                     </div>
                                 </div>
-                            </aside>
-                        </section>
-
-                        <section
-                            aria-labelledby='frame-editor-title'
-                            className='frame-editor'
-                        >
-                            <div className='panel-heading'>
-                                <h2 id='frame-editor-title'>Edit Frame</h2>
-                            </div>
-
-                            {selectedFrame === undefined ? (
-                                <section className='empty-state editor-empty'>
-                                    <p>
-                                        Add a frame to edit its color, text, and
-                                        logo.
-                                    </p>
-                                </section>
-                            ) : (
-                                <section className='editor-drawer'>
-                                    <div className='editor-segments'>
-                                        <section className='editor-segment'>
-                                            <div className='editor-segment__heading'>
-                                                <h3>Color</h3>
-                                            </div>
-                                            <div className='editor-drawer__split editor-drawer__split--color'>
-                                                <div className='color-editor'>
-                                                    <div className='color-editor__field-stack'>
-                                                        <button
-                                                            aria-label='Saturation and brightness'
-                                                            className='color-field'
-                                                            onPointerDown={(
-                                                                event
-                                                            ) => {
-                                                                event.currentTarget.setPointerCapture(
-                                                                    event.pointerId
-                                                                );
-                                                                updateSelectedFrameFromColorField(
-                                                                    event
-                                                                );
-                                                            }}
-                                                            onPointerMove={(
-                                                                event
-                                                            ) => {
-                                                                if (
-                                                                    event.buttons !==
-                                                                    1
-                                                                ) {
-                                                                    return;
-                                                                }
-
-                                                                updateSelectedFrameFromColorField(
-                                                                    event
-                                                                );
-                                                            }}
-                                                            style={
-                                                                {
-                                                                    '--color-field-hue':
-                                                                        hsvToHex(
-                                                                            selectedFrameHsv.hue,
-                                                                            100,
-                                                                            100
-                                                                        ),
-                                                                } as CSSProperties
-                                                            }
-                                                        >
-                                                            <span
-                                                                aria-hidden='true'
-                                                                className='color-field__marker'
-                                                                style={{
-                                                                    left: `${selectedFrameHsv.saturation}%`,
-                                                                    top: `${100 - selectedFrameHsv.value}%`,
-                                                                }}
-                                                            />
-                                                        </button>
-                                                    </div>
-                                                    <div className='color-editor__controls'>
-                                                        <label className='field color-editor__field-row'>
-                                                            <span>Hex</span>
-                                                            <input
-                                                                onBlur={(
-                                                                    event
-                                                                ) => {
-                                                                    updateSelectedFrameHex(
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateSelectedFrameHex(
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                placeholder='#5968C9'
-                                                                value={
-                                                                    selectedMaterializedFrame.color
-                                                                }
-                                                            />
-                                                        </label>
-                                                        <div className='color-editor__rgb-row'>
-                                                            <label className='field color-editor__field-row'>
-                                                                <span>R</span>
-                                                                <input
-                                                                    max='255'
-                                                                    min='0'
-                                                                    onChange={(
-                                                                        event
-                                                                    ) => {
-                                                                        updateSelectedFrameChannel(
-                                                                            'red',
-                                                                            event
-                                                                                .target
-                                                                                .value
-                                                                        );
-                                                                    }}
-                                                                    type='number'
-                                                                    value={
-                                                                        selectedFrameChannels.red
-                                                                    }
-                                                                />
-                                                            </label>
-                                                            <label className='field color-editor__field-row'>
-                                                                <span>G</span>
-                                                                <input
-                                                                    max='255'
-                                                                    min='0'
-                                                                    onChange={(
-                                                                        event
-                                                                    ) => {
-                                                                        updateSelectedFrameChannel(
-                                                                            'green',
-                                                                            event
-                                                                                .target
-                                                                                .value
-                                                                        );
-                                                                    }}
-                                                                    type='number'
-                                                                    value={
-                                                                        selectedFrameChannels.green
-                                                                    }
-                                                                />
-                                                            </label>
-                                                            <label className='field color-editor__field-row'>
-                                                                <span>B</span>
-                                                                <input
-                                                                    max='255'
-                                                                    min='0'
-                                                                    onChange={(
-                                                                        event
-                                                                    ) => {
-                                                                        updateSelectedFrameChannel(
-                                                                            'blue',
-                                                                            event
-                                                                                .target
-                                                                                .value
-                                                                        );
-                                                                    }}
-                                                                    type='number'
-                                                                    value={
-                                                                        selectedFrameChannels.blue
-                                                                    }
-                                                                />
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </section>
-
-                                        <section className='editor-segment editor-segment--text'>
-                                            <div className='editor-segment__heading'>
-                                                <h3>Text</h3>
-                                            </div>
-                                            <div className='editor-drawer__split editor-drawer__split--text'>
-                                                <div className='text-options'>
-                                                    <label className='switch-field'>
-                                                        <span>All Caps</span>
-                                                        <input
-                                                            checked={
-                                                                selectedFrame.allCaps !==
-                                                                false
-                                                            }
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateSelectedFrameAllCaps(
-                                                                    event.target
-                                                                        .checked
-                                                                );
-                                                            }}
-                                                            type='checkbox'
-                                                        />
-                                                    </label>
-                                                </div>
-                                                <label className='field'>
-                                                    <span>Text</span>
-                                                    <input
-                                                        onChange={(event) => {
-                                                            updateSelectedFrame(
-                                                                'name',
-                                                                event
-                                                            );
-                                                        }}
-                                                        placeholder='Badge text'
-                                                        value={
-                                                            selectedFrame.name
-                                                        }
-                                                    />
-                                                </label>
-                                            </div>
-                                        </section>
-
-                                        <section className='editor-segment editor-segment--logo'>
-                                            <div className='editor-segment__heading'>
-                                                <h3>Logo</h3>
-                                            </div>
-                                            <div className='editor-drawer__split editor-drawer__split--source'>
-                                                <label className='field source-field'>
-                                                    <span>SVG source</span>
-                                                    {selectedFrameHasSource ? (
-                                                        <textarea
-                                                            className='source-field__textarea'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateSelectedFrame(
-                                                                    'source',
-                                                                    event
-                                                                );
-                                                            }}
-                                                            value={
-                                                                selectedFrame.source
-                                                            }
-                                                        />
-                                                    ) : (
-                                                        <div className='source-empty'>
-                                                            <p>
-                                                                Paste SVG markup
-                                                                or open an SVG
-                                                                file to restore
-                                                                the logo
-                                                                artwork.
-                                                            </p>
-                                                            <button
-                                                                className='button button--secondary'
-                                                                onClick={
-                                                                    pasteSource
-                                                                }
-                                                                type='button'
-                                                            >
-                                                                <ClipboardPaste
-                                                                    aria-hidden='true'
-                                                                    size={16}
-                                                                />
-                                                                Paste
-                                                            </button>
-                                                            <button
-                                                                className='button button--secondary'
-                                                                onClick={
-                                                                    openFilePicker
-                                                                }
-                                                                type='button'
-                                                            >
-                                                                <FolderOpen
-                                                                    aria-hidden='true'
-                                                                    size={16}
-                                                                />
-                                                                Open file
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </label>
-                                                {renderSvglSearch({
-                                                    chooseLabel: 'Choose',
-                                                    emptyMessage: (query) =>
-                                                        `No SVGL logo titled "${query}". Try another search or paste SVG source.`,
-                                                    errorMessage:
-                                                        'SVGL search is unavailable right now. Paste SVG source or try again.',
-                                                    idleMessage:
-                                                        'Search SVGL to replace the logo artwork.',
-                                                    label: 'Logo',
-                                                    mode: 'source',
-                                                    placeholder:
-                                                        'Search a brand or product',
-                                                })}
-                                            </div>
-                                        </section>
-                                    </div>
-                                </section>
-                            )}
-                        </section>
+                            </section>
+                        </aside>
                     </section>
                 </div>
-
-                <input
-                    accept='.svg,image/svg+xml,text/plain'
-                    className='visually-hidden'
-                    onChange={readSourceFile}
-                    ref={(element) => {
-                        fileInputReference.current = element ?? undefined;
-                    }}
-                    type='file'
-                />
             </section>
 
             {deleteCandidateId === undefined ? undefined : (
@@ -1669,138 +1109,6 @@ export function App(): JSX.Element {
                     </section>
                 </div>
             )}
-
-            {addFrameDialogOpen ? (
-                <div className='confirm-backdrop' role='presentation'>
-                    <section
-                        aria-labelledby='add-frame-title'
-                        aria-modal='true'
-                        className='confirm-dialog add-frame-dialog'
-                        role='dialog'
-                    >
-                        <div className='panel-heading'>
-                            <h2 id='add-frame-title'>Add Frame</h2>
-                            <span>
-                                {states.length}/{maxFrames}
-                            </span>
-                        </div>
-
-                        <section
-                            aria-label='Search SVGL logos'
-                            className='svgl-search'
-                        >
-                            <label
-                                aria-label='SVGL logo'
-                                className='field add-frame-dialog__search-field'
-                            >
-                                <div className='svgl-search__bar'>
-                                    <Search aria-hidden='true' size={16} />
-                                    <input
-                                        autoFocus
-                                        onChange={(event) => {
-                                            setAddFrameQuery(
-                                                event.target.value
-                                            );
-                                        }}
-                                        placeholder='Search a brand or product'
-                                        value={addFrameQuery}
-                                    />
-                                </div>
-                            </label>
-
-                            <div className='svgl-results'>
-                                {addFrameResults.length === 0 ? (
-                                    <p>
-                                        {addFrameStatus === 'loading'
-                                            ? 'Searching SVGL...'
-                                            : undefined}
-                                        {addFrameStatus === 'empty'
-                                            ? `No SVGL logo titled "${addFrameQuery}". Try another search.`
-                                            : undefined}
-                                        {addFrameStatus === 'error'
-                                            ? 'SVGL search is unavailable right now. Try again.'
-                                            : undefined}
-                                        {addFrameStatus === 'idle'
-                                            ? 'Search SVGL to add a logo frame.'
-                                            : undefined}
-                                    </p>
-                                ) : (
-                                    addFrameResults.map((result) => (
-                                        <button
-                                            aria-current={
-                                                result.id ===
-                                                selectedAddFrameResult?.id
-                                                    ? 'true'
-                                                    : undefined
-                                            }
-                                            className='svgl-result'
-                                            key={result.id}
-                                            onClick={() => {
-                                                setSelectedAddFrameResult(
-                                                    result
-                                                );
-                                            }}
-                                            type='button'
-                                        >
-                                            <img
-                                                alt=''
-                                                src={getSvglRoute(result.route)}
-                                            />
-                                            <span>{result.title}</span>
-                                            {getSvglCategoryLabel(result) ===
-                                            undefined ? undefined : (
-                                                <small>
-                                                    {getSvglCategoryLabel(
-                                                        result
-                                                    )}
-                                                </small>
-                                            )}
-                                        </button>
-                                    ))
-                                )}
-                            </div>
-                        </section>
-
-                        <label className='switch-field add-frame-dialog__continue'>
-                            <span>Continue adding next</span>
-                            <input
-                                checked={
-                                    continueAddingFrames &&
-                                    states.length + 1 < maxFrames
-                                }
-                                disabled={states.length + 1 >= maxFrames}
-                                onChange={(event) => {
-                                    setContinueAddingFrames(
-                                        event.target.checked
-                                    );
-                                }}
-                                type='checkbox'
-                            />
-                        </label>
-
-                        <div className='confirm-dialog__actions'>
-                            <button
-                                className='button button--secondary'
-                                onClick={closeAddFrameDialog}
-                                type='button'
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className='button button--primary'
-                                disabled={
-                                    selectedAddFrameResult === undefined ||
-                                    states.length >= maxFrames
-                                }
-                                onClick={confirmAddFrame}
-                                type='button'
-                            >
-                                Add frame
-                            </button>
-                        </div>
-                    </section>
-                </div>
-            ) : undefined}
         </main>
     );
 }
