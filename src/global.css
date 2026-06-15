@@ -428,7 +428,7 @@ textarea {
 .color-mode-option {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    grid-template-columns: var(--space-24) minmax(0, 1fr);
+    grid-template-columns: var(--space-24) max-content;
     gap: var(--space-12);
     align-items: start;
     align-content: stretch;
@@ -459,6 +459,7 @@ textarea {
 
 .color-mode-option img {
     grid-column: 1 / -1;
+    grid-row: 2;
     align-self: center;
     justify-self: center;
     width: min(100%, calc(var(--space-48) * 7));
@@ -467,11 +468,11 @@ textarea {
 }
 
 .color-mode-option__label {
+    grid-column: 2;
+    grid-row: 1;
     align-self: center;
-    overflow: hidden;
     font: var(--font-small);
     font-weight: var(--fw-semibold);
-    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
