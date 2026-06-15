@@ -455,10 +455,41 @@ textarea {
     min-height: 0;
 }
 
+.custom-group {
+    display: grid;
+    gap: var(--space-8);
+    min-width: 0;
+}
+
+.custom-group--logo {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+    align-items: stretch;
+}
+
+.custom-group--logo .panel-heading {
+    grid-column: 1 / -1;
+}
+
+.custom-group--text {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+}
+
+.custom-group--text .panel-heading {
+    grid-column: 1 / -1;
+}
+
 .custom-colors {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--space-8);
+}
+
+.custom-colors--logo {
+    align-content: start;
+}
+
+.custom-colors--text {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .custom-color-field {
@@ -499,26 +530,6 @@ textarea {
     color: var(--clr-text);
 }
 
-.edit-controls {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-24);
-    align-content: stretch;
-    height: 100%;
-}
-
-.custom-block .edit-controls {
-    height: auto;
-    min-height: calc(var(--space-48) * 3);
-}
-
-.text-controls {
-    display: grid;
-    gap: var(--space-8);
-    min-width: 0;
-    align-content: start;
-}
-
 .quick-edit {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -543,12 +554,7 @@ textarea {
     align-content: stretch;
     justify-items: stretch;
     height: 100%;
-}
-
-.logo-field > span:first-child {
-    color: var(--clr-text);
-    font: var(--font-body-md);
-    font-weight: var(--fw-semibold);
+    min-height: calc(var(--space-48) * 3);
 }
 
 .logo-field > img {
@@ -683,7 +689,15 @@ textarea {
     gap: var(--space-12);
     align-items: center;
     min-height: var(--space-48);
+    padding: var(--space-4);
+    border: 1px solid transparent;
+    border-radius: var(--space-8);
     animation: slide-frame 180ms ease both;
+}
+
+.frame-card[aria-current='true'] {
+    border-color: var(--clr-border-strong);
+    background: var(--clr-accent-soft);
 }
 
 .frame-card > img {
@@ -884,6 +898,8 @@ textarea {
 
     .brand-results,
     .custom-colors,
+    .custom-group--logo,
+    .custom-group--text,
     .export-dialog__actions,
     .export-fields,
     .quick-edit {
