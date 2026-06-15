@@ -8,6 +8,7 @@ interface BadgeState {
     id: string;
     logoColor: string;
     name: string;
+    preserveOriginalArtwork?: boolean;
     source: string;
     textColor: string;
 }
@@ -17,6 +18,7 @@ interface EditorDraft {
     badgeColor: string;
     logoColor: string;
     name: string;
+    preserveOriginalArtwork: boolean;
     source: string;
     textColor: string;
 }
@@ -40,6 +42,7 @@ interface SvglApiError {
 type SvglSearchStatus = 'idle' | 'loading' | 'empty' | 'ready' | 'error';
 type ColorMode = 'brand' | 'inverse' | 'custom';
 type ComposeMode = 'search' | 'custom';
+type SelectionStatus = 'idle' | 'loading' | 'ready';
 type EditableColorTarget = 'badgeColor' | 'logoColor' | 'textColor';
 
 const defaultBadgeSource =
@@ -50,6 +53,7 @@ const defaultBadgeDraft: EditorDraft = {
     badgeColor: '#5968c9',
     logoColor: '#ffffff',
     name: 'Badgical',
+    preserveOriginalArtwork: false,
     source: defaultBadgeSource,
     textColor: '#ffffff',
 };
@@ -237,6 +241,7 @@ const materializeState = (state: BadgeState, _index: number): BadgeState => {
             state.source.trim() === ''
                 ? defaultBadgeDraft.source
                 : state.source.trim(),
+        preserveOriginalArtwork: state.preserveOriginalArtwork ?? false,
         textColor:
             state.textColor.trim() === '' ? defaultInk : state.textColor.trim(),
     };
@@ -319,7 +324,7 @@ const buildBadgeSvg = (
                     ? ` font-size="${textSize}" font-weight="700"`
                     : '';
 
-            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preserveOriginalArtwork)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preserveOriginalArtwork || state.preserveOriginalArtwork === true)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
 
             if (visibleStates.length === 1) {
                 return content;
@@ -467,6 +472,8 @@ export function App(): JSX.Element {
     const [selectedResult, setSelectedResult] = useState<
         SvglResult | undefined
     >(undefined);
+    const [selectionStatus, setSelectionStatus] =
+        useState<SelectionStatus>('idle');
     const [composeMode, setComposeMode] = useState<ComposeMode>('search');
     const [draft, setDraft] = useState(defaultBadgeDraft);
     const [brandColor, setBrandColor] = useState(defaultBadgeDraft.badgeColor);
@@ -547,6 +554,7 @@ export function App(): JSX.Element {
             setResults([]);
             setSearchStatus('ready');
             setSelectedResult(undefined);
+            setSelectionStatus('idle');
             return undefined;
         }
 
@@ -635,13 +643,17 @@ export function App(): JSX.Element {
     const applyColorMode = (
         nextBrandColor: string,
         mode: ColorMode
-    ): Pick<EditorDraft, 'badgeColor' | 'logoColor' | 'textColor'> => {
+    ): Pick<
+        EditorDraft,
+        'badgeColor' | 'logoColor' | 'preserveOriginalArtwork' | 'textColor'
+    > => {
         const contrastColor = getReadableInk(nextBrandColor);
 
         if (mode === 'inverse') {
             return {
                 badgeColor: contrastColor,
                 logoColor: nextBrandColor,
+                preserveOriginalArtwork: true,
                 textColor: nextBrandColor,
             };
         }
@@ -650,6 +662,7 @@ export function App(): JSX.Element {
             return {
                 badgeColor: draft.badgeColor,
                 logoColor: draft.logoColor,
+                preserveOriginalArtwork: draft.preserveOriginalArtwork,
                 textColor: draft.textColor,
             };
         }
@@ -657,6 +670,7 @@ export function App(): JSX.Element {
         return {
             badgeColor: nextBrandColor,
             logoColor: nextBrandColor,
+            preserveOriginalArtwork: true,
             textColor: contrastColor,
         };
     };
@@ -689,12 +703,17 @@ export function App(): JSX.Element {
         setDraft((currentDraft) => ({
             ...currentDraft,
             [field]: normalizedColor,
+            preserveOriginalArtwork:
+                field === 'logoColor'
+                    ? false
+                    : currentDraft.preserveOriginalArtwork,
         }));
         setColorMode('custom');
     };
 
     const chooseSearchResult = (result: SvglResult): void => {
         setSelectedResult(result);
+        setSelectionStatus('loading');
         setEditingFrameId(undefined);
         fetch(getSvglSourceUrl(result.route))
             .then(async (response) => {
@@ -717,8 +736,11 @@ export function App(): JSX.Element {
                 }));
                 setSourceDraft(source);
                 setExportCopyState('idle');
+                setSelectionStatus('ready');
             })
-            .catch(() => undefined);
+            .catch(() => {
+                setSelectionStatus('idle');
+            });
     };
 
     const openSourceDialog = (): void => {
@@ -748,6 +770,7 @@ export function App(): JSX.Element {
             badgeColor: nextDraft.badgeColor,
             logoColor: nextDraft.logoColor,
             name: nextDraft.name,
+            preserveOriginalArtwork: nextDraft.preserveOriginalArtwork ?? false,
             source: nextDraft.source,
             textColor: nextDraft.textColor,
         });
@@ -758,6 +781,7 @@ export function App(): JSX.Element {
         setComposeMode('custom');
         setEditingFrameId(state.id);
         setSourceDraft(nextDraft.source);
+        setSelectionStatus('ready');
     };
 
     const addDraftFrame = (): void => {
@@ -912,7 +936,7 @@ export function App(): JSX.Element {
         readonly previewSource: string;
     }> = [
         {
-            label: 'Brand',
+            label: 'Default',
             mode: 'brand',
             previewSource: getModePreviewSource('brand'),
         },
@@ -1009,6 +1033,10 @@ export function App(): JSX.Element {
                                                     setQuery(
                                                         event.target.value
                                                     );
+                                                    setSelectedResult(
+                                                        undefined
+                                                    );
+                                                    setSelectionStatus('idle');
                                                 }}
                                                 placeholder='Search...'
                                                 value={query}
@@ -1190,10 +1218,12 @@ export function App(): JSX.Element {
                                             <h2 id='color-title'>Variants</h2>
                                         </div>
 
-                                        {selectedResult === undefined ? (
+                                        {selectedResult === undefined ||
+                                        selectionStatus !== 'ready' ? (
                                             <div className='empty-state variant-empty'>
-                                                Pick a brand to preview
-                                                variants.
+                                                {selectionStatus === 'loading'
+                                                    ? 'Loading brand variants.'
+                                                    : 'Pick a brand to preview variants.'}
                                             </div>
                                         ) : (
                                             <div
@@ -1242,6 +1272,11 @@ export function App(): JSX.Element {
                                                                     modeOption.previewSource
                                                                 }
                                                             />
+                                                            <span className='color-mode-option__label'>
+                                                                {
+                                                                    modeOption.label
+                                                                }
+                                                            </span>
                                                         </button>
                                                     )
                                                 )}
@@ -1254,6 +1289,7 @@ export function App(): JSX.Element {
                                         disabled={
                                             editingFrameId === undefined &&
                                             (selectedResult === undefined ||
+                                                selectionStatus !== 'ready' ||
                                                 states.length >= maxFrames)
                                         }
                                         onClick={addDraftFrame}
