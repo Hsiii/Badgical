@@ -985,7 +985,7 @@ export function App(): JSX.Element {
                         >
                             <div className='search-block'>
                                 <div className='panel-heading search-heading'>
-                                    <h2 id='content-title'>Content</h2>
+                                    <h2 id='content-title'>Badge Content</h2>
                                     <div
                                         aria-label='Composer mode'
                                         className='mode-switch'
