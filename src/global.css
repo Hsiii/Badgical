@@ -144,7 +144,7 @@ textarea {
 
 .compose-panel {
     display: grid;
-    grid-template-rows: minmax(0, 1fr) calc(var(--space-48) * 6);
+    grid-template-rows: auto minmax(0, 1fr);
     overflow: hidden;
 }
 
@@ -159,8 +159,9 @@ textarea {
 }
 
 .search-block {
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
     min-height: 0;
+    align-content: start;
 }
 
 .compose-bottom {
@@ -170,10 +171,9 @@ textarea {
 }
 
 .color-block {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) auto;
-    column-gap: var(--space-24);
-    row-gap: var(--space-12);
+    gap: var(--space-16);
     height: 100%;
     min-height: 0;
     align-content: stretch;
@@ -223,7 +223,6 @@ textarea {
 }
 
 .field span,
-.checkbox-field span,
 .custom-color-field span {
     overflow: hidden;
     color: var(--clr-text);
@@ -275,12 +274,38 @@ textarea {
     outline: 0;
 }
 
+.pane-switch {
+    display: inline-grid;
+    grid-template-columns: repeat(2, minmax(var(--space-48), 1fr));
+    justify-self: start;
+    padding: var(--space-4);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-8);
+    background: var(--clr-control);
+}
+
+.pane-switch button {
+    min-height: var(--space-32);
+    padding: 0 var(--space-16);
+    border-radius: var(--space-4);
+    background: transparent;
+    color: var(--clr-text-muted);
+    cursor: pointer;
+}
+
+.pane-switch button[aria-selected='true'] {
+    background: var(--clr-surface);
+    color: var(--clr-text);
+    box-shadow: 0 var(--space-4) var(--space-12) var(--clr-edge-shadow);
+}
+
 .powered-by {
     padding-right: var(--space-8);
 }
 
 .brand-results {
     min-height: 0;
+    max-height: calc(var(--space-48) * 6 + var(--space-16) * 2);
     overflow: auto;
     box-shadow:
         inset 0 var(--space-4) var(--space-4) calc(var(--space-4) * -1)
@@ -357,7 +382,7 @@ textarea {
 
 .search-empty {
     grid-column: 1 / -1;
-    min-height: calc(var(--space-48) * 5);
+    min-height: calc(var(--space-48) * 6 + var(--space-16) * 2);
 }
 
 .variant-empty {
@@ -368,7 +393,7 @@ textarea {
 .variant-controls {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
-    grid-column: 3;
+    grid-column: 1;
     grid-row: 1;
     gap: var(--space-12);
     align-content: start;
@@ -376,8 +401,7 @@ textarea {
 
 .color-mode-switch {
     display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-16);
     align-content: stretch;
     height: 100%;
@@ -413,9 +437,15 @@ textarea {
 }
 
 .color-mode-option img {
-    max-width: min(100%, calc(var(--space-48) * 4));
+    max-width: min(100%, calc(var(--space-48) * 5));
     height: var(--space-40);
     object-fit: contain;
+}
+
+.custom-block {
+    display: grid;
+    gap: var(--space-16);
+    min-height: 0;
 }
 
 .custom-colors {
@@ -465,10 +495,14 @@ textarea {
 .edit-controls {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-column: 1 / 3;
-    grid-row: 1;
     gap: var(--space-24);
-    align-content: start;
+    align-content: stretch;
+    height: 100%;
+}
+
+.custom-block .edit-controls {
+    height: auto;
+    min-height: calc(var(--space-48) * 3);
 }
 
 .text-controls {
@@ -480,7 +514,7 @@ textarea {
 
 .quick-edit {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-8);
     align-items: center;
 }
@@ -491,37 +525,17 @@ textarea {
     min-width: 0;
 }
 
-.checkbox-field {
-    display: inline-flex;
-    gap: var(--space-8);
-    align-items: center;
-    justify-content: start;
-    min-width: max-content;
-    min-height: var(--space-40);
-    padding: 0;
-    color: var(--clr-text);
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.checkbox-field span {
-    font: var(--font-small);
-    font-weight: var(--fw-semibold);
-    text-transform: none;
-}
-
-.checkbox-field input {
-    width: var(--space-16);
-    height: var(--space-16);
-}
-
 .logo-field {
     display: grid;
+    grid-template-rows: auto minmax(0, 1fr) calc(
+            var(--space-40) + var(--space-4)
+        );
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-8);
-    align-items: start;
-    align-content: start;
-    justify-items: start;
+    align-items: stretch;
+    align-content: stretch;
+    justify-items: stretch;
+    height: 100%;
 }
 
 .logo-field > span:first-child {
@@ -533,14 +547,16 @@ textarea {
 .logo-field > img {
     justify-self: stretch;
     width: 100%;
-    height: calc(var(--space-48) * 2);
+    height: 100%;
+    min-height: 0;
     object-fit: contain;
 }
 
 .logo-field__empty {
     display: grid;
     width: 100%;
-    height: calc(var(--space-48) * 2);
+    height: 100%;
+    min-height: 0;
     place-items: center;
     border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
