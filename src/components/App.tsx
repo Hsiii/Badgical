@@ -489,6 +489,9 @@ export function App(): JSX.Element {
     const [editingFrameId, setEditingFrameId] = useState<string | undefined>(
         undefined
     );
+    const searchInputReference = useRef<HTMLInputElement | undefined>(
+        undefined
+    );
     const resultsReference = useRef<HTMLDivElement | undefined>(undefined);
     const badgeSvg = useMemo(() => buildBadgeSvg(states), [states]);
     const previewSource = useMemo(
@@ -985,40 +988,21 @@ export function App(): JSX.Element {
                                     <h2 id='search-title'>Search</h2>
                                 </div>
 
-                                {composeMode === 'search' ? (
-                                    <>
-                                        <div className='search-shell'>
-                                            <div
-                                                aria-label='Composer mode'
-                                                className='pane-switch'
-                                                role='tablist'
-                                            >
-                                                <button
-                                                    aria-selected
-                                                    onClick={() => {
-                                                        setComposeMode(
-                                                            'search'
-                                                        );
-                                                    }}
-                                                    role='tab'
-                                                    type='button'
-                                                >
-                                                    Search
-                                                </button>
-                                                <button
-                                                    aria-selected={false}
-                                                    onClick={() => {
-                                                        setComposeMode(
-                                                            'custom'
-                                                        );
-                                                    }}
-                                                    role='tab'
-                                                    type='button'
-                                                >
-                                                    Custom
-                                                </button>
-                                            </div>
-                                            <label className='search-field'>
+                                <div
+                                    aria-label='Composer mode'
+                                    className={`search-shell search-shell--${composeMode}`}
+                                    role='tablist'
+                                >
+                                    {composeMode === 'search' ? (
+                                        <div
+                                            aria-selected
+                                            className='search-field search-option'
+                                            onClick={() => {
+                                                searchInputReference.current?.focus();
+                                            }}
+                                            role='tab'
+                                        >
+                                            <label className='search-field__input'>
                                                 <Search
                                                     aria-hidden='true'
                                                     size={24}
@@ -1038,6 +1022,11 @@ export function App(): JSX.Element {
                                                         );
                                                     }}
                                                     placeholder='Search...'
+                                                    ref={(element) => {
+                                                        searchInputReference.current =
+                                                            element ??
+                                                            undefined;
+                                                    }}
                                                     value={query}
                                                 />
                                             </label>
@@ -1050,7 +1039,34 @@ export function App(): JSX.Element {
                                                 Powered by <span>Svgl</span>
                                             </a>
                                         </div>
+                                    ) : (
+                                        <button
+                                            aria-selected={false}
+                                            className='search-option search-option--collapsed'
+                                            onClick={() => {
+                                                setComposeMode('search');
+                                            }}
+                                            role='tab'
+                                            type='button'
+                                        >
+                                            Search
+                                        </button>
+                                    )}
+                                    <button
+                                        aria-selected={composeMode === 'custom'}
+                                        className='custom-option'
+                                        onClick={() => {
+                                            setComposeMode('custom');
+                                        }}
+                                        role='tab'
+                                        type='button'
+                                    >
+                                        Custom
+                                    </button>
+                                </div>
 
+                                {composeMode === 'search' ? (
+                                    <>
                                         <div
                                             className='brand-results'
                                             ref={(element) => {
@@ -1105,32 +1121,6 @@ export function App(): JSX.Element {
                                     </>
                                 ) : (
                                     <div className='custom-block'>
-                                        <div
-                                            aria-label='Composer mode'
-                                            className='pane-switch'
-                                            role='tablist'
-                                        >
-                                            <button
-                                                aria-selected={false}
-                                                onClick={() => {
-                                                    setComposeMode('search');
-                                                }}
-                                                role='tab'
-                                                type='button'
-                                            >
-                                                Search
-                                            </button>
-                                            <button
-                                                aria-selected
-                                                onClick={() => {
-                                                    setComposeMode('custom');
-                                                }}
-                                                role='tab'
-                                                type='button'
-                                            >
-                                                Custom
-                                            </button>
-                                        </div>
                                         <section
                                             aria-labelledby='logo-custom-title'
                                             className='custom-group custom-group--logo'
