@@ -21,6 +21,13 @@
     --font-display: var(--fw-semibold) var(--fs-body) / 1.2 var(--ff-display);
     --font-mono: var(--fw-medium) var(--fs-small) / 1.5 var(--ff-mono);
 
+    --font-ui-body: var(--font-body-md);
+    --font-ui-heading: var(--fw-semibold) var(--fs-body) / 1.6 var(--ff-body);
+    --font-ui-control: var(--font-display);
+    --font-ui-label: var(--font-label);
+    --font-ui-caption: var(--font-small);
+    --font-ui-code: var(--font-mono);
+
     --space-4: 4px;
     --space-8: 8px;
     --space-12: 12px;

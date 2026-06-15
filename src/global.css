@@ -17,7 +17,7 @@ html {
 body {
     height: 100%;
     overflow: hidden;
-    font: var(--font-body-md);
+    font: var(--font-ui-body);
     line-height: 1.5;
 }
 
@@ -82,8 +82,7 @@ textarea {
     justify-self: start;
     min-height: var(--space-32);
     color: var(--clr-text);
-    font: var(--font-body-md);
-    font-weight: var(--fw-semibold);
+    font: var(--font-ui-heading);
 }
 
 .brand-badge__word {
@@ -213,8 +212,7 @@ textarea {
 .panel-heading h2 {
     overflow: hidden;
     color: var(--clr-text);
-    font: var(--font-body-md);
-    font-weight: var(--fw-semibold);
+    font: var(--font-ui-heading);
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -227,7 +225,7 @@ textarea {
 .custom-color-field span {
     overflow: hidden;
     color: var(--clr-text);
-    font: var(--font-label);
+    font: var(--font-ui-label);
     letter-spacing: 0;
     text-overflow: ellipsis;
     text-transform: uppercase;
@@ -237,8 +235,7 @@ textarea {
 .panel-meta {
     overflow: hidden;
     color: var(--clr-text-muted);
-    font: var(--font-body-md);
-    font-weight: var(--fw-semibold);
+    font: var(--font-ui-heading);
     letter-spacing: 0;
     text-overflow: ellipsis;
     text-transform: none;
@@ -308,7 +305,7 @@ textarea {
     border: 0;
     background: transparent;
     color: var(--clr-text);
-    font: var(--font-display);
+    font: var(--font-ui-control);
 }
 
 .search-field input:focus-visible {
@@ -339,8 +336,7 @@ textarea {
 }
 
 .powered-by {
-    font: var(--font-display);
-    font-weight: var(--fw-semibold);
+    font: var(--font-ui-control);
     padding-right: var(--space-8);
 }
 
@@ -406,12 +402,12 @@ textarea {
 .brand-result span {
     margin-top: var(--space-4);
     margin-bottom: 0;
-    font: var(--font-small);
+    font: var(--font-ui-caption);
 }
 
 .brand-result small {
     color: var(--clr-text-muted);
-    font: var(--font-label);
+    font: var(--font-ui-label);
 }
 
 .empty-state {
@@ -422,7 +418,7 @@ textarea {
     border: 0;
     background: transparent;
     color: var(--clr-text-muted);
-    font: var(--font-small);
+    font: var(--font-ui-caption);
     text-align: center;
 }
 
@@ -489,8 +485,7 @@ textarea {
 .color-mode-option__label {
     grid-row: 1;
     align-self: center;
-    font: var(--font-small);
-    font-weight: var(--fw-semibold);
+    font: var(--font-ui-heading);
     white-space: nowrap;
 }
 
@@ -620,7 +615,7 @@ textarea {
     border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
     color: var(--clr-text-muted);
-    font: var(--font-label);
+    font: var(--font-ui-label);
 }
 
 .logo-source-button {
@@ -657,7 +652,7 @@ textarea {
     background: var(--clr-surface);
     color: var(--clr-text);
     cursor: pointer;
-    font: var(--font-small);
+    font: var(--font-ui-caption);
 }
 
 .button {
@@ -810,7 +805,7 @@ textarea {
 .preview span {
     width: min(240px, 100%);
     color: var(--clr-text-muted);
-    font: var(--font-small);
+    font: var(--font-ui-caption);
     text-align: center;
 }
 
@@ -865,11 +860,11 @@ textarea {
     border-radius: var(--space-8);
     background: var(--clr-control);
     color: var(--clr-text);
-    font: var(--font-small);
+    font: var(--font-ui-caption);
 }
 
 .export-guide code {
-    font: var(--font-mono);
+    font: var(--font-ui-code);
 }
 
 .export-fields {
@@ -892,7 +887,7 @@ textarea {
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
     color: var(--clr-text);
-    font: var(--font-mono);
+    font: var(--font-ui-code);
 }
 
 .source-dialog__field textarea {
@@ -906,7 +901,7 @@ textarea {
 
 .confirm-dialog p {
     color: var(--clr-text);
-    font: var(--font-small);
+    font: var(--font-ui-caption);
 }
 
 .confirm-dialog__actions {
@@ -950,8 +945,7 @@ textarea {
     }
 
     .search-field input {
-        font: var(--font-body-md);
-        font-weight: var(--fw-semibold);
+        font: var(--font-ui-heading);
     }
 
     .brand-results,
