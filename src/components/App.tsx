@@ -985,62 +985,69 @@ export function App(): JSX.Element {
                                     <h2 id='search-title'>Search</h2>
                                 </div>
 
-                                <div
-                                    aria-label='Composer mode'
-                                    className='pane-switch'
-                                    role='tablist'
-                                >
-                                    <button
-                                        aria-selected={composeMode === 'search'}
-                                        onClick={() => {
-                                            setComposeMode('search');
-                                        }}
-                                        role='tab'
-                                        type='button'
-                                    >
-                                        Search
-                                    </button>
-                                    <button
-                                        aria-selected={composeMode === 'custom'}
-                                        onClick={() => {
-                                            setComposeMode('custom');
-                                        }}
-                                        role='tab'
-                                        type='button'
-                                    >
-                                        Custom
-                                    </button>
-                                </div>
-
                                 {composeMode === 'search' ? (
                                     <>
-                                        <div className='search-field'>
-                                            <Search
-                                                aria-hidden='true'
-                                                size={24}
-                                            />
-                                            <input
-                                                aria-label='Search brand'
-                                                autoFocus
-                                                onChange={(event) => {
-                                                    setQuery(
-                                                        event.target.value
-                                                    );
-                                                    setSelectedResult(
-                                                        undefined
-                                                    );
-                                                    setSelectionStatus('idle');
-                                                }}
-                                                placeholder='Search...'
-                                                value={query}
-                                            />
+                                        <div className='search-shell'>
+                                            <div
+                                                aria-label='Composer mode'
+                                                className='pane-switch'
+                                                role='tablist'
+                                            >
+                                                <button
+                                                    aria-selected
+                                                    onClick={() => {
+                                                        setComposeMode(
+                                                            'search'
+                                                        );
+                                                    }}
+                                                    role='tab'
+                                                    type='button'
+                                                >
+                                                    Search
+                                                </button>
+                                                <button
+                                                    aria-selected={false}
+                                                    onClick={() => {
+                                                        setComposeMode(
+                                                            'custom'
+                                                        );
+                                                    }}
+                                                    role='tab'
+                                                    type='button'
+                                                >
+                                                    Custom
+                                                </button>
+                                            </div>
+                                            <label className='search-field'>
+                                                <Search
+                                                    aria-hidden='true'
+                                                    size={24}
+                                                />
+                                                <input
+                                                    aria-label='Search brand'
+                                                    autoFocus
+                                                    onChange={(event) => {
+                                                        setQuery(
+                                                            event.target.value
+                                                        );
+                                                        setSelectedResult(
+                                                            undefined
+                                                        );
+                                                        setSelectionStatus(
+                                                            'idle'
+                                                        );
+                                                    }}
+                                                    placeholder='Search...'
+                                                    value={query}
+                                                />
+                                            </label>
                                             <a
                                                 className='panel-meta powered-by'
                                                 href={svglUrl}
                                                 rel='noreferrer'
                                                 target='_blank'
                                             >
-                                                Powered by Svgl
+                                                Powered by <span>Svgl</span>
                                             </a>
                                         </div>
 
@@ -1098,6 +1105,32 @@ export function App(): JSX.Element {
                                     </>
                                 ) : (
                                     <div className='custom-block'>
+                                        <div
+                                            aria-label='Composer mode'
+                                            className='pane-switch'
+                                            role='tablist'
+                                        >
+                                            <button
+                                                aria-selected={false}
+                                                onClick={() => {
+                                                    setComposeMode('search');
+                                                }}
+                                                role='tab'
+                                                type='button'
+                                            >
+                                                Search
+                                            </button>
+                                            <button
+                                                aria-selected
+                                                onClick={() => {
+                                                    setComposeMode('custom');
+                                                }}
+                                                role='tab'
+                                                type='button'
+                                            >
+                                                Custom
+                                            </button>
+                                        </div>
                                         <section
                                             aria-labelledby='logo-custom-title'
                                             className='custom-group custom-group--logo'
