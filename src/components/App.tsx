@@ -108,6 +108,20 @@ const minifySvgSource = (source: string): string =>
         .replaceAll(/:\s+/g, ':')
         .replaceAll(/,\s+/g, ',');
 
+const ensureSvgNamespace = (source: string): string => {
+    if (
+        !/^<svg\b/iu.test(source) ||
+        /\sxmlns=(["'])http:\/\/www\.w3\.org\/2000\/svg\1/iu.test(source)
+    ) {
+        return source;
+    }
+
+    return source.replace(
+        /^<svg\b/iu,
+        '<svg xmlns="http://www.w3.org/2000/svg"'
+    );
+};
+
 const isSvgSource = (source: string): boolean =>
     /^<svg\b[\S\s]*<\/svg>$/iu.test(minifySvgSource(source));
 
@@ -158,7 +172,9 @@ const inlineSvgArtwork = (
 };
 
 const toDataUri = (source: string): string => {
-    const encodedSource = encodeURIComponent(minifySvgSource(source))
+    const encodedSource = encodeURIComponent(
+        ensureSvgNamespace(minifySvgSource(source))
+    )
         .replaceAll("'", '%27')
         .replaceAll('"', '%22');
 
