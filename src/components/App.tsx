@@ -458,9 +458,9 @@ const sortSvglResults = (
 
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);
-    const [exportCopyState, setExportCopyState] = useState<
-        'idle' | 'link' | 'markup'
-    >('idle');
+    const [exportCopyState, setExportCopyState] = useState<'idle' | 'markdown'>(
+        'idle'
+    );
     const [query, setQuery] = useState('');
     const [catalogResults, setCatalogResults] = useState<readonly SvglResult[]>(
         []
@@ -871,24 +871,13 @@ export function App(): JSX.Element {
     const normalizedExportRepo =
         trimmedExportRepo === '' ? defaultExportRepo : trimmedExportRepo;
     const rawGithubUrl = `https://raw.githubusercontent.com/${normalizedExportRepo}/HEAD/${exportPath}`;
-    const readmeMarkup = `<img src="${rawGithubUrl}" alt="Animated badge" />`;
+    const readmeMarkdown = `![Animated badge](${rawGithubUrl})`;
 
-    const copyRawGithubUrl = (): void => {
+    const copyReadmeMarkdown = (): void => {
         navigator.clipboard
-            .writeText(rawGithubUrl)
+            .writeText(readmeMarkdown)
             .then(() => {
-                setExportCopyState('link');
-            })
-            .catch(() => {
-                setExportCopyState('idle');
-            });
-    };
-
-    const copyReadmeMarkup = (): void => {
-        navigator.clipboard
-            .writeText(readmeMarkup)
-            .then(() => {
-                setExportCopyState('markup');
+                setExportCopyState('markdown');
             })
             .catch(() => {
                 setExportCopyState('idle');
@@ -1614,6 +1603,15 @@ export function App(): JSX.Element {
                             <h2 id='export-dialog-title'>Export Badge</h2>
                         </div>
 
+                        <div className='export-guide'>
+                            <p>
+                                Download the SVG, place it at{' '}
+                                <code>{exportPath}</code> in{' '}
+                                <code>{normalizedExportRepo}</code>, then paste
+                                the README Markdown below.
+                            </p>
+                        </div>
+
                         <div className='export-fields'>
                             <label className='field'>
                                 <span>Repository</span>
@@ -1640,25 +1638,13 @@ export function App(): JSX.Element {
                         </div>
 
                         <label className='field export-field'>
-                            <span>Raw GitHub URL</span>
-                            <div className='export-copy-row'>
-                                <input readOnly value={rawGithubUrl} />
-                                <button
-                                    className='button button--secondary'
-                                    onClick={copyRawGithubUrl}
-                                    type='button'
-                                >
-                                    <Copy aria-hidden='true' size={16} />
-                                    {exportCopyState === 'link'
-                                        ? 'Copied'
-                                        : 'Copy'}
-                                </button>
-                            </div>
+                            <span>Badge URL</span>
+                            <input readOnly value={rawGithubUrl} />
                         </label>
 
                         <label className='field export-field'>
-                            <span>README HTML</span>
-                            <textarea readOnly value={readmeMarkup} />
+                            <span>README Markdown</span>
+                            <textarea readOnly value={readmeMarkdown} />
                         </label>
 
                         <div className='confirm-dialog__actions export-dialog__actions'>
@@ -1673,13 +1659,13 @@ export function App(): JSX.Element {
                             </button>
                             <button
                                 className='button button--primary'
-                                onClick={copyReadmeMarkup}
+                                onClick={copyReadmeMarkdown}
                                 type='button'
                             >
                                 <Copy aria-hidden='true' size={16} />
-                                {exportCopyState === 'markup'
+                                {exportCopyState === 'markdown'
                                     ? 'Copied'
-                                    : 'Copy HTML'}
+                                    : 'Copy Markdown'}
                             </button>
                             <button
                                 className='button button--primary'

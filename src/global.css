@@ -814,6 +814,18 @@ textarea {
     width: min(100%, calc(var(--space-48) * 16));
 }
 
+.export-guide {
+    padding: var(--space-12);
+    border-radius: var(--space-8);
+    background: var(--clr-control);
+    color: var(--clr-text);
+    font: var(--font-small);
+}
+
+.export-guide code {
+    font: var(--font-mono);
+}
+
 .export-fields {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
