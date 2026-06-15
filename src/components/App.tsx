@@ -980,12 +980,12 @@ export function App(): JSX.Element {
                 <div className='builder__workspace'>
                     <section className='tool-panel'>
                         <section
-                            aria-labelledby='search-title'
+                            aria-labelledby='content-title'
                             className='compose-panel'
                         >
                             <div className='search-block'>
                                 <div className='panel-heading search-heading'>
-                                    <h2 id='search-title'>Search</h2>
+                                    <h2 id='content-title'>Content</h2>
                                     <div
                                         aria-label='Composer mode'
                                         className='mode-switch'
