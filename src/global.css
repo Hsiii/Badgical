@@ -654,7 +654,9 @@ textarea {
 
 .frame-card {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--space-32);
+    grid-template-columns:
+        minmax(0, 1fr)
+        calc(var(--space-32) * 2 + var(--space-4));
     gap: var(--space-12);
     align-items: center;
     min-height: var(--space-48);
@@ -668,12 +670,18 @@ textarea {
     object-fit: contain;
 }
 
-.frame-card__delete {
+.frame-card__actions {
+    display: grid;
+    grid-template-columns: repeat(2, var(--space-32));
+    gap: var(--space-4);
+    justify-self: end;
+}
+
+.frame-card__button {
     display: grid;
     width: var(--space-32);
     height: var(--space-32);
     place-items: center;
-    justify-self: end;
     border-radius: var(--space-8);
     background: transparent;
     color: var(--clr-text);

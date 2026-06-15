@@ -477,6 +477,9 @@ export function App(): JSX.Element {
     const [deleteCandidateId, setDeleteCandidateId] = useState<
         string | undefined
     >(undefined);
+    const [editingFrameId, setEditingFrameId] = useState<string | undefined>(
+        undefined
+    );
     const resultsReference = useRef<HTMLDivElement | undefined>(undefined);
     const badgeSvg = useMemo(() => buildBadgeSvg(states), [states]);
     const previewSource = useMemo(
@@ -490,10 +493,9 @@ export function App(): JSX.Element {
         },
         0
     );
-    const draftLogoSource =
-        selectedResult === undefined || !isSvgSource(materializedDraft.source)
-            ? undefined
-            : toDataUri(materializedDraft.source);
+    const draftLogoSource = isSvgSource(materializedDraft.source)
+        ? toDataUri(materializedDraft.source)
+        : undefined;
 
     useEffect(() => {
         const abortController = new AbortController();
@@ -693,6 +695,7 @@ export function App(): JSX.Element {
 
     const chooseSearchResult = (result: SvglResult): void => {
         setSelectedResult(result);
+        setEditingFrameId(undefined);
         fetch(getSvglSourceUrl(result.route))
             .then(async (response) => {
                 if (!response.ok) {
@@ -737,8 +740,30 @@ export function App(): JSX.Element {
         setExportCopyState('idle');
     };
 
+    const editFrame = (state: BadgeState): void => {
+        const nextDraft = materializeState(state, 0);
+
+        setDraft({
+            allCaps: nextDraft.allCaps ?? false,
+            badgeColor: nextDraft.badgeColor,
+            logoColor: nextDraft.logoColor,
+            name: nextDraft.name,
+            source: nextDraft.source,
+            textColor: nextDraft.textColor,
+        });
+        setBrandColor(
+            getPrimarySvgColor(nextDraft.source) ?? nextDraft.badgeColor
+        );
+        setColorMode('custom');
+        setEditingFrameId(state.id);
+        setSourceDraft(nextDraft.source);
+    };
+
     const addDraftFrame = (): void => {
-        if (selectedResult === undefined || states.length >= maxFrames) {
+        if (
+            editingFrameId === undefined &&
+            (selectedResult === undefined || states.length >= maxFrames)
+        ) {
             return;
         }
 
@@ -749,6 +774,19 @@ export function App(): JSX.Element {
             },
             states.length
         );
+
+        if (editingFrameId !== undefined) {
+            setStates((currentStates) =>
+                currentStates.map((state) =>
+                    state.id === editingFrameId
+                        ? { ...nextState, id: editingFrameId }
+                        : state
+                )
+            );
+            setEditingFrameId(undefined);
+            setExportCopyState('idle');
+            return;
+        }
 
         setStates((currentStates) =>
             currentStates.length >= maxFrames
@@ -1191,14 +1229,27 @@ export function App(): JSX.Element {
                                     <button
                                         className='button button--primary add-frame'
                                         disabled={
-                                            selectedResult === undefined ||
-                                            states.length >= maxFrames
+                                            editingFrameId === undefined &&
+                                            (selectedResult === undefined ||
+                                                states.length >= maxFrames)
                                         }
                                         onClick={addDraftFrame}
                                         type='button'
                                     >
-                                        <Plus aria-hidden='true' size={16} />
-                                        Add Frame
+                                        {editingFrameId === undefined ? (
+                                            <Plus
+                                                aria-hidden='true'
+                                                size={16}
+                                            />
+                                        ) : (
+                                            <Pencil
+                                                aria-hidden='true'
+                                                size={16}
+                                            />
+                                        )}
+                                        {editingFrameId === undefined
+                                            ? 'Add Frame'
+                                            : 'Update Frame'}
                                     </button>
                                 </section>
                             </div>
@@ -1250,22 +1301,38 @@ export function App(): JSX.Element {
                                                     alt={`${materializedState.name} badge`}
                                                     src={frameBadge}
                                                 />
-                                                <button
-                                                    aria-label={`Delete ${materializedState.name}`}
-                                                    className='frame-card__delete'
-                                                    onClick={() => {
-                                                        setDeleteCandidateId(
-                                                            state.id
-                                                        );
-                                                    }}
-                                                    title='Delete frame'
-                                                    type='button'
-                                                >
-                                                    <X
-                                                        aria-hidden='true'
-                                                        size={16}
-                                                    />
-                                                </button>
+                                                <div className='frame-card__actions'>
+                                                    <button
+                                                        aria-label={`Edit ${materializedState.name}`}
+                                                        className='frame-card__button'
+                                                        onClick={() => {
+                                                            editFrame(state);
+                                                        }}
+                                                        title='Edit frame'
+                                                        type='button'
+                                                    >
+                                                        <Pencil
+                                                            aria-hidden='true'
+                                                            size={16}
+                                                        />
+                                                    </button>
+                                                    <button
+                                                        aria-label={`Delete ${materializedState.name}`}
+                                                        className='frame-card__button'
+                                                        onClick={() => {
+                                                            setDeleteCandidateId(
+                                                                state.id
+                                                            );
+                                                        }}
+                                                        title='Delete frame'
+                                                        type='button'
+                                                    >
+                                                        <X
+                                                            aria-hidden='true'
+                                                            size={16}
+                                                        />
+                                                    </button>
+                                                </div>
                                             </div>
                                         );
                                     })}
