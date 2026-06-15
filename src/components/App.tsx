@@ -1648,11 +1648,6 @@ export function App(): JSX.Element {
                         </div>
 
                         <label className='field export-field'>
-                            <span>Badge URL</span>
-                            <input readOnly value={rawGithubUrl} />
-                        </label>
-
-                        <label className='field export-field'>
                             <span>README Markdown</span>
                             <textarea readOnly value={readmeMarkdown} />
                         </label>
