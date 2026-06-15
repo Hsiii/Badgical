@@ -984,23 +984,49 @@ export function App(): JSX.Element {
                             className='compose-panel'
                         >
                             <div className='search-block'>
-                                <div className='visually-hidden'>
+                                <div className='panel-heading search-heading'>
                                     <h2 id='search-title'>Search</h2>
+                                    <div
+                                        aria-label='Composer mode'
+                                        className='mode-switch'
+                                        role='tablist'
+                                    >
+                                        <button
+                                            aria-selected={
+                                                composeMode === 'search'
+                                            }
+                                            className='mode-switch__option'
+                                            onClick={() => {
+                                                setComposeMode('search');
+                                            }}
+                                            role='tab'
+                                            type='button'
+                                        >
+                                            Search
+                                        </button>
+                                        <button
+                                            aria-selected={
+                                                composeMode === 'custom'
+                                            }
+                                            className='mode-switch__option'
+                                            onClick={() => {
+                                                setComposeMode('custom');
+                                            }}
+                                            role='tab'
+                                            type='button'
+                                        >
+                                            Custom
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div
-                                    aria-label='Composer mode'
-                                    className={`search-shell search-shell--${composeMode}`}
-                                    role='tablist'
-                                >
-                                    {composeMode === 'search' ? (
+                                {composeMode === 'search' ? (
+                                    <>
                                         <div
-                                            aria-selected
-                                            className='search-field search-option'
+                                            className='search-shell'
                                             onClick={() => {
                                                 searchInputReference.current?.focus();
                                             }}
-                                            role='tab'
                                         >
                                             <label className='search-field__input'>
                                                 <Search
@@ -1021,7 +1047,7 @@ export function App(): JSX.Element {
                                                             'idle'
                                                         );
                                                     }}
-                                                    placeholder='Search...'
+                                                    placeholder='Search brands...'
                                                     ref={(element) => {
                                                         searchInputReference.current =
                                                             element ??
@@ -1036,37 +1062,9 @@ export function App(): JSX.Element {
                                                 rel='noreferrer'
                                                 target='_blank'
                                             >
-                                                Powered by <span>Svgl</span>
+                                                <span>Svgl</span>
                                             </a>
                                         </div>
-                                    ) : (
-                                        <button
-                                            aria-selected={false}
-                                            className='search-option search-option--collapsed'
-                                            onClick={() => {
-                                                setComposeMode('search');
-                                            }}
-                                            role='tab'
-                                            type='button'
-                                        >
-                                            Search
-                                        </button>
-                                    )}
-                                    <button
-                                        aria-selected={composeMode === 'custom'}
-                                        className='custom-option'
-                                        onClick={() => {
-                                            setComposeMode('custom');
-                                        }}
-                                        role='tab'
-                                        type='button'
-                                    >
-                                        Custom
-                                    </button>
-                                </div>
-
-                                {composeMode === 'search' ? (
-                                    <>
                                         <div
                                             className='brand-results'
                                             ref={(element) => {
