@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import { Check, Copy, Download, Pencil, Plus, Search, X } from 'lucide-react';
+import { Copy, Download, Pencil, Plus, Search, X } from 'lucide-react';
 
 interface BadgeState {
     allCaps?: boolean;
@@ -1354,19 +1354,6 @@ export function App(): JSX.Element {
                                                             role='radio'
                                                             type='button'
                                                         >
-                                                            <span
-                                                                aria-hidden='true'
-                                                                className='color-mode-option__check'
-                                                            >
-                                                                {colorMode ===
-                                                                modeOption.mode ? (
-                                                                    <Check
-                                                                        size={
-                                                                            16
-                                                                        }
-                                                                    />
-                                                                ) : undefined}
-                                                            </span>
                                                             <img
                                                                 alt=''
                                                                 src={
