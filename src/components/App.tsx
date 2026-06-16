@@ -140,27 +140,107 @@ const isSvgSource = (source: string): boolean =>
 const compactColor = (color: string): string =>
     color.replace(/^#([\dA-Fa-f])\1([\dA-Fa-f])\2([\dA-Fa-f])\3$/, '#$1$2$3');
 
-const colorizeSvgContent = (content: string, color: string): string =>
+interface RgbColor {
+    readonly blue: number;
+    readonly green: number;
+    readonly red: number;
+}
+
+const parseHexColor = (color: string): RgbColor | undefined => {
+    const hexMatch = /^#?([\dA-Fa-f]{3}|[\dA-Fa-f]{6})$/u.exec(color.trim());
+
+    if (hexMatch === null) {
+        return undefined;
+    }
+
+    const [, hexColor] = hexMatch;
+    const normalizedColor =
+        hexColor.length === 3
+            ? `${hexColor[0]}${hexColor[0]}${hexColor[1]}${hexColor[1]}${hexColor[2]}${hexColor[2]}`
+            : hexColor;
+
+    return {
+        blue: Number.parseInt(normalizedColor.slice(4, 6), 16),
+        green: Number.parseInt(normalizedColor.slice(2, 4), 16),
+        red: Number.parseInt(normalizedColor.slice(0, 2), 16),
+    };
+};
+
+const areColorsNear = (leftColor: string, rightColor: string): boolean => {
+    const left = parseHexColor(leftColor);
+    const right = parseHexColor(rightColor);
+
+    if (left === undefined || right === undefined) {
+        return false;
+    }
+
+    const redDistance = left.red - right.red;
+    const greenDistance = left.green - right.green;
+    const blueDistance = left.blue - right.blue;
+    const channelDistance = Math.hypot(
+        redDistance,
+        greenDistance,
+        blueDistance
+    );
+
+    return channelDistance < 72;
+};
+
+const shouldRecolorSvgPaint = (
+    paintColor: string,
+    conflictColor: string | undefined
+): boolean =>
+    conflictColor === undefined || areColorsNear(paintColor, conflictColor);
+
+const replaceSvgPaint = (
+    match: string,
+    quote: string,
+    paintColor: string,
+    replacementColor: string,
+    conflictColor: string | undefined
+): string =>
+    shouldRecolorSvgPaint(paintColor, conflictColor)
+        ? match.replace(
+              `${quote}${paintColor}${quote}`,
+              `${quote}${escapeXml(replacementColor)}${quote}`
+          )
+        : match;
+
+const colorizeSvgContent = (
+    content: string,
+    color: string,
+    conflictColor?: string
+): string =>
     content
         .replaceAll(
             /\sfill=(["'])(?!none|transparent|currentColor)(.*?)\1/giu,
-            ` fill="${escapeXml(color)}"`
+            (match, quote: string, paintColor: string) =>
+                replaceSvgPaint(match, quote, paintColor, color, conflictColor)
         )
         .replaceAll(
             /\sstroke=(["'])(?!none|transparent|currentColor)(.*?)\1/giu,
-            ` stroke="${escapeXml(color)}"`
+            (match, quote: string, paintColor: string) =>
+                replaceSvgPaint(match, quote, paintColor, color, conflictColor)
         )
         .replaceAll(/<stop\b[^>]*>/giu, (match) =>
             match.replaceAll(
                 /\sstop-color=(["'])(.*?)\1/giu,
-                ` stop-color="${escapeXml(color)}"`
+                (stopMatch, quote: string, paintColor: string) =>
+                    replaceSvgPaint(
+                        stopMatch,
+                        quote,
+                        paintColor,
+                        color,
+                        conflictColor
+                    )
             )
         );
 
 const inlineSvgArtwork = (
     source: string,
     logoColor: string,
-    preserveOriginalArtwork = false
+    preserveOriginalArtwork = false,
+    conflictColor?: string
 ): string => {
     const svgSource = minifySvgSource(source)
         .replaceAll(/<\?xml[\S\s]*?\?>/g, '')
@@ -180,7 +260,7 @@ const inlineSvgArtwork = (
         return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}>${content}</svg>`;
     }
 
-    return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}><g fill="${escapeXml(logoColor)}" stroke="${escapeXml(logoColor)}" style="color:${escapeXml(logoColor)}">${colorizeSvgContent(content, logoColor)}</g></svg>`;
+    return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}><g fill="${escapeXml(logoColor)}" stroke="${escapeXml(logoColor)}" style="color:${escapeXml(logoColor)}">${colorizeSvgContent(content, logoColor, conflictColor)}</g></svg>`;
 };
 
 const toDataUri = (source: string): string => {
@@ -331,7 +411,7 @@ const buildBadgeSvg = (
                     ? ` font-size="${textSize}" font-weight="700"`
                     : '';
 
-            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preserveOriginalArtwork || state.preserveOriginalArtwork === true)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preserveOriginalArtwork || state.preserveOriginalArtwork === true, state.badgeColor)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
 
             if (visibleStates.length === 1) {
                 return content;
