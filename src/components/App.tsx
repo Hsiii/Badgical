@@ -685,8 +685,8 @@ export function App(): JSX.Element {
 
         return {
             badgeColor: nextBrandColor,
-            logoColor: nextBrandColor,
-            preserveOriginalArtwork: true,
+            logoColor: contrastColor,
+            preserveOriginalArtwork: false,
             textColor: contrastColor,
         };
     };
