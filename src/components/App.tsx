@@ -50,7 +50,7 @@ interface SvglApiError {
 type SvglSearchStatus = 'idle' | 'loading' | 'empty' | 'ready' | 'error';
 type ColorMode = 'brand' | 'inverse' | 'custom';
 type SelectionStatus = 'idle' | 'loading' | 'ready';
-type EditableColorTarget = 'badgeColor' | 'logoColor' | 'textColor';
+type EditableColorTarget = 'badgeColor' | 'textColor';
 
 const defaultBadgeSource =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="spark-fill" x1="8" x2="24" y1="22" y2="2" gradientUnits="userSpaceOnUse"><stop stop-color="#7436d9"/><stop offset="1" stop-color="#ffc2f7"/></linearGradient><path id="spark-shape" d="M18 9C20.240000000000002 14.76 20.240000000000002 14.76 26 17C20.240000000000002 19.240000000000002 20.240000000000002 19.240000000000002 18 25C15.76 19.240000000000002 15.76 19.240000000000002 10 17C15.76 14.76 15.76 14.76 18 9Z"/><g id="badge-shape"><rect x="3.2" y="20.8" width="26.8" height="9.2" rx="2.4"/><rect x="18.6" y="20.8" width="11.4" height="9.2" rx="2.4"/></g></defs><g transform="translate(1.4 -1.625)"><use href="#badge-shape" fill="#112255" transform="translate(-2 -3.75)"/><use href="#spark-shape" fill="url(#spark-fill)"/></g></svg>';
@@ -719,10 +719,6 @@ export function App(): JSX.Element {
         setDraft((currentDraft) => ({
             ...currentDraft,
             [field]: normalizedColor,
-            preserveOriginalArtwork:
-                field === 'logoColor'
-                    ? false
-                    : currentDraft.preserveOriginalArtwork,
         }));
         setColorMode('custom');
     };
@@ -916,15 +912,6 @@ export function App(): JSX.Element {
         searchMessage = 'SVGL search is unavailable right now. Try again.';
     }
 
-    const badgeTextColorFields: ReadonlyArray<{
-        readonly field: EditableColorTarget;
-        readonly label: string;
-        readonly value: string;
-    }> = [
-        { field: 'badgeColor', label: 'Badge', value: draft.badgeColor },
-        { field: 'textColor', label: 'Text', value: draft.textColor },
-    ];
-
     return (
         <main className='app'>
             <section aria-labelledby='builder-title' className='builder'>
@@ -969,259 +956,261 @@ export function App(): JSX.Element {
                                     <h2 id='content-title'>Badge Content</h2>
                                 </div>
 
-                                <div className='compose-inputs'>
-                                    <section
-                                        aria-label='Search brands'
-                                        className='search-panel'
+                                <section
+                                    aria-label='Search brands'
+                                    className='search-panel'
+                                >
+                                    <div
+                                        className='search-shell'
+                                        onClick={() => {
+                                            searchInputReference.current?.focus();
+                                        }}
                                     >
-                                        <div
-                                            className='search-shell'
-                                            onClick={() => {
-                                                searchInputReference.current?.focus();
-                                            }}
-                                        >
-                                            <label className='search-field__input'>
-                                                <Search
-                                                    aria-hidden='true'
-                                                    size={24}
-                                                />
-                                                <input
-                                                    aria-label='Search brand'
-                                                    autoFocus
-                                                    onChange={(event) => {
-                                                        setQuery(
-                                                            event.target.value
-                                                        );
-                                                        setSelectedResult(
-                                                            undefined
-                                                        );
-                                                        setSelectionStatus(
-                                                            'idle'
-                                                        );
-                                                    }}
-                                                    placeholder='Search...'
-                                                    ref={(element) => {
-                                                        searchInputReference.current =
-                                                            element ??
-                                                            undefined;
-                                                    }}
-                                                    value={query}
-                                                />
-                                            </label>
-                                        </div>
+                                        <label className='search-field__input'>
+                                            <Search
+                                                aria-hidden='true'
+                                                size={24}
+                                            />
+                                            <input
+                                                aria-label='Search brand'
+                                                autoFocus
+                                                onChange={(event) => {
+                                                    setQuery(
+                                                        event.target.value
+                                                    );
+                                                    setSelectedResult(
+                                                        undefined
+                                                    );
+                                                    setSelectionStatus('idle');
+                                                }}
+                                                placeholder='Search...'
+                                                ref={(element) => {
+                                                    searchInputReference.current =
+                                                        element ?? undefined;
+                                                }}
+                                                value={query}
+                                            />
+                                        </label>
+                                    </div>
 
-                                        <div
-                                            className='brand-results'
-                                            ref={(element) => {
-                                                resultsReference.current =
-                                                    element ?? undefined;
-                                            }}
-                                        >
-                                            {visibleResults.length === 0 ? (
-                                                <div className='empty-state search-empty'>
-                                                    <p>{searchMessage}</p>
-                                                </div>
-                                            ) : (
-                                                <div
-                                                    aria-label='SVGL logos'
-                                                    className='brand-results__canvas'
-                                                >
-                                                    {visibleResults.map(
-                                                        (result) => (
-                                                            <button
-                                                                aria-current={
-                                                                    result.id ===
-                                                                    selectedResult?.id
-                                                                        ? 'true'
-                                                                        : undefined
-                                                                }
-                                                                className='brand-result'
-                                                                key={result.id}
-                                                                onClick={() => {
-                                                                    chooseSearchResult(
-                                                                        result
-                                                                    );
-                                                                }}
-                                                                type='button'
-                                                            >
-                                                                <img
-                                                                    alt=''
-                                                                    src={getSvglRoute(
-                                                                        result.route
-                                                                    )}
-                                                                />
-                                                                <span>
-                                                                    {
-                                                                        result.title
-                                                                    }
-                                                                </span>
-                                                            </button>
-                                                        )
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </section>
-
-                                    <section
-                                        aria-label='Advanced badge controls'
-                                        className='advanced-panel'
+                                    <div
+                                        className='brand-results'
+                                        ref={(element) => {
+                                            resultsReference.current =
+                                                element ?? undefined;
+                                        }}
                                     >
-                                        <div className='advanced-logo-row'>
-                                            <div className='field advanced-svg-field'>
-                                                <span>SVG</span>
-                                                <button
-                                                    aria-label='Edit SVG source'
-                                                    className='advanced-logo-preview'
-                                                    onClick={openSourceDialog}
-                                                    type='button'
-                                                >
-                                                    {draftLogoSource ===
-                                                    undefined ? (
-                                                        <span>No logo</span>
-                                                    ) : (
-                                                        <img
-                                                            alt=''
-                                                            src={
-                                                                draftLogoSource
-                                                            }
-                                                        />
-                                                    )}
-                                                </button>
+                                        {visibleResults.length === 0 ? (
+                                            <div className='empty-state search-empty'>
+                                                <p>{searchMessage}</p>
                                             </div>
+                                        ) : (
+                                            <div
+                                                aria-label='SVGL logos'
+                                                className='brand-results__canvas'
+                                            >
+                                                {visibleResults.map(
+                                                    (result) => (
+                                                        <button
+                                                            aria-current={
+                                                                result.id ===
+                                                                selectedResult?.id
+                                                                    ? 'true'
+                                                                    : undefined
+                                                            }
+                                                            className='brand-result'
+                                                            key={result.id}
+                                                            onClick={() => {
+                                                                chooseSearchResult(
+                                                                    result
+                                                                );
+                                                            }}
+                                                            type='button'
+                                                        >
+                                                            <img
+                                                                alt=''
+                                                                src={getSvglRoute(
+                                                                    result.route
+                                                                )}
+                                                            />
+                                                            <span>
+                                                                {result.title}
+                                                            </span>
+                                                        </button>
+                                                    )
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </section>
 
+                                <section
+                                    aria-label='Advanced badge controls'
+                                    className='advanced-panel'
+                                >
+                                    <div className='advanced-controls'>
+                                        <div className='advanced-controls__left'>
                                             <label className='field advanced-text-field'>
                                                 <span>Text</span>
-                                                <input
-                                                    aria-label='Badge text'
-                                                    onChange={(event) => {
-                                                        setDraft(
-                                                            (currentDraft) => ({
-                                                                ...currentDraft,
-                                                                name: event
-                                                                    .target
-                                                                    .value,
-                                                            })
-                                                        );
-                                                    }}
-                                                    placeholder='Badge text'
-                                                    value={draft.name}
-                                                />
+                                                <span className='advanced-text-input'>
+                                                    <input
+                                                        aria-label='Badge text'
+                                                        onChange={(event) => {
+                                                            setDraft(
+                                                                (
+                                                                    currentDraft
+                                                                ) => ({
+                                                                    ...currentDraft,
+                                                                    name: event
+                                                                        .target
+                                                                        .value,
+                                                                })
+                                                            );
+                                                        }}
+                                                        placeholder='Badge text'
+                                                        value={draft.name}
+                                                    />
+                                                </span>
                                             </label>
-                                        </div>
 
-                                        <div className='advanced-colors'>
-                                            {badgeTextColorFields.map(
-                                                (colorField) => (
-                                                    <label
-                                                        className='custom-color-field'
-                                                        key={colorField.field}
+                                            <div className='advanced-asset-row'>
+                                                <div className='field'>
+                                                    <span>SVG</span>
+                                                    <button
+                                                        aria-label='Edit SVG source'
+                                                        className='advanced-logo-preview'
+                                                        onClick={
+                                                            openSourceDialog
+                                                        }
+                                                        type='button'
                                                     >
-                                                        <span>
-                                                            {colorField.label}
-                                                        </span>
+                                                        {draftLogoSource ===
+                                                        undefined ? (
+                                                            <span>No logo</span>
+                                                        ) : (
+                                                            <img
+                                                                alt=''
+                                                                src={
+                                                                    draftLogoSource
+                                                                }
+                                                            />
+                                                        )}
+                                                    </button>
+                                                </div>
+
+                                                <label className='field'>
+                                                    <span>Badge Color</span>
+                                                    <span className='color-swatch-control'>
                                                         <input
-                                                            aria-label={`${colorField.label} color`}
+                                                            aria-label='Badge color'
                                                             onChange={(
                                                                 event
                                                             ) => {
                                                                 updateDraftColor(
-                                                                    colorField.field,
+                                                                    'badgeColor',
                                                                     event.target
                                                                         .value
                                                                 );
                                                             }}
+                                                            title='Badge color'
                                                             type='color'
                                                             value={
-                                                                colorField.value
+                                                                draft.badgeColor
                                                             }
                                                         />
+                                                    </span>
+                                                </label>
+
+                                                <label className='field'>
+                                                    <span>Text Color</span>
+                                                    <span className='color-swatch-control'>
                                                         <input
-                                                            aria-label={`${colorField.label} hex`}
+                                                            aria-label='Text color'
                                                             onChange={(
                                                                 event
                                                             ) => {
                                                                 updateDraftColor(
-                                                                    colorField.field,
+                                                                    'textColor',
                                                                     event.target
                                                                         .value
                                                                 );
                                                             }}
+                                                            title='Text color'
+                                                            type='color'
                                                             value={
-                                                                colorField.value
+                                                                draft.textColor
                                                             }
                                                         />
-                                                    </label>
-                                                )
-                                            )}
+                                                    </span>
+                                                </label>
+                                            </div>
                                         </div>
 
-                                        <div className='advanced-preview'>
-                                            <img
-                                                alt='Current badge draft preview'
-                                                src={draftPreviewSource}
-                                            />
-                                            <div className='advanced-preview__actions'>
-                                                <button
-                                                    className='button button--secondary'
-                                                    disabled={
-                                                        selectedResult ===
-                                                            undefined ||
+                                        <div className='advanced-controls__right'>
+                                            <button
+                                                className='button button--secondary'
+                                                disabled={
+                                                    selectedResult ===
+                                                        undefined ||
+                                                    selectionStatus !== 'ready'
+                                                }
+                                                onClick={() => {
+                                                    selectColorMode(
+                                                        colorMode === 'inverse'
+                                                            ? 'brand'
+                                                            : 'inverse'
+                                                    );
+                                                }}
+                                                type='button'
+                                            >
+                                                <ArrowLeftRight
+                                                    aria-hidden='true'
+                                                    size={16}
+                                                />
+                                                Invert
+                                            </button>
+
+                                            <button
+                                                className='button button--primary add-frame'
+                                                disabled={
+                                                    editingFrameId ===
+                                                        undefined &&
+                                                    (selectedResult ===
+                                                        undefined ||
                                                         selectionStatus !==
-                                                            'ready'
-                                                    }
-                                                    onClick={() => {
-                                                        selectColorMode(
-                                                            colorMode ===
-                                                                'inverse'
-                                                                ? 'brand'
-                                                                : 'inverse'
-                                                        );
-                                                    }}
-                                                    type='button'
-                                                >
-                                                    <ArrowLeftRight
+                                                            'ready' ||
+                                                        states.length >=
+                                                            maxFrames)
+                                                }
+                                                onClick={addDraftFrame}
+                                                type='button'
+                                            >
+                                                {editingFrameId ===
+                                                undefined ? (
+                                                    <Plus
                                                         aria-hidden='true'
                                                         size={16}
                                                     />
-                                                    Invert
-                                                </button>
-                                                <button
-                                                    className='button button--primary add-frame'
-                                                    disabled={
-                                                        editingFrameId ===
-                                                            undefined &&
-                                                        (selectedResult ===
-                                                            undefined ||
-                                                            selectionStatus !==
-                                                                'ready' ||
-                                                            states.length >=
-                                                                maxFrames)
-                                                    }
-                                                    onClick={addDraftFrame}
-                                                    type='button'
-                                                >
-                                                    {editingFrameId ===
-                                                    undefined ? (
-                                                        <Plus
-                                                            aria-hidden='true'
-                                                            size={16}
-                                                        />
-                                                    ) : (
-                                                        <Pencil
-                                                            aria-hidden='true'
-                                                            size={16}
-                                                        />
-                                                    )}
-                                                    {editingFrameId ===
-                                                    undefined
-                                                        ? 'Add Frame'
-                                                        : 'Update Frame'}
-                                                </button>
-                                            </div>
+                                                ) : (
+                                                    <Pencil
+                                                        aria-hidden='true'
+                                                        size={16}
+                                                    />
+                                                )}
+                                                {editingFrameId === undefined
+                                                    ? 'Add Frame'
+                                                    : 'Update Frame'}
+                                            </button>
                                         </div>
-                                    </section>
-                                </div>
+                                    </div>
+
+                                    <div className='advanced-preview'>
+                                        <img
+                                            alt='Current badge draft preview'
+                                            src={draftPreviewSource}
+                                        />
+                                    </div>
+                                </section>
                             </div>
                         </section>
 
