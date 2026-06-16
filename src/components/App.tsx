@@ -1220,19 +1220,7 @@ export function App(): JSX.Element {
     const searchTerm = query.trim();
     const visibleResults = searchTerm === '' ? catalogResults : results;
     const resultStatus = searchTerm === '' ? catalogStatus : searchStatus;
-    let searchMessage = 'Loading SVGL logos...';
-
-    if (resultStatus === 'loading') {
-        searchMessage = 'Searching SVGL...';
-    }
-
-    if (resultStatus === 'empty') {
-        searchMessage = `No SVGL logo titled "${query}". Try another brand.`;
-    }
-
-    if (resultStatus === 'error') {
-        searchMessage = 'SVGL search is unavailable right now. Try again.';
-    }
+    const resultsAreLoading = resultStatus === 'loading';
 
     return (
         <main className='app'>
@@ -1316,6 +1304,7 @@ export function App(): JSX.Element {
                                     </div>
 
                                     <div
+                                        aria-busy={resultsAreLoading}
                                         className='brand-results'
                                         ref={(element) => {
                                             resultsReference.current =
@@ -1323,9 +1312,10 @@ export function App(): JSX.Element {
                                         }}
                                     >
                                         {visibleResults.length === 0 ? (
-                                            <div className='empty-state search-empty'>
-                                                <p>{searchMessage}</p>
-                                            </div>
+                                            <div
+                                                aria-hidden='true'
+                                                className='search-empty'
+                                            />
                                         ) : (
                                             <div
                                                 aria-label='SVGL logos'
