@@ -935,11 +935,6 @@ export function App(): JSX.Element {
             previewSource: getModePreviewSource('inverse'),
         },
     ];
-    const logoColorFields: ReadonlyArray<{
-        readonly field: EditableColorTarget;
-        readonly label: string;
-        readonly value: string;
-    }> = [{ field: 'logoColor', label: 'Logo', value: draft.logoColor }];
     const badgeTextColorFields: ReadonlyArray<{
         readonly field: EditableColorTarget;
         readonly label: string;
@@ -963,6 +958,14 @@ export function App(): JSX.Element {
                         Badgical badge builder
                     </h1>
                     <a
+                        className='powered-by'
+                        href={svglUrl}
+                        rel='noreferrer'
+                        target='_blank'
+                    >
+                        Powered by <span>Svgl</span>
+                    </a>
+                    <a
                         aria-label='Open Badgical on GitHub'
                         className='icon-button'
                         href={githubUrl}
@@ -981,7 +984,7 @@ export function App(): JSX.Element {
                             className='compose-panel'
                         >
                             <div className='search-block'>
-                                <div className='panel-heading search-heading'>
+                                <div className='visually-hidden'>
                                     <h2 id='content-title'>Badge Content</h2>
                                 </div>
 
@@ -1015,7 +1018,7 @@ export function App(): JSX.Element {
                                                             'idle'
                                                         );
                                                     }}
-                                                    placeholder='Search brands...'
+                                                    placeholder='Search...'
                                                     ref={(element) => {
                                                         searchInputReference.current =
                                                             element ??
@@ -1024,14 +1027,6 @@ export function App(): JSX.Element {
                                                     value={query}
                                                 />
                                             </label>
-                                            <a
-                                                className='panel-meta powered-by'
-                                                href={svglUrl}
-                                                rel='noreferrer'
-                                                target='_blank'
-                                            >
-                                                <span>Svgl</span>
-                                            </a>
                                         </div>
 
                                         <div
@@ -1088,38 +1083,30 @@ export function App(): JSX.Element {
                                     </section>
 
                                     <section
-                                        aria-labelledby='advanced-title'
+                                        aria-label='Advanced badge controls'
                                         className='advanced-panel'
                                     >
-                                        <div className='panel-heading advanced-heading'>
-                                            <h2 id='advanced-title'>
-                                                Advanced
-                                            </h2>
-                                            <button
-                                                aria-label='Edit SVG source'
-                                                className='advanced-source-button'
-                                                onClick={openSourceDialog}
-                                                type='button'
-                                            >
-                                                <Pencil
-                                                    aria-hidden='true'
-                                                    size={16}
-                                                />
-                                                <span>SVG</span>
-                                            </button>
-                                        </div>
-
                                         <div className='advanced-logo-row'>
-                                            <div className='advanced-logo-preview'>
-                                                {draftLogoSource ===
-                                                undefined ? (
-                                                    <span>No logo</span>
-                                                ) : (
-                                                    <img
-                                                        alt=''
-                                                        src={draftLogoSource}
-                                                    />
-                                                )}
+                                            <div className='field advanced-svg-field'>
+                                                <span>SVG</span>
+                                                <button
+                                                    aria-label='Edit SVG source'
+                                                    className='advanced-logo-preview'
+                                                    onClick={openSourceDialog}
+                                                    type='button'
+                                                >
+                                                    {draftLogoSource ===
+                                                    undefined ? (
+                                                        <span>No logo</span>
+                                                    ) : (
+                                                        <img
+                                                            alt=''
+                                                            src={
+                                                                draftLogoSource
+                                                            }
+                                                        />
+                                                    )}
+                                                </button>
                                             </div>
 
                                             <label className='field advanced-text-field'>
@@ -1143,42 +1130,49 @@ export function App(): JSX.Element {
                                         </div>
 
                                         <div className='advanced-colors'>
-                                            {[
-                                                ...badgeTextColorFields,
-                                                ...logoColorFields,
-                                            ].map((colorField) => (
-                                                <label
-                                                    className='custom-color-field'
-                                                    key={colorField.field}
-                                                >
-                                                    <span>
-                                                        {colorField.label}
-                                                    </span>
-                                                    <input
-                                                        aria-label={`${colorField.label} color`}
-                                                        onChange={(event) => {
-                                                            updateDraftColor(
-                                                                colorField.field,
-                                                                event.target
-                                                                    .value
-                                                            );
-                                                        }}
-                                                        type='color'
-                                                        value={colorField.value}
-                                                    />
-                                                    <input
-                                                        aria-label={`${colorField.label} hex`}
-                                                        onChange={(event) => {
-                                                            updateDraftColor(
-                                                                colorField.field,
-                                                                event.target
-                                                                    .value
-                                                            );
-                                                        }}
-                                                        value={colorField.value}
-                                                    />
-                                                </label>
-                                            ))}
+                                            {badgeTextColorFields.map(
+                                                (colorField) => (
+                                                    <label
+                                                        className='custom-color-field'
+                                                        key={colorField.field}
+                                                    >
+                                                        <span>
+                                                            {colorField.label}
+                                                        </span>
+                                                        <input
+                                                            aria-label={`${colorField.label} color`}
+                                                            onChange={(
+                                                                event
+                                                            ) => {
+                                                                updateDraftColor(
+                                                                    colorField.field,
+                                                                    event.target
+                                                                        .value
+                                                                );
+                                                            }}
+                                                            type='color'
+                                                            value={
+                                                                colorField.value
+                                                            }
+                                                        />
+                                                        <input
+                                                            aria-label={`${colorField.label} hex`}
+                                                            onChange={(
+                                                                event
+                                                            ) => {
+                                                                updateDraftColor(
+                                                                    colorField.field,
+                                                                    event.target
+                                                                        .value
+                                                                );
+                                                            }}
+                                                            value={
+                                                                colorField.value
+                                                            }
+                                                        />
+                                                    </label>
+                                                )
+                                            )}
                                         </div>
                                     </section>
                                 </div>
@@ -1235,11 +1229,6 @@ export function App(): JSX.Element {
                                                                     modeOption.previewSource
                                                                 }
                                                             />
-                                                            <span className='color-mode-option__label'>
-                                                                {
-                                                                    modeOption.label
-                                                                }
-                                                            </span>
                                                         </button>
                                                     )
                                                 )}
