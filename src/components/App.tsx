@@ -12,6 +12,7 @@ import {
 
 interface BadgeState {
     allCaps?: boolean;
+    smartRecolor?: boolean;
     badgeColor: string;
     id: string;
     logoColor: string;
@@ -23,6 +24,7 @@ interface BadgeState {
 
 interface EditorDraft {
     allCaps: boolean;
+    smartRecolor: boolean;
     badgeColor: string;
     logoColor: string;
     name: string;
@@ -57,6 +59,7 @@ const defaultBadgeSource =
 
 const defaultBadgeDraft: EditorDraft = {
     allCaps: false,
+    smartRecolor: false,
     badgeColor: '#5968c9',
     logoColor: '#ffffff',
     name: 'Badgical',
@@ -78,6 +81,9 @@ const textSize = 10;
 const frameSeconds = 2.4;
 const maxFrames = 20;
 const maxSvglResults = 8;
+const logoEdgeCanvasSize = 64;
+const logoEdgeAlphaThreshold = 24;
+const logoEdgeColorDistance = 72;
 const githubUrl = 'https://github.com/Hsiii/Badgical';
 const svglUrl = 'https://svgl.app';
 const defaultExportFolder = 'assets/badges/';
@@ -160,7 +166,8 @@ const colorizeSvgContent = (content: string, color: string): string =>
 const inlineSvgArtwork = (
     source: string,
     logoColor: string,
-    preserveOriginalArtwork = false
+    preserveOriginalArtwork = false,
+    smartRecolorBadgeColor?: string
 ): string => {
     const svgSource = minifySvgSource(source)
         .replaceAll(/<\?xml[\S\s]*?\?>/g, '')
@@ -177,7 +184,12 @@ const inlineSvgArtwork = (
         viewBox === undefined ? '' : ` viewBox="${escapeXml(viewBox)}"`;
 
     if (preserveOriginalArtwork) {
-        return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}>${content}</svg>`;
+        const artworkContent =
+            smartRecolorBadgeColor === undefined
+                ? content
+                : smartRecolorSvgContent(content, smartRecolorBadgeColor);
+
+        return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}>${artworkContent}</svg>`;
     }
 
     return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}><g fill="${escapeXml(logoColor)}" stroke="${escapeXml(logoColor)}" style="color:${escapeXml(logoColor)}">${colorizeSvgContent(content, logoColor)}</g></svg>`;
@@ -227,6 +239,234 @@ const normalizeHexInput = (value: string): string | undefined => {
     return `#${hexValue[0]}${hexValue[0]}${hexValue[1]}${hexValue[1]}${hexValue[2]}${hexValue[2]}`;
 };
 
+interface RgbColor {
+    readonly blue: number;
+    readonly green: number;
+    readonly red: number;
+}
+
+const getRgbColor = (color: string): RgbColor | undefined => {
+    const namedColor = {
+        black: '#000000',
+        white: '#ffffff',
+    }[color.trim().toLowerCase()];
+    const normalizedColor = normalizeHexInput(namedColor ?? color);
+
+    if (normalizedColor === undefined) {
+        return undefined;
+    }
+
+    return {
+        blue: Number.parseInt(normalizedColor.slice(5, 7), 16),
+        green: Number.parseInt(normalizedColor.slice(3, 5), 16),
+        red: Number.parseInt(normalizedColor.slice(1, 3), 16),
+    };
+};
+
+const getColorDistance = (
+    red: number,
+    green: number,
+    blue: number,
+    color: RgbColor
+): number =>
+    Math.hypot(red - color.red, green - color.green, blue - color.blue);
+
+const getRelativeLuminance = (color: RgbColor): number =>
+    (color.red * 299 + color.green * 587 + color.blue * 114) / 255_000;
+
+const getGrayHex = (luminance: number): string => {
+    const boundedLuminance = Math.min(1, Math.max(0, luminance));
+    const channel = Math.round(boundedLuminance * 255)
+        .toString(16)
+        .padStart(2, '0');
+
+    return `#${channel}${channel}${channel}`;
+};
+
+const getSmartRecolorPaint = (
+    paintColor: string,
+    badgeColor: string
+): string | undefined => {
+    const paint = getRgbColor(paintColor);
+    const badge = getRgbColor(badgeColor);
+
+    if (paint === undefined || badge === undefined) {
+        return undefined;
+    }
+
+    const paintLuminance = getRelativeLuminance(paint);
+    const badgeLuminance = getRelativeLuminance(badge);
+
+    if (badgeLuminance < 0.5) {
+        return paintLuminance <= badgeLuminance + 0.1
+            ? '#ffffff'
+            : getGrayHex(Math.max(0.12, Math.min(0.42, 1 - paintLuminance)));
+    }
+
+    return paintLuminance >= badgeLuminance - 0.1
+        ? '#1f2328'
+        : getGrayHex(Math.min(0.88, Math.max(0.58, 1 - paintLuminance)));
+};
+
+const smartRecolorSvgPaint = (
+    match: string,
+    attribute: string,
+    quote: string,
+    paintColor: string,
+    badgeColor: string
+): string => {
+    const smartColor = getSmartRecolorPaint(paintColor, badgeColor);
+
+    return smartColor === undefined
+        ? match
+        : ` ${attribute}=${quote}${escapeXml(smartColor)}${quote}`;
+};
+
+const smartRecolorSvgContent = (content: string, badgeColor: string): string =>
+    content
+        .replaceAll(
+            /\s(fill|stroke)=(["'])(?!none|transparent|currentColor)(.*?)\2/giu,
+            (match, attribute: string, quote: string, paintColor: string) =>
+                smartRecolorSvgPaint(
+                    match,
+                    attribute,
+                    quote,
+                    paintColor,
+                    badgeColor
+                )
+        )
+        .replaceAll(/<stop\b[^>]*>/giu, (match) =>
+            match.replaceAll(
+                /\s(stop-color)=(["'])(.*?)\2/giu,
+                (
+                    stopMatch,
+                    attribute: string,
+                    quote: string,
+                    paintColor: string
+                ) =>
+                    smartRecolorSvgPaint(
+                        stopMatch,
+                        attribute,
+                        quote,
+                        paintColor,
+                        badgeColor
+                    )
+            )
+        );
+
+const hasTransparentNeighbor = (
+    pixels: Uint8ClampedArray,
+    x: number,
+    y: number
+): boolean => {
+    for (let yOffset = -1; yOffset <= 1; yOffset++) {
+        for (let xOffset = -1; xOffset <= 1; xOffset++) {
+            if (xOffset === 0 && yOffset === 0) {
+                continue;
+            }
+
+            const neighborX = x + xOffset;
+            const neighborY = y + yOffset;
+
+            if (
+                neighborX < 0 ||
+                neighborX >= logoEdgeCanvasSize ||
+                neighborY < 0 ||
+                neighborY >= logoEdgeCanvasSize
+            ) {
+                return true;
+            }
+
+            const alphaIndex =
+                (neighborY * logoEdgeCanvasSize + neighborX) * 4 + 3;
+
+            if (pixels[alphaIndex] <= logoEdgeAlphaThreshold) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+};
+
+const loadSvgImage = async (source: string): Promise<HTMLImageElement> =>
+    await new Promise((resolve, reject) => {
+        const image = new Image();
+
+        image.addEventListener('load', () => {
+            resolve(image);
+        });
+        image.addEventListener('error', () => {
+            reject(new Error('SVG logo rasterization failed'));
+        });
+        image.src = toDataUri(source);
+    });
+
+const logoColorTouchesBadgeEdge = async (
+    source: string,
+    badgeColor: string
+): Promise<boolean> => {
+    if (!isSvgSource(source)) {
+        return false;
+    }
+
+    const badgeRgb = getRgbColor(badgeColor);
+
+    if (badgeRgb === undefined) {
+        return false;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = logoEdgeCanvasSize;
+    canvas.height = logoEdgeCanvasSize;
+
+    const context = canvas.getContext('2d', {
+        willReadFrequently: true,
+    });
+
+    if (context === null) {
+        return false;
+    }
+
+    try {
+        const image = await loadSvgImage(source);
+
+        context.clearRect(0, 0, logoEdgeCanvasSize, logoEdgeCanvasSize);
+        context.drawImage(image, 0, 0, logoEdgeCanvasSize, logoEdgeCanvasSize);
+    } catch {
+        return false;
+    }
+
+    const pixels = context.getImageData(
+        0,
+        0,
+        logoEdgeCanvasSize,
+        logoEdgeCanvasSize
+    ).data;
+
+    for (let y = 0; y < logoEdgeCanvasSize; y++) {
+        for (let x = 0; x < logoEdgeCanvasSize; x++) {
+            const pixelIndex = (y * logoEdgeCanvasSize + x) * 4;
+            const alpha = pixels[pixelIndex + 3];
+
+            if (
+                alpha > logoEdgeAlphaThreshold &&
+                getColorDistance(
+                    pixels[pixelIndex],
+                    pixels[pixelIndex + 1],
+                    pixels[pixelIndex + 2],
+                    badgeRgb
+                ) < logoEdgeColorDistance &&
+                hasTransparentNeighbor(pixels, x, y)
+            ) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+};
+
 const materializeState = (state: BadgeState, _index: number): BadgeState => {
     const badgeColor =
         state.badgeColor.trim() === ''
@@ -237,6 +477,7 @@ const materializeState = (state: BadgeState, _index: number): BadgeState => {
     return {
         ...state,
         allCaps: state.allCaps ?? false,
+        smartRecolor: state.smartRecolor ?? false,
         badgeColor,
         logoColor:
             state.logoColor.trim() === '' ? defaultInk : state.logoColor.trim(),
@@ -331,7 +572,14 @@ const buildBadgeSvg = (
                     ? ` font-size="${textSize}" font-weight="700"`
                     : '';
 
-            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preserveOriginalArtwork || state.preserveOriginalArtwork === true)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
+            const preservesArtwork =
+                preserveOriginalArtwork ||
+                state.preserveOriginalArtwork === true;
+            const smartRecolorBadgeColor =
+                preservesArtwork && state.smartRecolor === true
+                    ? state.badgeColor
+                    : undefined;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preservesArtwork, smartRecolorBadgeColor)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
 
             if (visibleStates.length === 1) {
                 return content;
@@ -656,17 +904,67 @@ export function App(): JSX.Element {
         resultElement.scrollTop = 0;
     }, [query]);
 
+    useEffect(() => {
+        if (!draft.preserveOriginalArtwork) {
+            setDraft((currentDraft) =>
+                currentDraft.smartRecolor
+                    ? { ...currentDraft, smartRecolor: false }
+                    : currentDraft
+            );
+            return undefined;
+        }
+
+        let isCurrent = true;
+        const { badgeColor, source } = draft;
+
+        logoColorTouchesBadgeEdge(source, badgeColor)
+            .then((smartRecolor) => {
+                if (!isCurrent) {
+                    return;
+                }
+
+                setDraft((currentDraft) =>
+                    currentDraft.source === source &&
+                    currentDraft.badgeColor === badgeColor &&
+                    currentDraft.preserveOriginalArtwork &&
+                    currentDraft.smartRecolor !== smartRecolor
+                        ? { ...currentDraft, smartRecolor }
+                        : currentDraft
+                );
+            })
+            .catch(() => {
+                if (!isCurrent) {
+                    return;
+                }
+
+                setDraft((currentDraft) =>
+                    currentDraft.smartRecolor
+                        ? { ...currentDraft, smartRecolor: false }
+                        : currentDraft
+                );
+            });
+
+        return (): void => {
+            isCurrent = false;
+        };
+    }, [draft.badgeColor, draft.preserveOriginalArtwork, draft.source]);
+
     const applyColorMode = (
         nextBrandColor: string,
         mode: ColorMode
     ): Pick<
         EditorDraft,
-        'badgeColor' | 'logoColor' | 'preserveOriginalArtwork' | 'textColor'
+        | 'smartRecolor'
+        | 'badgeColor'
+        | 'logoColor'
+        | 'preserveOriginalArtwork'
+        | 'textColor'
     > => {
         const contrastColor = getReadableInk(nextBrandColor);
 
         if (mode === 'inverse') {
             return {
+                smartRecolor: false,
                 badgeColor: contrastColor,
                 logoColor: nextBrandColor,
                 preserveOriginalArtwork: true,
@@ -676,6 +974,7 @@ export function App(): JSX.Element {
 
         if (mode === 'custom') {
             return {
+                smartRecolor: draft.smartRecolor,
                 badgeColor: draft.badgeColor,
                 logoColor: draft.logoColor,
                 preserveOriginalArtwork: draft.preserveOriginalArtwork,
@@ -684,6 +983,7 @@ export function App(): JSX.Element {
         }
 
         return {
+            smartRecolor: false,
             badgeColor: nextBrandColor,
             logoColor: nextBrandColor,
             preserveOriginalArtwork: true,
@@ -735,21 +1035,42 @@ export function App(): JSX.Element {
 
                 return await response.text();
             })
-            .then((source) => {
+            .then(async (source) => {
                 const extractedBrandColor =
                     getPrimarySvgColor(source) ?? defaultBadgeDraft.badgeColor;
-
-                setBrandColor(extractedBrandColor);
-                setDraft((currentDraft) => ({
-                    ...currentDraft,
-                    ...applyColorMode(extractedBrandColor, colorMode),
-                    name: result.title,
+                const modeDraft = applyColorMode(
+                    extractedBrandColor,
+                    colorMode
+                );
+                const smartRecolor = await logoColorTouchesBadgeEdge(
                     source,
-                }));
-                setSourceDraft(source);
-                setExportCopyState('idle');
-                setSelectionStatus('ready');
+                    modeDraft.badgeColor
+                );
+
+                return {
+                    smartRecolor: modeDraft.preserveOriginalArtwork
+                        ? smartRecolor
+                        : false,
+                    extractedBrandColor,
+                    modeDraft,
+                    source,
+                };
             })
+            .then(
+                ({ smartRecolor, extractedBrandColor, modeDraft, source }) => {
+                    setBrandColor(extractedBrandColor);
+                    setDraft((currentDraft) => ({
+                        ...currentDraft,
+                        ...modeDraft,
+                        smartRecolor,
+                        name: result.title,
+                        source,
+                    }));
+                    setSourceDraft(source);
+                    setExportCopyState('idle');
+                    setSelectionStatus('ready');
+                }
+            )
             .catch(() => {
                 setSelectionStatus('idle');
             });
@@ -779,6 +1100,7 @@ export function App(): JSX.Element {
 
         setDraft({
             allCaps: nextDraft.allCaps ?? false,
+            smartRecolor: nextDraft.smartRecolor ?? false,
             badgeColor: nextDraft.badgeColor,
             logoColor: nextDraft.logoColor,
             name: nextDraft.name,
