@@ -147,7 +147,6 @@ textarea {
     overflow: hidden;
 }
 
-.search-block,
 .frames,
 .output {
     display: grid;
@@ -157,10 +156,9 @@ textarea {
 }
 
 .search-block {
-    grid-template-rows: minmax(0, 1fr) minmax(168px, 184px);
+    display: grid;
+    grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
     min-height: 0;
-    padding: var(--space-16);
-    align-content: stretch;
     overflow: hidden;
 }
 
@@ -231,6 +229,7 @@ textarea {
 .search-panel {
     grid-template-rows: auto minmax(0, 1fr);
     gap: var(--space-12);
+    padding: var(--space-16);
 }
 
 .advanced-panel {
@@ -238,6 +237,8 @@ textarea {
     z-index: 1;
     grid-template-columns: minmax(320px, 1.15fr) minmax(240px, 1fr);
     gap: var(--space-16);
+    padding: var(--space-16);
+    border-top: 1px solid var(--clr-border);
     background: var(--clr-surface);
     overflow: hidden;
 }
@@ -408,10 +409,13 @@ textarea {
 
 .advanced-controls {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(120px, 144px);
+    grid-template-columns: minmax(0, 1fr) minmax(128px, 136px);
     gap: var(--space-16);
     min-width: 0;
     min-height: 0;
+    padding: var(--space-16);
+    border-radius: var(--space-8);
+    background: var(--clr-card);
 }
 
 .advanced-controls__left,
@@ -427,7 +431,7 @@ textarea {
 
 .advanced-controls__right {
     grid-template-rows: max-content max-content;
-    align-content: space-between;
+    align-content: start;
 }
 
 .advanced-text-input {
