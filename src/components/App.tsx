@@ -41,7 +41,6 @@ interface SvglApiError {
 
 type SvglSearchStatus = 'idle' | 'loading' | 'empty' | 'ready' | 'error';
 type ColorMode = 'brand' | 'inverse' | 'custom';
-type ComposeMode = 'search' | 'custom';
 type SelectionStatus = 'idle' | 'loading' | 'ready';
 type EditableColorTarget = 'badgeColor' | 'logoColor' | 'textColor';
 
@@ -474,7 +473,6 @@ export function App(): JSX.Element {
     >(undefined);
     const [selectionStatus, setSelectionStatus] =
         useState<SelectionStatus>('idle');
-    const [composeMode, setComposeMode] = useState<ComposeMode>('search');
     const [draft, setDraft] = useState(defaultBadgeDraft);
     const [brandColor, setBrandColor] = useState(defaultBadgeDraft.badgeColor);
     const [colorMode, setColorMode] = useState<ColorMode>('brand');
@@ -781,7 +779,6 @@ export function App(): JSX.Element {
             getPrimarySvgColor(nextDraft.source) ?? nextDraft.badgeColor
         );
         setColorMode('custom');
-        setComposeMode('custom');
         setEditingFrameId(state.id);
         setSourceDraft(nextDraft.source);
         setSelectionStatus('ready');
@@ -983,47 +980,16 @@ export function App(): JSX.Element {
                             aria-labelledby='content-title'
                             className='compose-panel'
                         >
-                            <div
-                                className={`search-block search-block--${composeMode}`}
-                            >
+                            <div className='search-block'>
                                 <div className='panel-heading search-heading'>
                                     <h2 id='content-title'>Badge Content</h2>
-                                    <div
-                                        aria-label='Composer mode'
-                                        className='mode-switch'
-                                        role='tablist'
-                                    >
-                                        <button
-                                            aria-selected={
-                                                composeMode === 'search'
-                                            }
-                                            className='mode-switch__option'
-                                            onClick={() => {
-                                                setComposeMode('search');
-                                            }}
-                                            role='tab'
-                                            type='button'
-                                        >
-                                            Search
-                                        </button>
-                                        <button
-                                            aria-selected={
-                                                composeMode === 'custom'
-                                            }
-                                            className='mode-switch__option'
-                                            onClick={() => {
-                                                setComposeMode('custom');
-                                            }}
-                                            role='tab'
-                                            type='button'
-                                        >
-                                            Custom
-                                        </button>
-                                    </div>
                                 </div>
 
-                                {composeMode === 'search' ? (
-                                    <>
+                                <div className='compose-inputs'>
+                                    <section
+                                        aria-label='Search brands'
+                                        className='search-panel'
+                                    >
                                         <div
                                             className='search-shell'
                                             onClick={() => {
@@ -1067,6 +1033,7 @@ export function App(): JSX.Element {
                                                 <span>Svgl</span>
                                             </a>
                                         </div>
+
                                         <div
                                             className='brand-results'
                                             ref={(element) => {
@@ -1118,185 +1085,103 @@ export function App(): JSX.Element {
                                                 </div>
                                             )}
                                         </div>
-                                    </>
-                                ) : (
-                                    <div className='custom-block'>
-                                        <section
-                                            aria-labelledby='logo-custom-title'
-                                            className='custom-group custom-group--logo'
-                                        >
-                                            <div className='panel-heading'>
-                                                <h2 id='logo-custom-title'>
-                                                    Logo
-                                                </h2>
-                                            </div>
-                                            <div className='logo-field'>
+                                    </section>
+
+                                    <section
+                                        aria-labelledby='advanced-title'
+                                        className='advanced-panel'
+                                    >
+                                        <div className='panel-heading advanced-heading'>
+                                            <h2 id='advanced-title'>
+                                                Advanced
+                                            </h2>
+                                            <button
+                                                aria-label='Edit SVG source'
+                                                className='advanced-source-button'
+                                                onClick={openSourceDialog}
+                                                type='button'
+                                            >
+                                                <Pencil
+                                                    aria-hidden='true'
+                                                    size={16}
+                                                />
+                                                <span>SVG</span>
+                                            </button>
+                                        </div>
+
+                                        <div className='advanced-logo-row'>
+                                            <div className='advanced-logo-preview'>
                                                 {draftLogoSource ===
                                                 undefined ? (
-                                                    <span className='logo-field__empty'>
-                                                        No logo
-                                                    </span>
+                                                    <span>No logo</span>
                                                 ) : (
                                                     <img
                                                         alt=''
                                                         src={draftLogoSource}
                                                     />
                                                 )}
-                                                <button
-                                                    aria-label='Edit SVG source'
-                                                    className='logo-source-button'
-                                                    onClick={openSourceDialog}
-                                                    type='button'
+                                            </div>
+
+                                            <label className='field advanced-text-field'>
+                                                <span>Text</span>
+                                                <input
+                                                    aria-label='Badge text'
+                                                    onChange={(event) => {
+                                                        setDraft(
+                                                            (currentDraft) => ({
+                                                                ...currentDraft,
+                                                                name: event
+                                                                    .target
+                                                                    .value,
+                                                            })
+                                                        );
+                                                    }}
+                                                    placeholder='Badge text'
+                                                    value={draft.name}
+                                                />
+                                            </label>
+                                        </div>
+
+                                        <div className='advanced-colors'>
+                                            {[
+                                                ...badgeTextColorFields,
+                                                ...logoColorFields,
+                                            ].map((colorField) => (
+                                                <label
+                                                    className='custom-color-field'
+                                                    key={colorField.field}
                                                 >
-                                                    <Pencil
-                                                        aria-hidden='true'
-                                                        size={16}
-                                                    />
-                                                    <span>Edit</span>
-                                                </button>
-                                            </div>
-                                            <div className='custom-colors custom-colors--logo'>
-                                                {logoColorFields.map(
-                                                    (colorField) => (
-                                                        <label
-                                                            className='custom-color-field'
-                                                            key={
-                                                                colorField.field
-                                                            }
-                                                        >
-                                                            <span>
-                                                                {
-                                                                    colorField.label
-                                                                }
-                                                            </span>
-                                                            <input
-                                                                aria-label={`${colorField.label} color`}
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateDraftColor(
-                                                                        colorField.field,
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='color'
-                                                                value={
-                                                                    colorField.value
-                                                                }
-                                                            />
-                                                            <input
-                                                                aria-label={`${colorField.label} hex`}
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateDraftColor(
-                                                                        colorField.field,
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                value={
-                                                                    colorField.value
-                                                                }
-                                                            />
-                                                        </label>
-                                                    )
-                                                )}
-                                            </div>
-                                        </section>
-
-                                        <section
-                                            aria-labelledby='text-custom-title'
-                                            className='custom-group custom-group--text'
-                                        >
-                                            <div className='panel-heading text-heading'>
-                                                <h2 id='text-custom-title'>
-                                                    Badge & text
-                                                </h2>
-                                            </div>
-
-                                            <div className='custom-colors custom-colors--text'>
-                                                {badgeTextColorFields.map(
-                                                    (colorField) => (
-                                                        <label
-                                                            className='custom-color-field'
-                                                            key={
-                                                                colorField.field
-                                                            }
-                                                        >
-                                                            <span>
-                                                                {
-                                                                    colorField.label
-                                                                }
-                                                            </span>
-                                                            <input
-                                                                aria-label={`${colorField.label} color`}
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateDraftColor(
-                                                                        colorField.field,
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='color'
-                                                                value={
-                                                                    colorField.value
-                                                                }
-                                                            />
-                                                            <input
-                                                                aria-label={`${colorField.label} hex`}
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateDraftColor(
-                                                                        colorField.field,
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                value={
-                                                                    colorField.value
-                                                                }
-                                                            />
-                                                        </label>
-                                                    )
-                                                )}
-                                            </div>
-
-                                            <div
-                                                aria-labelledby='text-custom-title'
-                                                className='quick-edit'
-                                            >
-                                                <label className='field'>
+                                                    <span>
+                                                        {colorField.label}
+                                                    </span>
                                                     <input
-                                                        aria-label='Badge text'
+                                                        aria-label={`${colorField.label} color`}
                                                         onChange={(event) => {
-                                                            setDraft(
-                                                                (
-                                                                    currentDraft
-                                                                ) => ({
-                                                                    ...currentDraft,
-                                                                    name: event
-                                                                        .target
-                                                                        .value,
-                                                                })
+                                                            updateDraftColor(
+                                                                colorField.field,
+                                                                event.target
+                                                                    .value
                                                             );
                                                         }}
-                                                        placeholder='Badge text'
-                                                        value={draft.name}
+                                                        type='color'
+                                                        value={colorField.value}
+                                                    />
+                                                    <input
+                                                        aria-label={`${colorField.label} hex`}
+                                                        onChange={(event) => {
+                                                            updateDraftColor(
+                                                                colorField.field,
+                                                                event.target
+                                                                    .value
+                                                            );
+                                                        }}
+                                                        value={colorField.value}
                                                     />
                                                 </label>
-                                            </div>
-                                        </section>
-                                    </div>
-                                )}
+                                            ))}
+                                        </div>
+                                    </section>
+                                </div>
                             </div>
 
                             <div className='compose-bottom'>
