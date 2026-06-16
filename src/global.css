@@ -263,12 +263,12 @@ textarea {
 }
 
 .advanced-panel {
-    grid-template-rows: auto auto;
-    gap: var(--space-8);
-    align-content: start;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: var(--space-12);
+    align-content: stretch;
     padding-left: var(--space-16);
     border-left: 1px solid var(--clr-border);
-    overflow: auto;
+    overflow: hidden;
 }
 
 .search-shell {
@@ -312,21 +312,16 @@ textarea {
     font: var(--font-ui-control);
     color: var(--clr-text-muted);
     justify-self: center;
-}
-
-.powered-by:hover span {
-    text-decoration: underline;
-    text-underline-offset: var(--space-4);
+    text-decoration: none;
 }
 
 .powered-by span {
     text-decoration: underline;
-    text-underline-offset: var(--space-4);
 }
 
 .brand-results {
     min-height: 0;
-    max-height: calc(var(--space-48) * 6 + var(--space-16) * 2);
+    height: 100%;
     overflow: auto;
     scrollbar-gutter: stable both-edges;
     box-shadow:
@@ -462,9 +457,9 @@ textarea {
 
 .advanced-logo-row {
     display: grid;
-    grid-template-columns: var(--space-48) minmax(0, 1fr);
+    grid-template-columns: calc(var(--space-48) + var(--space-8)) minmax(0, 1fr);
     gap: var(--space-8);
-    align-items: end;
+    align-items: stretch;
     min-width: 0;
 }
 
@@ -505,6 +500,20 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-8);
     align-content: start;
+}
+
+.advanced-preview {
+    display: grid;
+    min-height: 0;
+    place-items: center;
+    border-radius: var(--space-8);
+    background: var(--clr-card);
+}
+
+.advanced-preview img {
+    width: min(100%, calc(var(--space-48) * 6));
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .custom-color-field {

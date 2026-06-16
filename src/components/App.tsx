@@ -506,6 +506,13 @@ export function App(): JSX.Element {
     const draftLogoSource = isSvgSource(materializedDraft.source)
         ? toDataUri(materializedDraft.source)
         : undefined;
+    const draftPreviewSource = toDataUri(
+        buildSingleBadgeSvg(
+            materializedDraft,
+            0,
+            materializedDraft.preserveOriginalArtwork
+        )
+    );
 
     useEffect(() => {
         const abortController = new AbortController();
@@ -1173,6 +1180,13 @@ export function App(): JSX.Element {
                                                     </label>
                                                 )
                                             )}
+                                        </div>
+
+                                        <div className='advanced-preview'>
+                                            <img
+                                                alt='Current badge draft preview'
+                                                src={draftPreviewSource}
+                                            />
                                         </div>
                                     </section>
                                 </div>
