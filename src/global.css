@@ -143,7 +143,7 @@ textarea {
 
 .compose-panel {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
     overflow: hidden;
 }
 
@@ -158,10 +158,18 @@ textarea {
 }
 
 .search-block {
-    grid-template-rows: auto auto auto;
     min-height: 0;
-    padding: var(--space-16) var(--space-16) 0;
-    align-content: start;
+    padding: var(--space-16);
+    align-content: stretch;
+    overflow: hidden;
+}
+
+.search-block--search {
+    grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.search-block--custom {
+    grid-template-rows: auto minmax(0, 1fr);
 }
 
 .compose-bottom {
@@ -331,8 +339,6 @@ textarea {
 .brand-results {
     min-height: 0;
     max-height: calc(var(--space-48) * 6 + var(--space-16) * 2);
-    margin-right: calc(var(--space-16) * -1);
-    margin-left: calc(var(--space-16) * -1);
     overflow: auto;
     box-shadow:
         inset 0 var(--space-4) var(--space-4) calc(var(--space-4) * -1)
@@ -479,6 +485,7 @@ textarea {
     gap: var(--space-16);
     min-height: 0;
     padding-bottom: var(--space-16);
+    overflow: auto;
 }
 
 .custom-group {

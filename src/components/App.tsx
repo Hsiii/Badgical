@@ -983,7 +983,9 @@ export function App(): JSX.Element {
                             aria-labelledby='content-title'
                             className='compose-panel'
                         >
-                            <div className='search-block'>
+                            <div
+                                className={`search-block search-block--${composeMode}`}
+                            >
                                 <div className='panel-heading search-heading'>
                                     <h2 id='content-title'>Badge Content</h2>
                                     <div
