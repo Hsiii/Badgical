@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import { Copy, Download, Pencil, Plus, Search, X } from 'lucide-react';
+import {
+    ArrowLeftRight,
+    Copy,
+    Download,
+    Pencil,
+    Plus,
+    Search,
+    X,
+} from 'lucide-react';
 
 interface BadgeState {
     allCaps?: boolean;
@@ -908,40 +916,6 @@ export function App(): JSX.Element {
         searchMessage = 'SVGL search is unavailable right now. Try again.';
     }
 
-    const getModePreviewSource = (mode: ColorMode): string => {
-        const colors = applyColorMode(brandColor, mode);
-
-        return toDataUri(
-            buildSingleBadgeSvg(
-                materializeState(
-                    {
-                        ...draft,
-                        ...colors,
-                        id: `mode-${mode}`,
-                    },
-                    0
-                ),
-                0,
-                mode === 'brand'
-            )
-        );
-    };
-    const colorModes: ReadonlyArray<{
-        readonly label: string;
-        readonly mode: ColorMode;
-        readonly previewSource: string;
-    }> = [
-        {
-            label: 'Default',
-            mode: 'brand',
-            previewSource: getModePreviewSource('brand'),
-        },
-        {
-            label: 'Inverse',
-            mode: 'inverse',
-            previewSource: getModePreviewSource('inverse'),
-        },
-    ];
     const badgeTextColorFields: ReadonlyArray<{
         readonly field: EditableColorTarget;
         readonly label: string;
@@ -1187,96 +1161,67 @@ export function App(): JSX.Element {
                                                 alt='Current badge draft preview'
                                                 src={draftPreviewSource}
                                             />
+                                            <div className='advanced-preview__actions'>
+                                                <button
+                                                    className='button button--secondary'
+                                                    disabled={
+                                                        selectedResult ===
+                                                            undefined ||
+                                                        selectionStatus !==
+                                                            'ready'
+                                                    }
+                                                    onClick={() => {
+                                                        selectColorMode(
+                                                            colorMode ===
+                                                                'inverse'
+                                                                ? 'brand'
+                                                                : 'inverse'
+                                                        );
+                                                    }}
+                                                    type='button'
+                                                >
+                                                    <ArrowLeftRight
+                                                        aria-hidden='true'
+                                                        size={16}
+                                                    />
+                                                    Invert
+                                                </button>
+                                                <button
+                                                    className='button button--primary add-frame'
+                                                    disabled={
+                                                        editingFrameId ===
+                                                            undefined &&
+                                                        (selectedResult ===
+                                                            undefined ||
+                                                            selectionStatus !==
+                                                                'ready' ||
+                                                            states.length >=
+                                                                maxFrames)
+                                                    }
+                                                    onClick={addDraftFrame}
+                                                    type='button'
+                                                >
+                                                    {editingFrameId ===
+                                                    undefined ? (
+                                                        <Plus
+                                                            aria-hidden='true'
+                                                            size={16}
+                                                        />
+                                                    ) : (
+                                                        <Pencil
+                                                            aria-hidden='true'
+                                                            size={16}
+                                                        />
+                                                    )}
+                                                    {editingFrameId ===
+                                                    undefined
+                                                        ? 'Add Frame'
+                                                        : 'Update Frame'}
+                                                </button>
+                                            </div>
                                         </div>
                                     </section>
                                 </div>
-                            </div>
-
-                            <div className='compose-bottom'>
-                                <section
-                                    aria-labelledby='color-title'
-                                    className='color-block'
-                                >
-                                    <div className='variant-controls'>
-                                        <div className='panel-heading'>
-                                            <h2 id='color-title'>Variants</h2>
-                                        </div>
-
-                                        {selectedResult === undefined ||
-                                        selectionStatus !== 'ready' ? (
-                                            <div className='empty-state variant-empty'>
-                                                {selectionStatus === 'loading'
-                                                    ? 'Loading brand variants.'
-                                                    : 'Pick a brand to preview variants.'}
-                                            </div>
-                                        ) : (
-                                            <div
-                                                aria-label='Color mode'
-                                                className='color-mode-switch'
-                                                role='radiogroup'
-                                            >
-                                                {colorModes.map(
-                                                    (modeOption) => (
-                                                        <button
-                                                            aria-checked={
-                                                                colorMode ===
-                                                                modeOption.mode
-                                                            }
-                                                            aria-label={
-                                                                modeOption.label
-                                                            }
-                                                            className='color-mode-option'
-                                                            key={
-                                                                modeOption.mode
-                                                            }
-                                                            onClick={() => {
-                                                                selectColorMode(
-                                                                    modeOption.mode
-                                                                );
-                                                            }}
-                                                            role='radio'
-                                                            type='button'
-                                                        >
-                                                            <img
-                                                                alt=''
-                                                                src={
-                                                                    modeOption.previewSource
-                                                                }
-                                                            />
-                                                        </button>
-                                                    )
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <button
-                                        className='button button--primary add-frame'
-                                        disabled={
-                                            editingFrameId === undefined &&
-                                            (selectedResult === undefined ||
-                                                selectionStatus !== 'ready' ||
-                                                states.length >= maxFrames)
-                                        }
-                                        onClick={addDraftFrame}
-                                        type='button'
-                                    >
-                                        {editingFrameId === undefined ? (
-                                            <Plus
-                                                aria-hidden='true'
-                                                size={16}
-                                            />
-                                        ) : (
-                                            <Pencil
-                                                aria-hidden='true'
-                                                size={16}
-                                            />
-                                        )}
-                                        {editingFrameId === undefined
-                                            ? 'Add Frame'
-                                            : 'Update Frame'}
-                                    </button>
-                                </section>
                             </div>
                         </section>
 

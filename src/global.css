@@ -143,12 +143,11 @@ textarea {
 
 .compose-panel {
     display: grid;
-    grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-rows: minmax(0, 1fr);
     overflow: hidden;
 }
 
 .search-block,
-.color-block,
 .frames,
 .output {
     display: grid;
@@ -163,22 +162,6 @@ textarea {
     padding: var(--space-16);
     align-content: stretch;
     overflow: hidden;
-}
-
-.compose-bottom {
-    min-height: 0;
-    border-top: 1px solid var(--clr-border);
-    background: var(--clr-surface);
-}
-
-.color-block {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto;
-    gap: var(--space-12);
-    height: 100%;
-    min-height: 0;
-    align-content: stretch;
-    overflow: visible;
 }
 
 .frame-rail {
@@ -323,7 +306,7 @@ textarea {
     min-height: 0;
     height: 100%;
     overflow: auto;
-    scrollbar-gutter: stable both-edges;
+    scrollbar-gutter: stable;
     box-shadow:
         inset 0 var(--space-4) var(--space-4) calc(var(--space-4) * -1)
             var(--clr-edge-shadow),
@@ -337,7 +320,7 @@ textarea {
     gap: var(--space-8);
     align-content: start;
     min-height: 100%;
-    padding: 0 var(--space-8) var(--space-8);
+    padding: 0 var(--space-8) var(--space-8) 0;
 }
 
 .brand-result {
@@ -403,58 +386,6 @@ textarea {
     min-height: calc(var(--space-48) * 6 + var(--space-16) * 2);
 }
 
-.variant-empty {
-    min-height: 100%;
-    padding: 0;
-}
-
-.variant-controls {
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
-    grid-column: 1;
-    grid-row: 1;
-    gap: var(--space-12);
-    align-content: start;
-}
-
-.color-mode-switch {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-12);
-    align-content: stretch;
-    height: 100%;
-}
-
-.color-mode-option {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: center;
-    align-content: center;
-    justify-items: center;
-    min-width: 0;
-    min-height: calc(var(--space-48) * 2);
-    padding: var(--space-12);
-    border: 1px solid var(--clr-border);
-    border-radius: var(--space-8);
-    background: var(--clr-card);
-    color: var(--clr-text);
-    cursor: pointer;
-}
-
-.color-mode-option[aria-checked='true'] {
-    border-color: var(--clr-border-strong);
-    background: var(--clr-accent-soft);
-    box-shadow: inset 0 0 0 1px var(--clr-border-strong);
-}
-
-.color-mode-option img {
-    align-self: center;
-    justify-self: center;
-    width: min(100%, calc(var(--space-48) * 7));
-    height: calc(var(--space-48) * 2);
-    object-fit: contain;
-}
-
 .advanced-logo-row {
     display: grid;
     grid-template-columns: calc(var(--space-48) + var(--space-8)) minmax(0, 1fr);
@@ -504,8 +435,11 @@ textarea {
 
 .advanced-preview {
     display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: var(--space-12);
     min-height: 0;
     place-items: center;
+    padding: var(--space-16);
     border-radius: var(--space-8);
     background: var(--clr-card);
 }
@@ -514,6 +448,13 @@ textarea {
     width: min(100%, calc(var(--space-48) * 6));
     max-height: 100%;
     object-fit: contain;
+}
+
+.advanced-preview__actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: var(--space-8);
+    width: min(100%, calc(var(--space-48) * 7));
 }
 
 .custom-color-field {
@@ -635,11 +576,7 @@ textarea {
 }
 
 .add-frame {
-    grid-column: 1;
-    grid-row: 2;
-    align-self: end;
-    justify-self: center;
-    width: min(100%, calc(var(--space-48) * 6 + var(--space-40)));
+    width: 100%;
 }
 
 .frame-list {
@@ -891,7 +828,6 @@ textarea {
 
     .advanced-colors,
     .brand-results,
-    .color-mode-switch,
     .compose-inputs,
     .export-dialog__actions,
     .export-fields {
