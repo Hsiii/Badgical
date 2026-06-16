@@ -1,14 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import {
-    ArrowLeftRight,
-    Copy,
-    Download,
-    Pencil,
-    Plus,
-    Search,
-    X,
-} from 'lucide-react';
+import { Copy, Download, Pencil, Plus, Search, X } from 'lucide-react';
 
 interface BadgeState {
     allCaps?: boolean;
@@ -51,9 +43,8 @@ interface SvglApiError {
 
 type SvglSearchStatus = 'idle' | 'loading' | 'empty' | 'ready' | 'error';
 type ColorMode = 'brand' | 'inverse' | 'custom';
+type VariantMode = Exclude<ColorMode, 'custom'>;
 type SelectionStatus = 'idle' | 'loading' | 'ready';
-type EditableColorTarget = 'badgeColor' | 'textColor';
-
 const defaultBadgeSource =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="spark-fill" x1="8" x2="24" y1="22" y2="2" gradientUnits="userSpaceOnUse"><stop stop-color="#7436d9"/><stop offset="1" stop-color="#ffc2f7"/></linearGradient><path id="spark-shape" d="M18 9C20.240000000000002 14.76 20.240000000000002 14.76 26 17C20.240000000000002 19.240000000000002 20.240000000000002 19.240000000000002 18 25C15.76 19.240000000000002 15.76 19.240000000000002 10 17C15.76 14.76 15.76 14.76 18 9Z"/><g id="badge-shape"><rect x="3.2" y="20.8" width="26.8" height="9.2" rx="2.4"/><rect x="18.6" y="20.8" width="11.4" height="9.2" rx="2.4"/></g></defs><g transform="translate(1.4 -1.625)"><use href="#badge-shape" fill="#112255" transform="translate(-2 -3.75)"/><use href="#spark-shape" fill="url(#spark-fill)"/></g></svg>';
 
@@ -245,6 +236,12 @@ interface RgbColor {
     readonly red: number;
 }
 
+interface HsvColor {
+    readonly hue: number;
+    readonly saturation: number;
+    readonly value: number;
+}
+
 const getRgbColor = (color: string): RgbColor | undefined => {
     const namedColor = {
         black: '#000000',
@@ -260,6 +257,76 @@ const getRgbColor = (color: string): RgbColor | undefined => {
         blue: Number.parseInt(normalizedColor.slice(5, 7), 16),
         green: Number.parseInt(normalizedColor.slice(3, 5), 16),
         red: Number.parseInt(normalizedColor.slice(1, 3), 16),
+    };
+};
+
+const getHexChannel = (value: number): string =>
+    Math.round(Math.min(255, Math.max(0, value)))
+        .toString(16)
+        .padStart(2, '0');
+
+const getHexColor = ({ blue, green, red }: RgbColor): string =>
+    `#${getHexChannel(red)}${getHexChannel(green)}${getHexChannel(blue)}`;
+
+const getHsvColor = ({ blue, green, red }: RgbColor): HsvColor => {
+    const normalizedRed = red / 255;
+    const normalizedGreen = green / 255;
+    const normalizedBlue = blue / 255;
+    const maxChannel = Math.max(normalizedRed, normalizedGreen, normalizedBlue);
+    const minChannel = Math.min(normalizedRed, normalizedGreen, normalizedBlue);
+    const delta = maxChannel - minChannel;
+    let hue = 0;
+
+    if (delta !== 0) {
+        if (maxChannel === normalizedRed) {
+            hue = 60 * (((normalizedGreen - normalizedBlue) / delta) % 6);
+        } else if (maxChannel === normalizedGreen) {
+            hue = 60 * ((normalizedBlue - normalizedRed) / delta + 2);
+        } else {
+            hue = 60 * ((normalizedRed - normalizedGreen) / delta + 4);
+        }
+    }
+
+    return {
+        hue: Math.round((hue + 360) % 360),
+        saturation: maxChannel === 0 ? 0 : delta / maxChannel,
+        value: maxChannel,
+    };
+};
+
+const getRgbFromHsv = ({ hue, saturation, value }: HsvColor): RgbColor => {
+    const chroma = value * saturation;
+    const huePrime = hue / 60;
+    const x = chroma * (1 - Math.abs((huePrime % 2) - 1));
+    const match = value - chroma;
+    let red = 0;
+    let green = 0;
+    let blue = 0;
+
+    if (huePrime >= 0 && huePrime < 1) {
+        red = chroma;
+        green = x;
+    } else if (huePrime < 2) {
+        red = x;
+        green = chroma;
+    } else if (huePrime < 3) {
+        green = chroma;
+        blue = x;
+    } else if (huePrime < 4) {
+        green = x;
+        blue = chroma;
+    } else if (huePrime < 5) {
+        red = x;
+        blue = chroma;
+    } else {
+        red = chroma;
+        blue = x;
+    }
+
+    return {
+        blue: (blue + match) * 255,
+        green: (green + match) * 255,
+        red: (red + match) * 255,
     };
 };
 
@@ -1006,21 +1073,74 @@ export function App(): JSX.Element {
         setDraftBrandColor(brandColor, mode);
     };
 
-    const updateDraftColor = (
-        field: EditableColorTarget,
-        value: string
-    ): void => {
+    const updateDraftColor = (value: string): void => {
         const normalizedColor = normalizeHexInput(value);
 
         if (normalizedColor === undefined) {
             return;
         }
 
+        setBrandColor(normalizedColor);
         setDraft((currentDraft) => ({
             ...currentDraft,
-            [field]: normalizedColor,
+            badgeColor: normalizedColor,
+            textColor: getReadableInk(normalizedColor),
         }));
         setColorMode('custom');
+    };
+
+    const updateDraftColorChannel = (
+        channel: keyof RgbColor,
+        value: string
+    ): void => {
+        const currentColor =
+            getRgbColor(draft.badgeColor) ??
+            getRgbColor(defaultBadgeDraft.badgeColor);
+        const channelValue = Number.parseInt(value, 10);
+
+        if (
+            currentColor === undefined ||
+            Number.isNaN(channelValue) ||
+            channelValue < 0 ||
+            channelValue > 255
+        ) {
+            return;
+        }
+
+        updateDraftColor(
+            getHexColor({
+                ...currentColor,
+                [channel]: channelValue,
+            })
+        );
+    };
+
+    const updateDraftHue = (value: string): void => {
+        const currentColor =
+            getRgbColor(draft.badgeColor) ??
+            getRgbColor(defaultBadgeDraft.badgeColor);
+        const hue = Number.parseInt(value, 10);
+
+        if (
+            currentColor === undefined ||
+            Number.isNaN(hue) ||
+            hue < 0 ||
+            hue > 360
+        ) {
+            return;
+        }
+
+        const currentHsv = getHsvColor(currentColor);
+
+        updateDraftColor(
+            getHexColor(
+                getRgbFromHsv({
+                    ...currentHsv,
+                    hue,
+                    saturation: Math.max(currentHsv.saturation, 0.72),
+                })
+            )
+        );
     };
 
     const chooseSearchResult = (result: SvglResult): void => {
@@ -1221,6 +1341,33 @@ export function App(): JSX.Element {
     const visibleResults = searchTerm === '' ? catalogResults : results;
     const resultStatus = searchTerm === '' ? catalogStatus : searchStatus;
     const resultsAreLoading = resultStatus === 'loading';
+    const draftPrimaryColor =
+        normalizeHexInput(draft.badgeColor) ?? defaultBadgeDraft.badgeColor;
+    const draftPrimaryRgb =
+        getRgbColor(draftPrimaryColor) ??
+        getRgbColor(defaultBadgeDraft.badgeColor);
+    const draftPrimaryHsv =
+        draftPrimaryRgb === undefined
+            ? { hue: 0, saturation: 0, value: 0 }
+            : getHsvColor(draftPrimaryRgb);
+    const variantPreviews = (
+        [
+            ['brand', 'Default'],
+            ['inverse', 'Inverse'],
+        ] as const satisfies ReadonlyArray<readonly [VariantMode, string]>
+    ).map(([mode, label]) => {
+        const variantDraft = {
+            ...draft,
+            ...applyColorMode(brandColor, mode),
+            id: `variant-${mode}`,
+        };
+
+        return {
+            label,
+            mode,
+            source: toDataUri(buildSingleBadgeSvg(variantDraft, 0)),
+        };
+    });
 
     return (
         <main className='app'>
@@ -1410,117 +1557,195 @@ export function App(): JSX.Element {
                                                     </button>
                                                 </div>
 
-                                                <label className='field'>
-                                                    <span>Badge Color</span>
-                                                    <span className='color-swatch-control'>
-                                                        <input
-                                                            aria-label='Badge color'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateDraftColor(
-                                                                    'badgeColor',
-                                                                    event.target
-                                                                        .value
-                                                                );
-                                                            }}
-                                                            title='Badge color'
-                                                            type='color'
-                                                            value={
-                                                                draft.badgeColor
-                                                            }
-                                                        />
-                                                    </span>
-                                                </label>
+                                                <div className='field advanced-color-field'>
+                                                    <span>Primary Color</span>
+                                                    <div className='color-control'>
+                                                        <label className='color-control__swatch'>
+                                                            <input
+                                                                aria-label='Primary color'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateDraftColor(
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                title='Primary color'
+                                                                type='color'
+                                                                value={
+                                                                    draftPrimaryColor
+                                                                }
+                                                            />
+                                                        </label>
 
-                                                <label className='field'>
-                                                    <span>Text Color</span>
-                                                    <span className='color-swatch-control'>
                                                         <input
-                                                            aria-label='Text color'
+                                                            aria-label='Primary color hue'
+                                                            className='color-control__hue'
+                                                            max='360'
+                                                            min='0'
                                                             onChange={(
                                                                 event
                                                             ) => {
-                                                                updateDraftColor(
-                                                                    'textColor',
+                                                                updateDraftHue(
                                                                     event.target
                                                                         .value
                                                                 );
                                                             }}
-                                                            title='Text color'
-                                                            type='color'
+                                                            step='1'
+                                                            type='range'
                                                             value={
-                                                                draft.textColor
+                                                                draftPrimaryHsv.hue
                                                             }
                                                         />
-                                                    </span>
-                                                </label>
+
+                                                        <div className='color-control__inputs'>
+                                                            <input
+                                                                aria-label='Primary red'
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateDraftColorChannel(
+                                                                        'red',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='number'
+                                                                value={
+                                                                    draftPrimaryRgb?.red ??
+                                                                    0
+                                                                }
+                                                            />
+                                                            <input
+                                                                aria-label='Primary green'
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateDraftColorChannel(
+                                                                        'green',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='number'
+                                                                value={
+                                                                    draftPrimaryRgb?.green ??
+                                                                    0
+                                                                }
+                                                            />
+                                                            <input
+                                                                aria-label='Primary blue'
+                                                                max='255'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateDraftColorChannel(
+                                                                        'blue',
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                type='number'
+                                                                value={
+                                                                    draftPrimaryRgb?.blue ??
+                                                                    0
+                                                                }
+                                                            />
+                                                            <input
+                                                                aria-label='Primary hex'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateDraftColor(
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                value={
+                                                                    draftPrimaryColor
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div className='advanced-controls__right'>
-                                            <button
-                                                className='button button--secondary'
-                                                disabled={
-                                                    selectedResult ===
-                                                        undefined ||
-                                                    selectionStatus !== 'ready'
-                                                }
-                                                onClick={() => {
-                                                    selectColorMode(
-                                                        colorMode === 'inverse'
-                                                            ? 'brand'
-                                                            : 'inverse'
-                                                    );
-                                                }}
-                                                type='button'
-                                            >
-                                                <ArrowLeftRight
-                                                    aria-hidden='true'
-                                                    size={16}
-                                                />
-                                                Invert
-                                            </button>
-
-                                            <button
-                                                className='button button--primary add-frame'
-                                                disabled={
-                                                    editingFrameId ===
-                                                        undefined &&
-                                                    (selectedResult ===
-                                                        undefined ||
-                                                        selectionStatus !==
-                                                            'ready' ||
-                                                        states.length >=
-                                                            maxFrames)
-                                                }
-                                                onClick={addDraftFrame}
-                                                type='button'
-                                            >
-                                                {editingFrameId ===
-                                                undefined ? (
-                                                    <Plus
-                                                        aria-hidden='true'
-                                                        size={16}
-                                                    />
-                                                ) : (
-                                                    <Pencil
-                                                        aria-hidden='true'
-                                                        size={16}
-                                                    />
-                                                )}
-                                                {editingFrameId === undefined
-                                                    ? 'Add Frame'
-                                                    : 'Update Frame'}
-                                            </button>
                                         </div>
                                     </div>
 
-                                    <div className='advanced-preview'>
-                                        <img
-                                            alt='Current badge draft preview'
-                                            src={draftPreviewSource}
-                                        />
+                                    <div className='advanced-preview-stack'>
+                                        <div className='advanced-preview'>
+                                            <img
+                                                alt='Current badge draft preview'
+                                                src={draftPreviewSource}
+                                            />
+                                        </div>
+
+                                        <div
+                                            aria-label='Badge variants'
+                                            className='variant-options'
+                                        >
+                                            {variantPreviews.map((variant) => (
+                                                <button
+                                                    aria-pressed={
+                                                        colorMode ===
+                                                        variant.mode
+                                                    }
+                                                    className='variant-card'
+                                                    key={variant.mode}
+                                                    onClick={() => {
+                                                        selectColorMode(
+                                                            variant.mode
+                                                        );
+                                                    }}
+                                                    type='button'
+                                                >
+                                                    <img
+                                                        alt=''
+                                                        src={variant.source}
+                                                    />
+                                                    <span>{variant.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <button
+                                            className='button button--primary add-frame'
+                                            disabled={
+                                                editingFrameId === undefined &&
+                                                (selectedResult === undefined ||
+                                                    selectionStatus !==
+                                                        'ready' ||
+                                                    states.length >= maxFrames)
+                                            }
+                                            onClick={addDraftFrame}
+                                            type='button'
+                                        >
+                                            {editingFrameId === undefined ? (
+                                                <Plus
+                                                    aria-hidden='true'
+                                                    size={16}
+                                                />
+                                            ) : (
+                                                <Pencil
+                                                    aria-hidden='true'
+                                                    size={16}
+                                                />
+                                            )}
+                                            {editingFrameId === undefined
+                                                ? 'Add Frame'
+                                                : 'Update Frame'}
+                                        </button>
                                     </div>
                                 </section>
                             </div>
