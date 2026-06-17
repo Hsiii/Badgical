@@ -690,7 +690,15 @@ export function App(): JSX.Element {
     const normalizedExportRepo =
         trimmedExportRepo === '' ? defaultExportRepo : trimmedExportRepo;
     const rawGithubUrl = `https://raw.githubusercontent.com/${normalizedExportRepo}/HEAD/${exportPath}`;
-    const readmeMarkdown = `![Animated badge](${rawGithubUrl})`;
+    const badgeNames = states.map((state) => materializeState(state, 0).name);
+    const readmeAltText =
+        badgeNames.length === 0
+            ? 'Animated badge'
+            : `Animated badge cycling through ${new Intl.ListFormat('en', {
+                  style: 'long',
+                  type: 'conjunction',
+              }).format(badgeNames)}`;
+    const readmeMarkdown = `![${readmeAltText}](${rawGithubUrl})`;
 
     const copyReadmeMarkdown = (): void => {
         navigator.clipboard
