@@ -7,6 +7,7 @@ export default [
         ignores: [
             '.next/**',
             'dist/**',
+            'next-env.d.ts',
             'node_modules/**',
             'packages/create-hsi-app/**',
             'scripts/**',
