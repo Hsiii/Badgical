@@ -1,7 +1,7 @@
 import './FrameRail.css';
 
 import type { JSX, KeyboardEvent } from 'react';
-import { MoreHorizontal, Pencil, X } from 'lucide-react';
+import { MoreHorizontal, X } from 'lucide-react';
 
 import {
     maxFrameDelaySeconds,
@@ -143,8 +143,27 @@ export function FrameRail({
                             aria-current={
                                 editingFrameId === state.id ? 'true' : undefined
                             }
+                            aria-label={`Edit ${materializedState.name}`}
                             className='frame-card'
                             key={state.id}
+                            onClick={() => {
+                                editFrame(state);
+                            }}
+                            onKeyDown={(
+                                event: KeyboardEvent<HTMLDivElement>
+                            ) => {
+                                if (
+                                    event.key !== 'Enter' &&
+                                    event.key !== ' '
+                                ) {
+                                    return;
+                                }
+
+                                event.preventDefault();
+                                editFrame(state);
+                            }}
+                            role='button'
+                            tabIndex={0}
                         >
                             <img
                                 alt={`${materializedState.name} badge`}
@@ -152,20 +171,10 @@ export function FrameRail({
                             />
                             <div className='frame-card__actions'>
                                 <button
-                                    aria-label={`Edit ${materializedState.name}`}
-                                    className='frame-card__button'
-                                    onClick={() => {
-                                        editFrame(state);
-                                    }}
-                                    title='Edit frame'
-                                    type='button'
-                                >
-                                    <Pencil aria-hidden='true' size={16} />
-                                </button>
-                                <button
                                     aria-label={`Delete ${materializedState.name}`}
                                     className='frame-card__button'
-                                    onClick={() => {
+                                    onClick={(event) => {
+                                        event.stopPropagation();
                                         setDeleteCandidateId(state.id);
                                     }}
                                     title='Delete frame'

@@ -103,14 +103,15 @@
     display: grid;
     grid-template-columns:
         minmax(0, 1fr)
-        calc(var(--space-32) * 2 + var(--space-4));
+        var(--space-32);
     gap: var(--space-12);
     align-items: center;
     min-height: var(--space-48);
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-8);
     border: 1px solid transparent;
     border-radius: var(--space-8);
     animation: slide-frame 180ms ease both;
+    cursor: pointer;
 }
 
 .frame-card[aria-current='true'] {
@@ -127,8 +128,7 @@
 
 .frame-card__actions {
     display: grid;
-    grid-template-columns: repeat(2, var(--space-32));
-    gap: var(--space-4);
+    grid-template-columns: var(--space-32);
     justify-self: end;
 }
 
