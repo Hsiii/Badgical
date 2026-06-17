@@ -57,6 +57,7 @@ import type {
     VariantMode,
 } from '@/components/badge-builder/types';
 import { BrandSearchPanel } from '@/components/BrandSearchPanel';
+import { OutputPreview } from '@/components/OutputPreview';
 import { Topbar } from '@/components/Topbar';
 
 export function App(): JSX.Element {
@@ -1307,45 +1308,11 @@ export function App(): JSX.Element {
                                 </div>
                             </section>
 
-                            <section aria-label='Preview' className='output'>
-                                <div className='panel-heading'>
-                                    <h2>The Badgic</h2>
-                                </div>
-                                <div className='output__showcase'>
-                                    <div className='preview'>
-                                        {previewSource === '' ? (
-                                            <span>
-                                                Add frames to preview the
-                                                animated badge.
-                                            </span>
-                                        ) : (
-                                            <img
-                                                alt='Generated animated badge preview'
-                                                src={previewSource}
-                                            />
-                                        )}
-                                    </div>
-
-                                    <div className='output__actions'>
-                                        <button
-                                            aria-label='Export animated SVG'
-                                            className='button button--primary'
-                                            disabled={badgeSvg === ''}
-                                            onClick={() => {
-                                                setExportDialogOpen(true);
-                                            }}
-                                            title='Export'
-                                            type='button'
-                                        >
-                                            <Download
-                                                aria-hidden='true'
-                                                size={16}
-                                            />
-                                            Export
-                                        </button>
-                                    </div>
-                                </div>
-                            </section>
+                            <OutputPreview
+                                badgeSvg={badgeSvg}
+                                previewSource={previewSource}
+                                setExportDialogOpen={setExportDialogOpen}
+                            />
                         </aside>
                     </section>
                 </div>
