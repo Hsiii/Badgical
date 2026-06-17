@@ -23,7 +23,14 @@
 }
 
 .export-dialog {
-    width: min(100%, calc(var(--space-48) * 16));
+    width: min(100%, calc(var(--space-48) * 10));
+}
+
+.export-dialog__close {
+    width: var(--space-32);
+    height: var(--space-32);
+    min-height: var(--space-32);
+    justify-self: end;
 }
 
 .export-guide {
@@ -37,17 +44,10 @@
 
 .export-fields {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--space-12);
 }
 
-.export-copy-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content;
-    gap: var(--space-8);
-}
-
-.export-field textarea,
 .source-dialog__field textarea {
     width: 100%;
     padding: var(--space-12);
@@ -62,11 +62,6 @@
     min-height: calc(var(--space-48) * 7);
 }
 
-.export-field textarea {
-    min-height: calc(var(--space-48) * 2);
-    resize: none;
-}
-
 .confirm-dialog p {
     color: var(--clr-text);
     font: var(--font-ui-caption);
@@ -79,16 +74,5 @@
 }
 
 .export-dialog__actions {
-    grid-template-columns: 1fr 1fr 1fr;
-}
-
-@media (max-width: 640px) {
-    .export-dialog__actions,
-    .export-fields {
-        grid-template-columns: 1fr;
-    }
-
-    .export-copy-row {
-        grid-template-columns: 1fr;
-    }
+    grid-template-columns: 1fr;
 }

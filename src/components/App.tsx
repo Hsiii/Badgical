@@ -947,7 +947,6 @@ export function App({
                 exportPath={exportPath}
                 exportRepo={exportRepo}
                 normalizedExportRepo={normalizedExportRepo}
-                readmeMarkdown={readmeMarkdown}
                 saveSourceDialog={saveSourceDialog}
                 setDeleteCandidateId={setDeleteCandidateId}
                 setExportCopyState={setExportCopyState}

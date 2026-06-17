@@ -1,7 +1,7 @@
 import './BuilderDialogs.css';
 
 import type { Dispatch, JSX, SetStateAction } from 'react';
-import { Copy, Download } from 'lucide-react';
+import { Copy, Download, X } from 'lucide-react';
 
 import { defaultExportFolder } from '@/components/badge-builder/constants';
 import type { UiCopy } from '@/components/i18n';
@@ -18,7 +18,6 @@ interface BuilderDialogsProps {
     readonly exportPath: string;
     readonly exportRepo: string;
     readonly normalizedExportRepo: string;
-    readonly readmeMarkdown: string;
     readonly saveSourceDialog: () => void;
     readonly setDeleteCandidateId: (id: string | undefined) => void;
     readonly setExportCopyState: Dispatch<SetStateAction<'idle' | 'markdown'>>;
@@ -43,7 +42,6 @@ export function BuilderDialogs({
     exportPath,
     exportRepo,
     normalizedExportRepo,
-    readmeMarkdown,
     saveSourceDialog,
     setDeleteCandidateId,
     setExportCopyState,
@@ -158,6 +156,16 @@ export function BuilderDialogs({
                     >
                         <div className='panel-heading'>
                             <h2 id='export-dialog-title'>{copy.exportBadge}</h2>
+                            <button
+                                aria-label={copy.close}
+                                className='icon-button export-dialog__close'
+                                onClick={() => {
+                                    setExportDialogOpen(false);
+                                }}
+                                type='button'
+                            >
+                                <X aria-hidden='true' size={16} />
+                            </button>
                         </div>
 
                         <div className='export-fields'>
@@ -192,21 +200,7 @@ export function BuilderDialogs({
                             {copy.exportGuide(exportPath, normalizedExportRepo)}
                         </p>
 
-                        <label className='field export-field'>
-                            <span>{copy.readmeMarkdown}</span>
-                            <textarea readOnly value={readmeMarkdown} />
-                        </label>
-
                         <div className='confirm-dialog__actions export-dialog__actions'>
-                            <button
-                                className='button button--secondary'
-                                onClick={() => {
-                                    setExportDialogOpen(false);
-                                }}
-                                type='button'
-                            >
-                                {copy.close}
-                            </button>
                             <button
                                 className='button button--primary'
                                 onClick={copyReadmeMarkdown}
