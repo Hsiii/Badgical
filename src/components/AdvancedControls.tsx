@@ -269,109 +269,114 @@ export function AdvancedControls({
                             </div>
 
                             <div className='color-control__inputs'>
-                                <label className='color-control__hex-row'>
-                                    <span>Hex</span>
-                                    <input
-                                        aria-label='Primary hex'
-                                        onChange={(event) => {
-                                            updateDraftColor(
-                                                event.target.value
-                                            );
-                                        }}
-                                        value={draftPrimaryColor}
-                                    />
-                                </label>
+                                <div className='color-control__value-group'>
+                                    <label className='color-control__hex-row'>
+                                        <span>Hex</span>
+                                        <input
+                                            aria-label='Primary hex'
+                                            onChange={(event) => {
+                                                updateDraftColor(
+                                                    event.target.value
+                                                );
+                                            }}
+                                            value={draftPrimaryColor}
+                                        />
+                                    </label>
 
-                                <div className='color-control__rgb-row'>
-                                    <span>RGB</span>
-                                    <div className='color-control__rgb-group'>
-                                        <span className='color-control__rgb-slot'>
-                                            <input
-                                                aria-label='Primary red'
-                                                inputMode='numeric'
-                                                onChange={(event) => {
-                                                    updateDraftColorChannel(
-                                                        'red',
-                                                        event.target.value
-                                                    );
-                                                }}
-                                                onKeyDown={(event) => {
-                                                    handleRgbChannelKeyDown(
-                                                        event,
-                                                        'red',
+                                    <div className='color-control__rgb-row'>
+                                        <span>RGB</span>
+                                        <div className='color-control__rgb-group'>
+                                            <span className='color-control__rgb-slot'>
+                                                <input
+                                                    aria-label='Primary red'
+                                                    inputMode='numeric'
+                                                    onChange={(event) => {
+                                                        updateDraftColorChannel(
+                                                            'red',
+                                                            event.target.value
+                                                        );
+                                                    }}
+                                                    onKeyDown={(event) => {
+                                                        handleRgbChannelKeyDown(
+                                                            event,
+                                                            'red',
+                                                            draftPrimaryRgb?.red ??
+                                                                0
+                                                        );
+                                                    }}
+                                                    pattern='[0-9]*'
+                                                    type='text'
+                                                    value={
                                                         draftPrimaryRgb?.red ??
-                                                            0
-                                                    );
-                                                }}
-                                                pattern='[0-9]*'
-                                                type='text'
-                                                value={
-                                                    draftPrimaryRgb?.red ?? 0
-                                                }
-                                            />
-                                        </span>
-                                        <span
-                                            aria-hidden='true'
-                                            className='color-control__rgb-separator'
-                                        >
-                                            ,
-                                        </span>
-                                        <span className='color-control__rgb-slot'>
-                                            <input
-                                                aria-label='Primary green'
-                                                inputMode='numeric'
-                                                onChange={(event) => {
-                                                    updateDraftColorChannel(
-                                                        'green',
-                                                        event.target.value
-                                                    );
-                                                }}
-                                                onKeyDown={(event) => {
-                                                    handleRgbChannelKeyDown(
-                                                        event,
-                                                        'green',
+                                                        0
+                                                    }
+                                                />
+                                            </span>
+                                            <span
+                                                aria-hidden='true'
+                                                className='color-control__rgb-separator'
+                                            >
+                                                ,
+                                            </span>
+                                            <span className='color-control__rgb-slot'>
+                                                <input
+                                                    aria-label='Primary green'
+                                                    inputMode='numeric'
+                                                    onChange={(event) => {
+                                                        updateDraftColorChannel(
+                                                            'green',
+                                                            event.target.value
+                                                        );
+                                                    }}
+                                                    onKeyDown={(event) => {
+                                                        handleRgbChannelKeyDown(
+                                                            event,
+                                                            'green',
+                                                            draftPrimaryRgb?.green ??
+                                                                0
+                                                        );
+                                                    }}
+                                                    pattern='[0-9]*'
+                                                    type='text'
+                                                    value={
                                                         draftPrimaryRgb?.green ??
-                                                            0
-                                                    );
-                                                }}
-                                                pattern='[0-9]*'
-                                                type='text'
-                                                value={
-                                                    draftPrimaryRgb?.green ?? 0
-                                                }
-                                            />
-                                        </span>
-                                        <span
-                                            aria-hidden='true'
-                                            className='color-control__rgb-separator'
-                                        >
-                                            ,
-                                        </span>
-                                        <span className='color-control__rgb-slot'>
-                                            <input
-                                                aria-label='Primary blue'
-                                                inputMode='numeric'
-                                                onChange={(event) => {
-                                                    updateDraftColorChannel(
-                                                        'blue',
-                                                        event.target.value
-                                                    );
-                                                }}
-                                                onKeyDown={(event) => {
-                                                    handleRgbChannelKeyDown(
-                                                        event,
-                                                        'blue',
+                                                        0
+                                                    }
+                                                />
+                                            </span>
+                                            <span
+                                                aria-hidden='true'
+                                                className='color-control__rgb-separator'
+                                            >
+                                                ,
+                                            </span>
+                                            <span className='color-control__rgb-slot'>
+                                                <input
+                                                    aria-label='Primary blue'
+                                                    inputMode='numeric'
+                                                    onChange={(event) => {
+                                                        updateDraftColorChannel(
+                                                            'blue',
+                                                            event.target.value
+                                                        );
+                                                    }}
+                                                    onKeyDown={(event) => {
+                                                        handleRgbChannelKeyDown(
+                                                            event,
+                                                            'blue',
+                                                            draftPrimaryRgb?.blue ??
+                                                                0
+                                                        );
+                                                    }}
+                                                    pattern='[0-9]*'
+                                                    type='text'
+                                                    value={
                                                         draftPrimaryRgb?.blue ??
-                                                            0
-                                                    );
-                                                }}
-                                                pattern='[0-9]*'
-                                                type='text'
-                                                value={
-                                                    draftPrimaryRgb?.blue ?? 0
-                                                }
-                                            />
-                                        </span>
+                                                        0
+                                                    }
+                                                />
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
