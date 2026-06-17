@@ -1,8 +1,11 @@
 import type { JSX } from 'react';
 import { Search } from 'lucide-react';
 
-import { getSvglRoute, svglUrl } from './badge-builder/domain.js';
-import type { SelectionStatus, SvglResult } from './badge-builder/domain.js';
+import { getSvglRoute, svglUrl } from '@/components/badge-builder/domain';
+import type {
+    SelectionStatus,
+    SvglResult,
+} from '@/components/badge-builder/domain';
 
 interface BrandSearchPanelProps {
     readonly chooseSearchResult: (result: SvglResult) => void;

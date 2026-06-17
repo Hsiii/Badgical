@@ -34,7 +34,7 @@ import {
     normalizeHexInput,
     sortSvglResults,
     toDataUri,
-} from './badge-builder/domain.js';
+} from '@/components/badge-builder/domain';
 import type {
     BadgeState,
     ColorMode,
@@ -47,9 +47,9 @@ import type {
     SvglSearchStatus,
     ThemePreference,
     VariantMode,
-} from './badge-builder/domain.js';
-import { BrandSearchPanel } from './BrandSearchPanel.js';
-import { Topbar } from './Topbar.js';
+} from '@/components/badge-builder/domain';
+import { BrandSearchPanel } from '@/components/BrandSearchPanel';
+import { Topbar } from '@/components/Topbar';
 
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);

@@ -5,13 +5,13 @@ import {
     githubUrl,
     languagePreferenceLabels,
     themePreferenceLabels,
-} from './badge-builder/domain.js';
+} from '@/components/badge-builder/domain';
 import type {
     LanguagePreference,
     PreferenceMenu,
     ThemePreference,
-} from './badge-builder/domain.js';
-import { GitHubMark } from './GitHubMark.js';
+} from '@/components/badge-builder/domain';
+import { GitHubMark } from '@/components/GitHubMark';
 
 interface TopbarProps {
     readonly languagePreference: LanguagePreference;
