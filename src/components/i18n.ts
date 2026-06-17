@@ -222,7 +222,7 @@ export const uiCopy = {
         themeLabels: {
             light: '\u6DFA\u8272',
             dark: '\u6DF1\u8272',
-            system: '\u8DDF\u96A8\u7CFB\u7D71',
+            system: '\u7CFB\u7D71',
         },
         updateFrame: '\u66F4\u65B0\u5F71\u683C',
         variantDefault: '\u9810\u8A2D',
