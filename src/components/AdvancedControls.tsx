@@ -1,6 +1,12 @@
 import './AdvancedControls.css';
 
-import type { CSSProperties, Dispatch, JSX, SetStateAction } from 'react';
+import type {
+    CSSProperties,
+    Dispatch,
+    JSX,
+    KeyboardEvent,
+    SetStateAction,
+} from 'react';
 import { Pencil, Plus } from 'lucide-react';
 
 import { maxFrames } from '@/components/badge-builder/constants';
@@ -55,6 +61,31 @@ interface AdvancedControlsProps {
     readonly variantPreviews: readonly VariantPreview[];
 }
 
+function focusSiblingRgbInput(
+    event: KeyboardEvent<HTMLInputElement>,
+    direction: 1 | -1
+) {
+    const rgbGroup = event.currentTarget.closest('.color-control__rgb-group');
+
+    if (rgbGroup === null) {
+        return;
+    }
+
+    const rgbInputs = [...rgbGroup.querySelectorAll<HTMLInputElement>('input')];
+    const currentIndex = rgbInputs.indexOf(event.currentTarget);
+    const nextIndex = currentIndex + direction;
+
+    if (nextIndex < 0 || nextIndex >= rgbInputs.length) {
+        return;
+    }
+
+    const nextInput = rgbInputs[nextIndex];
+
+    event.preventDefault();
+    nextInput.focus();
+    nextInput.select();
+}
+
 export function AdvancedControls({
     addDraftFrame,
     colorMode,
@@ -79,6 +110,35 @@ export function AdvancedControls({
     updateDraftSaturationValue,
     variantPreviews,
 }: AdvancedControlsProps): JSX.Element {
+    const handleRgbChannelKeyDown = (
+        event: KeyboardEvent<HTMLInputElement>,
+        channel: keyof RgbColor,
+        currentValue: number
+    ): void => {
+        if (event.key === 'ArrowLeft') {
+            focusSiblingRgbInput(event, -1);
+            return;
+        }
+
+        if (event.key === 'ArrowRight') {
+            focusSiblingRgbInput(event, 1);
+            return;
+        }
+
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+            event.preventDefault();
+
+            const direction = event.key === 'ArrowUp' ? 1 : -1;
+            const step = event.shiftKey ? 10 : 1;
+            const nextValue = Math.min(
+                255,
+                Math.max(0, currentValue + direction * step)
+            );
+
+            updateDraftColorChannel(channel, String(nextValue));
+        }
+    };
+
     return (
         <section
             aria-label='Advanced badge controls'
@@ -228,15 +288,23 @@ export function AdvancedControls({
                                         <span className='color-control__rgb-slot'>
                                             <input
                                                 aria-label='Primary red'
-                                                max='255'
-                                                min='0'
+                                                inputMode='numeric'
                                                 onChange={(event) => {
                                                     updateDraftColorChannel(
                                                         'red',
                                                         event.target.value
                                                     );
                                                 }}
-                                                type='number'
+                                                onKeyDown={(event) => {
+                                                    handleRgbChannelKeyDown(
+                                                        event,
+                                                        'red',
+                                                        draftPrimaryRgb?.red ??
+                                                            0
+                                                    );
+                                                }}
+                                                pattern='[0-9]*'
+                                                type='text'
                                                 value={
                                                     draftPrimaryRgb?.red ?? 0
                                                 }
@@ -246,15 +314,23 @@ export function AdvancedControls({
                                         <span className='color-control__rgb-slot'>
                                             <input
                                                 aria-label='Primary green'
-                                                max='255'
-                                                min='0'
+                                                inputMode='numeric'
                                                 onChange={(event) => {
                                                     updateDraftColorChannel(
                                                         'green',
                                                         event.target.value
                                                     );
                                                 }}
-                                                type='number'
+                                                onKeyDown={(event) => {
+                                                    handleRgbChannelKeyDown(
+                                                        event,
+                                                        'green',
+                                                        draftPrimaryRgb?.green ??
+                                                            0
+                                                    );
+                                                }}
+                                                pattern='[0-9]*'
+                                                type='text'
                                                 value={
                                                     draftPrimaryRgb?.green ?? 0
                                                 }
@@ -264,15 +340,23 @@ export function AdvancedControls({
                                         <span className='color-control__rgb-slot'>
                                             <input
                                                 aria-label='Primary blue'
-                                                max='255'
-                                                min='0'
+                                                inputMode='numeric'
                                                 onChange={(event) => {
                                                     updateDraftColorChannel(
                                                         'blue',
                                                         event.target.value
                                                     );
                                                 }}
-                                                type='number'
+                                                onKeyDown={(event) => {
+                                                    handleRgbChannelKeyDown(
+                                                        event,
+                                                        'blue',
+                                                        draftPrimaryRgb?.blue ??
+                                                            0
+                                                    );
+                                                }}
+                                                pattern='[0-9]*'
+                                                type='text'
                                                 value={
                                                     draftPrimaryRgb?.blue ?? 0
                                                 }

@@ -319,6 +319,12 @@
     text-align: right;
 }
 
+.field
+    .color-control__rgb-group
+    input:not([type='color']):not([type='range']):focus-visible {
+    outline: 0;
+}
+
 .variant-options {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
