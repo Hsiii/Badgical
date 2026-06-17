@@ -9,9 +9,11 @@ import type {
     SelectionStatus,
     SvglResult,
 } from '@/components/badge-builder/types';
+import type { UiCopy } from '@/components/i18n';
 
 interface BrandSearchPanelProps {
     readonly chooseSearchResult: (result: SvglResult) => void;
+    readonly copy: UiCopy;
     readonly query: string;
     readonly resultsAreLoading: boolean;
     readonly searchInputElement: HTMLInputElement | undefined;
@@ -28,6 +30,7 @@ interface BrandSearchPanelProps {
 
 export function BrandSearchPanel({
     chooseSearchResult,
+    copy,
     query,
     resultsAreLoading,
     searchInputElement,
@@ -40,7 +43,7 @@ export function BrandSearchPanel({
     visibleResults,
 }: BrandSearchPanelProps): JSX.Element {
     return (
-        <section aria-label='Search brands' className='search-panel'>
+        <section aria-label={copy.searchBrands} className='search-panel'>
             <div
                 className='search-shell'
                 onClick={() => {
@@ -50,14 +53,14 @@ export function BrandSearchPanel({
                 <label className='search-field__input'>
                     <Search aria-hidden='true' size={24} />
                     <input
-                        aria-label='Search brand'
+                        aria-label={copy.searchBrand}
                         autoFocus
                         onChange={(event) => {
                             setQuery(event.target.value);
                             setSelectedResult(undefined);
                             setSelectionStatus('idle');
                         }}
-                        placeholder='Search...'
+                        placeholder={copy.searchPlaceholder}
                         ref={(element) => {
                             setSearchInputElement(element ?? undefined);
                         }}
@@ -76,7 +79,7 @@ export function BrandSearchPanel({
                         rel='noreferrer'
                         target='_blank'
                     >
-                        Powered by <span>Svgl</span>
+                        {copy.poweredBy} <span>Svgl</span>
                     </a>
                 </div>
             </div>
@@ -93,7 +96,7 @@ export function BrandSearchPanel({
                     <div aria-hidden='true' className='search-empty' />
                 ) : (
                     <div
-                        aria-label='SVGL logos'
+                        aria-label={copy.svglLogos}
                         className='brand-results__canvas'
                     >
                         {visibleResults.map((result) => (

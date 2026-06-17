@@ -4,9 +4,11 @@ import type { Dispatch, JSX, SetStateAction } from 'react';
 import { Copy, Download } from 'lucide-react';
 
 import { defaultExportFolder } from '@/components/badge-builder/constants';
+import type { UiCopy } from '@/components/i18n';
 
 interface BuilderDialogsProps {
     readonly confirmDeleteState: () => void;
+    readonly copy: UiCopy;
     readonly copyReadmeMarkdown: () => void;
     readonly deleteCandidateId: string | undefined;
     readonly downloadSvg: () => void;
@@ -31,6 +33,7 @@ interface BuilderDialogsProps {
 
 export function BuilderDialogs({
     confirmDeleteState,
+    copy,
     copyReadmeMarkdown,
     deleteCandidateId,
     downloadSvg,
@@ -64,10 +67,12 @@ export function BuilderDialogs({
                         role='dialog'
                     >
                         <div className='panel-heading'>
-                            <h2 id='delete-frame-title'>Delete Frame</h2>
+                            <h2 id='delete-frame-title'>
+                                {copy.deleteFrameTitle}
+                            </h2>
                         </div>
                         <p id='delete-frame-description'>
-                            This removes the frame from the badge animation.
+                            {copy.deleteFrameDescription}
                         </p>
                         <div className='confirm-dialog__actions'>
                             <button
@@ -77,14 +82,14 @@ export function BuilderDialogs({
                                 }}
                                 type='button'
                             >
-                                Cancel
+                                {copy.cancel}
                             </button>
                             <button
                                 className='button button--primary'
                                 onClick={confirmDeleteState}
                                 type='button'
                             >
-                                Delete
+                                {copy.delete}
                             </button>
                         </div>
                     </section>
@@ -101,17 +106,19 @@ export function BuilderDialogs({
                         role='dialog'
                     >
                         <div className='panel-heading'>
-                            <h2 id='source-dialog-title'>Edit SVG Source</h2>
+                            <h2 id='source-dialog-title'>
+                                {copy.editSvgSource}
+                            </h2>
                         </div>
                         <p
                             className='visually-hidden'
                             id='source-dialog-description'
                         >
-                            Edit the raw SVG source used for this badge frame.
+                            {copy.editSvgSourceDescription}
                         </p>
                         <label className='field source-dialog__field'>
                             <textarea
-                                aria-label='Logo SVG'
+                                aria-label={copy.logoSvg}
                                 onChange={(event) => {
                                     setSourceDraft(event.target.value);
                                 }}
@@ -126,14 +133,14 @@ export function BuilderDialogs({
                                 }}
                                 type='button'
                             >
-                                Cancel
+                                {copy.cancel}
                             </button>
                             <button
                                 className='button button--primary'
                                 onClick={saveSourceDialog}
                                 type='button'
                             >
-                                Save
+                                {copy.save}
                             </button>
                         </div>
                     </section>
@@ -150,12 +157,12 @@ export function BuilderDialogs({
                         role='dialog'
                     >
                         <div className='panel-heading'>
-                            <h2 id='export-dialog-title'>Export Badge</h2>
+                            <h2 id='export-dialog-title'>{copy.exportBadge}</h2>
                         </div>
 
                         <div className='export-fields'>
                             <label className='field'>
-                                <span>Choose target repo</span>
+                                <span>{copy.chooseTargetRepo}</span>
                                 <input
                                     onChange={(event) => {
                                         setExportRepo(event.target.value);
@@ -166,7 +173,7 @@ export function BuilderDialogs({
                                 />
                             </label>
                             <label className='field'>
-                                <span>Choose asset folder</span>
+                                <span>{copy.chooseAssetFolder}</span>
                                 <input
                                     onChange={(event) => {
                                         setExportFolder(event.target.value);
@@ -182,14 +189,11 @@ export function BuilderDialogs({
                             className='export-guide'
                             id='export-dialog-description'
                         >
-                            Download the SVG and put it in{' '}
-                            <code>{exportPath}</code> in{' '}
-                            <code>{normalizedExportRepo}</code>. Then put the
-                            generated Markdown in that repository README.
+                            {copy.exportGuide(exportPath, normalizedExportRepo)}
                         </p>
 
                         <label className='field export-field'>
-                            <span>README Markdown</span>
+                            <span>{copy.readmeMarkdown}</span>
                             <textarea readOnly value={readmeMarkdown} />
                         </label>
 
@@ -201,7 +205,7 @@ export function BuilderDialogs({
                                 }}
                                 type='button'
                             >
-                                Close
+                                {copy.close}
                             </button>
                             <button
                                 className='button button--primary'
@@ -210,8 +214,8 @@ export function BuilderDialogs({
                             >
                                 <Copy aria-hidden='true' size={16} />
                                 {exportCopyState === 'markdown'
-                                    ? 'Copied'
-                                    : 'Copy Markdown'}
+                                    ? copy.copied
+                                    : copy.copyMarkdown}
                             </button>
                             <button
                                 className='button button--primary'
@@ -219,7 +223,7 @@ export function BuilderDialogs({
                                 type='button'
                             >
                                 <Download aria-hidden='true' size={16} />
-                                Download SVG
+                                {copy.downloadSvg}
                             </button>
                         </div>
                     </section>

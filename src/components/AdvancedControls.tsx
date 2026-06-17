@@ -19,6 +19,7 @@ import type {
     SvglResult,
     VariantMode,
 } from '@/components/badge-builder/types';
+import type { UiCopy } from '@/components/i18n';
 
 interface VariantPreview {
     readonly label: string;
@@ -30,6 +31,7 @@ interface AdvancedControlsProps {
     readonly addDraftFrame: () => void;
     readonly colorMode: ColorMode;
     readonly colorPickerStyle: CSSProperties;
+    readonly copy: UiCopy;
     readonly draft: EditorDraft;
     readonly draftLogoSource: string | undefined;
     readonly draftPrimaryColor: string;
@@ -90,6 +92,7 @@ export function AdvancedControls({
     addDraftFrame,
     colorMode,
     colorPickerStyle,
+    copy,
     draft,
     draftLogoSource,
     draftPrimaryColor,
@@ -141,16 +144,16 @@ export function AdvancedControls({
 
     return (
         <section
-            aria-label='Advanced badge controls'
+            aria-label={copy.advancedControlsLabel}
             className='advanced-panel'
         >
             <div className='advanced-controls'>
-                <h2 className='advanced-controls__title'>Custom Edits</h2>
+                <h2 className='advanced-controls__title'>{copy.customEdits}</h2>
                 <div className='advanced-controls__left'>
                     <div className='advanced-top-row'>
                         <div className='field advanced-svg-field'>
                             <button
-                                aria-label='Edit SVG source'
+                                aria-label={copy.editSvgSource}
                                 className='advanced-logo-preview'
                                 onClick={openSourceDialog}
                                 type='button'
@@ -169,14 +172,14 @@ export function AdvancedControls({
                         <label className='field advanced-text-field'>
                             <span className='advanced-text-input'>
                                 <input
-                                    aria-label='Badge text'
+                                    aria-label={copy.badgeText}
                                     onChange={(event) => {
                                         setDraft((currentDraft) => ({
                                             ...currentDraft,
                                             name: event.target.value,
                                         }));
                                     }}
-                                    placeholder='Badge text'
+                                    placeholder={copy.badgeText}
                                     value={draft.name}
                                 />
                             </span>
@@ -190,7 +193,9 @@ export function AdvancedControls({
                                 style={colorPickerStyle}
                             >
                                 <button
-                                    aria-label={`Primary color saturation and brightness ${draftPrimaryColor}`}
+                                    aria-label={copy.primaryColorSaturation(
+                                        draftPrimaryColor
+                                    )}
                                     className='color-control__pad'
                                     onKeyDown={(event) => {
                                         const step = event.shiftKey
@@ -273,7 +278,7 @@ export function AdvancedControls({
                                     <label className='color-control__hex-row'>
                                         <span>Hex</span>
                                         <input
-                                            aria-label='Primary hex'
+                                            aria-label={copy.primaryHex}
                                             onChange={(event) => {
                                                 updateDraftColor(
                                                     event.target.value
@@ -288,7 +293,7 @@ export function AdvancedControls({
                                         <div className='color-control__rgb-group'>
                                             <span className='color-control__rgb-slot'>
                                                 <input
-                                                    aria-label='Primary red'
+                                                    aria-label={copy.primaryRed}
                                                     inputMode='numeric'
                                                     onChange={(event) => {
                                                         updateDraftColorChannel(
@@ -320,7 +325,9 @@ export function AdvancedControls({
                                             </span>
                                             <span className='color-control__rgb-slot'>
                                                 <input
-                                                    aria-label='Primary green'
+                                                    aria-label={
+                                                        copy.primaryGreen
+                                                    }
                                                     inputMode='numeric'
                                                     onChange={(event) => {
                                                         updateDraftColorChannel(
@@ -352,7 +359,9 @@ export function AdvancedControls({
                                             </span>
                                             <span className='color-control__rgb-slot'>
                                                 <input
-                                                    aria-label='Primary blue'
+                                                    aria-label={
+                                                        copy.primaryBlue
+                                                    }
                                                     inputMode='numeric'
                                                     onChange={(event) => {
                                                         updateDraftColorChannel(
@@ -383,7 +392,7 @@ export function AdvancedControls({
                                 <label className='color-control__hue-row'>
                                     <span>Hue</span>
                                     <input
-                                        aria-label='Primary color hue'
+                                        aria-label={copy.primaryColorHue}
                                         className='color-control__hue'
                                         max='360'
                                         min='0'
@@ -402,10 +411,14 @@ export function AdvancedControls({
             </div>
 
             <div className='advanced-preview-stack'>
-                <div aria-label='Badge variants' className='variant-options'>
+                <div
+                    aria-label={copy.badgeVariantsLabel}
+                    className='variant-options'
+                >
                     {hasActiveDraft ? (
                         variantPreviews.map((variant) => (
                             <button
+                                aria-label={copy.selectVariant(variant.label)}
                                 aria-pressed={colorMode === variant.mode}
                                 className='variant-card'
                                 key={variant.mode}
@@ -420,7 +433,7 @@ export function AdvancedControls({
                         ))
                     ) : (
                         <div className='empty-state advanced-preview-empty'>
-                            <p>Pick a brand to preview badge variants.</p>
+                            <p>{copy.noVariantPreview}</p>
                         </div>
                     )}
                 </div>
@@ -442,8 +455,8 @@ export function AdvancedControls({
                         <Pencil aria-hidden='true' size={16} />
                     )}
                     {editingFrameId === undefined
-                        ? 'Add Frame'
-                        : 'Update Frame'}
+                        ? copy.addFrame
+                        : copy.updateFrame}
                 </button>
             </div>
         </section>

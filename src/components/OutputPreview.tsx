@@ -3,29 +3,33 @@ import './OutputPreview.css';
 import type { JSX } from 'react';
 import { Download } from 'lucide-react';
 
+import type { UiCopy } from '@/components/i18n';
+
 interface OutputPreviewProps {
     readonly badgeSvg: string;
+    readonly copy: UiCopy;
     readonly previewSource: string;
     readonly setExportDialogOpen: (isOpen: boolean) => void;
 }
 
 export function OutputPreview({
     badgeSvg,
+    copy,
     previewSource,
     setExportDialogOpen,
 }: OutputPreviewProps): JSX.Element {
     return (
         <section aria-labelledby='output-title' className='output'>
             <div className='panel-heading'>
-                <h2 id='output-title'>Badge Preview</h2>
+                <h2 id='output-title'>{copy.badgePreviewTitle}</h2>
             </div>
             <div className='output__showcase'>
                 <div aria-live='polite' className='preview'>
                     {previewSource === '' ? (
-                        <span>Add frames to preview the animated badge.</span>
+                        <span>{copy.noPreviewFrames}</span>
                     ) : (
                         <img
-                            alt='Generated animated badge preview'
+                            alt={copy.generatedPreviewAlt}
                             src={previewSource}
                         />
                     )}
@@ -33,17 +37,17 @@ export function OutputPreview({
 
                 <div className='output__actions'>
                     <button
-                        aria-label='Export animated SVG'
+                        aria-label={copy.exportAnimatedSvg}
                         className='button button--primary'
                         disabled={badgeSvg === ''}
                         onClick={() => {
                             setExportDialogOpen(true);
                         }}
-                        title='Export'
+                        title={copy.export}
                         type='button'
                     >
                         <Download aria-hidden='true' size={16} />
-                        Export
+                        {copy.export}
                     </button>
                 </div>
             </div>

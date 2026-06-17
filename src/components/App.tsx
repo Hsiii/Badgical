@@ -60,7 +60,36 @@ import type {
 } from '@/components/badge-builder/types';
 import { BuilderDialogs } from '@/components/BuilderDialogs';
 import { FrameRail } from '@/components/FrameRail';
+import { getSupportedLanguagePreference, uiCopy } from '@/components/i18n';
 import { OutputPreview } from '@/components/OutputPreview';
+
+function getInitialLanguagePreference(): LanguagePreference {
+    const runtimeWindow = (globalThis as { readonly window?: Window }).window;
+
+    if (runtimeWindow === undefined) {
+        return 'en';
+    }
+
+    const { location, navigator } = runtimeWindow;
+    const urlLanguage = getSupportedLanguagePreference(
+        new URLSearchParams(location.search).get('lang') ?? undefined
+    );
+
+    if (urlLanguage !== undefined) {
+        return urlLanguage;
+    }
+
+    const browserLanguages =
+        navigator.languages.length > 0
+            ? navigator.languages
+            : [navigator.language];
+
+    return browserLanguages.some((language) =>
+        language.toLowerCase().startsWith('zh')
+    )
+        ? 'zh-Hant'
+        : 'en';
+}
 
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);
@@ -89,7 +118,7 @@ export function App(): JSX.Element {
     const [exportRepo, setExportRepo] = useState(defaultExportRepo);
     const [sourceDraft, setSourceDraft] = useState(defaultBadgeDraft.source);
     const [languagePreference, setLanguagePreference] =
-        useState<LanguagePreference>('en');
+        useState<LanguagePreference>(getInitialLanguagePreference);
     const [themePreference, setThemePreference] =
         useState<ThemePreference>('system');
     const [openPreferenceMenu, setOpenPreferenceMenu] = useState<
@@ -103,6 +132,7 @@ export function App(): JSX.Element {
     const [editingFrameId, setEditingFrameId] = useState<string | undefined>(
         undefined
     );
+    const copy = uiCopy[languagePreference];
     const searchInputReference = useRef<HTMLInputElement | undefined>(
         undefined
     );
@@ -158,6 +188,24 @@ export function App(): JSX.Element {
             );
         };
     }, [themePreference]);
+
+    useEffect(() => {
+        document.documentElement.lang = languagePreference;
+
+        const url = new URL(globalThis.location.href);
+
+        if (languagePreference === 'en') {
+            url.searchParams.delete('lang');
+        } else {
+            url.searchParams.set('lang', languagePreference);
+        }
+
+        globalThis.history.replaceState(
+            undefined,
+            '',
+            `${url.pathname}${url.search}${url.hash}`
+        );
+    }, [languagePreference]);
 
     useEffect(() => {
         const abortController = new AbortController();
@@ -691,13 +739,7 @@ export function App(): JSX.Element {
         trimmedExportRepo === '' ? defaultExportRepo : trimmedExportRepo;
     const rawGithubUrl = `https://raw.githubusercontent.com/${normalizedExportRepo}/HEAD/${exportPath}`;
     const badgeNames = states.map((state) => materializeState(state, 0).name);
-    const readmeAltText =
-        badgeNames.length === 0
-            ? 'Animated badge'
-            : `Animated badge cycling through ${new Intl.ListFormat('en', {
-                  style: 'long',
-                  type: 'conjunction',
-              }).format(badgeNames)}`;
+    const readmeAltText = copy.readmeAlt(badgeNames);
     const readmeMarkdown = `![${readmeAltText}](${rawGithubUrl})`;
 
     const copyReadmeMarkdown = (): void => {
@@ -738,8 +780,8 @@ export function App(): JSX.Element {
     } as CSSProperties;
     const variantPreviews = (
         [
-            ['brand', 'Default'],
-            ['inverse', 'Inverse'],
+            ['brand', copy.variantDefault],
+            ['inverse', copy.variantInverse],
         ] as const satisfies ReadonlyArray<readonly [VariantMode, string]>
     ).map(([mode, label]) => {
         const variantDraft = {
@@ -771,6 +813,7 @@ export function App(): JSX.Element {
         <main className='app'>
             <section aria-labelledby='builder-title' className='builder'>
                 <Topbar
+                    copy={copy}
                     languagePreference={languagePreference}
                     openPreferenceMenu={openPreferenceMenu}
                     setLanguagePreference={setLanguagePreference}
@@ -787,11 +830,14 @@ export function App(): JSX.Element {
                         >
                             <div className='search-block'>
                                 <div className='visually-hidden'>
-                                    <h2 id='content-title'>Badge Content</h2>
+                                    <h2 id='content-title'>
+                                        {copy.contentTitle}
+                                    </h2>
                                 </div>
 
                                 <BrandSearchPanel
                                     chooseSearchResult={chooseSearchResult}
+                                    copy={copy}
                                     query={query}
                                     resultsAreLoading={resultsAreLoading}
                                     searchInputElement={
@@ -814,6 +860,7 @@ export function App(): JSX.Element {
                                     addDraftFrame={addDraftFrame}
                                     colorMode={colorMode}
                                     colorPickerStyle={colorPickerStyle}
+                                    copy={copy}
                                     draft={draft}
                                     draftLogoSource={draftLogoSource}
                                     draftPrimaryColor={draftPrimaryColor}
@@ -848,6 +895,7 @@ export function App(): JSX.Element {
                             className='frame-rail'
                         >
                             <FrameRail
+                                copy={copy}
                                 editFrame={editFrame}
                                 editingFrameId={editingFrameId}
                                 frameDelaySeconds={frameDelaySeconds}
@@ -862,6 +910,7 @@ export function App(): JSX.Element {
 
                             <OutputPreview
                                 badgeSvg={badgeSvg}
+                                copy={copy}
                                 previewSource={previewSource}
                                 setExportDialogOpen={setExportDialogOpen}
                             />
@@ -872,6 +921,7 @@ export function App(): JSX.Element {
 
             <BuilderDialogs
                 confirmDeleteState={confirmDeleteState}
+                copy={copy}
                 copyReadmeMarkdown={copyReadmeMarkdown}
                 deleteCandidateId={deleteCandidateId}
                 downloadSvg={downloadSvg}

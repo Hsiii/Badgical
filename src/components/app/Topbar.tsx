@@ -8,15 +8,16 @@ import { GitHubMark } from '@/components/app/GitHubMark';
 import {
     githubUrl,
     languagePreferenceLabels,
-    themePreferenceLabels,
 } from '@/components/badge-builder/constants';
 import type {
     LanguagePreference,
     PreferenceMenu,
     ThemePreference,
 } from '@/components/badge-builder/types';
+import type { UiCopy } from '@/components/i18n';
 
 interface TopbarProps {
+    readonly copy: UiCopy;
     readonly languagePreference: LanguagePreference;
     readonly openPreferenceMenu: PreferenceMenu | undefined;
     readonly setLanguagePreference: Dispatch<
@@ -51,6 +52,7 @@ function formatStarCount(starCount: number): string {
 }
 
 export function Topbar({
+    copy,
     languagePreference,
     openPreferenceMenu,
     setLanguagePreference,
@@ -110,11 +112,7 @@ export function Topbar({
                     <span className='brand-badge__word'>Badgical</span>
                 </a>
                 <a
-                    aria-label={
-                        formattedStarCount === undefined
-                            ? 'Open Badgical on GitHub'
-                            : `Open Badgical on GitHub, ${formattedStarCount} stars`
-                    }
+                    aria-label={copy.githubLabel(formattedStarCount)}
                     className='icon-button github-link'
                     href={githubUrl}
                     rel='noreferrer'
@@ -129,7 +127,7 @@ export function Topbar({
                 </a>
             </div>
             <h1 className='visually-hidden' id='builder-title'>
-                Badgical badge builder
+                {copy.builderTitle}
             </h1>
             <div className='topbar-actions'>
                 <div className='preference-menu'>
@@ -144,6 +142,7 @@ export function Topbar({
                                     : 'language'
                             );
                         }}
+                        title={copy.language}
                         type='button'
                     >
                         <Languages aria-hidden='true' size={16} />
@@ -154,7 +153,7 @@ export function Topbar({
                     </button>
                     {openPreferenceMenu === 'language' ? (
                         <div
-                            aria-label='Language'
+                            aria-label={copy.language}
                             className='preference-options'
                             role='menu'
                         >
@@ -190,20 +189,21 @@ export function Topbar({
                                 currentMenu === 'theme' ? undefined : 'theme'
                             );
                         }}
+                        title={copy.theme}
                         type='button'
                     >
                         <SunMoon aria-hidden='true' size={16} />
-                        <span>{themePreferenceLabels[themePreference]}</span>
+                        <span>{copy.themeLabels[themePreference]}</span>
                         <ChevronDown aria-hidden='true' size={16} />
                     </button>
                     {openPreferenceMenu === 'theme' ? (
                         <div
-                            aria-label='Theme'
+                            aria-label={copy.theme}
                             className='preference-options'
                             role='menu'
                         >
                             {(
-                                Object.entries(themePreferenceLabels) as Array<
+                                Object.entries(copy.themeLabels) as Array<
                                     [ThemePreference, string]
                                 >
                             ).map(([value, label]) => (

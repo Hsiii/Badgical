@@ -14,8 +14,10 @@ import {
     toDataUri,
 } from '@/components/badge-builder/svg';
 import type { BadgeState } from '@/components/badge-builder/types';
+import type { UiCopy } from '@/components/i18n';
 
 interface FrameRailProps {
+    readonly copy: UiCopy;
     readonly editFrame: (state: BadgeState) => void;
     readonly editingFrameId: string | undefined;
     readonly frameDelaySeconds: number;
@@ -29,6 +31,7 @@ interface FrameRailProps {
 }
 
 export function FrameRail({
+    copy,
     editFrame,
     editingFrameId,
     frameDelaySeconds,
@@ -61,7 +64,7 @@ export function FrameRail({
         <section className='frames'>
             <div className='panel-heading'>
                 <div className='panel-title-row'>
-                    <h2 id='frames-title'>Frames</h2>
+                    <h2 id='frames-title'>{copy.frames}</h2>
                     <span className='panel-meta'>
                         {states.length}/{maxFrames}
                     </span>
@@ -69,12 +72,12 @@ export function FrameRail({
                 <div className='panel-menu'>
                     <button
                         aria-expanded={frameSettingsOpen}
-                        aria-label='Frame settings'
+                        aria-label={copy.frameSettings}
                         className='icon-button panel-menu__button'
                         onClick={() => {
                             setFrameSettingsOpen((isOpen) => !isOpen);
                         }}
-                        title='Frame settings'
+                        title={copy.frameSettings}
                         type='button'
                     >
                         <MoreHorizontal aria-hidden='true' size={20} />
@@ -82,7 +85,7 @@ export function FrameRail({
                     {frameSettingsOpen ? (
                         <div className='settings-popover'>
                             <label className='field'>
-                                <span>Animation delay</span>
+                                <span>{copy.animationDelay}</span>
                                 <input
                                     max={maxFrameDelaySeconds}
                                     min={minFrameDelaySeconds}
@@ -98,7 +101,7 @@ export function FrameRail({
                             </label>
                             <label className='settings-value-row'>
                                 <input
-                                    aria-label='Animation delay seconds'
+                                    aria-label={copy.animationDelaySeconds}
                                     inputMode='decimal'
                                     max={maxFrameDelaySeconds}
                                     min={minFrameDelaySeconds}
@@ -113,7 +116,7 @@ export function FrameRail({
                                     type='text'
                                     value={frameDelaySeconds}
                                 />
-                                <span>Sec</span>
+                                <span>{copy.secondsUnit}</span>
                             </label>
                         </div>
                     ) : undefined}
@@ -129,7 +132,7 @@ export function FrameRail({
             >
                 {states.length === 0 ? (
                     <div className='empty-state frame-list__empty'>
-                        <p>Pick a brand and add the first frame.</p>
+                        <p>{copy.pickFirstFrame}</p>
                     </div>
                 ) : undefined}
                 {states.map((state, index) => {
@@ -147,7 +150,9 @@ export function FrameRail({
                             key={state.id}
                         >
                             <button
-                                aria-label={`Edit ${materializedState.name}`}
+                                aria-label={copy.editFrame(
+                                    materializedState.name
+                                )}
                                 className='frame-card__edit'
                                 onClick={() => {
                                     editFrame(state);
@@ -162,12 +167,16 @@ export function FrameRail({
                             </button>
                             <div className='frame-card__actions'>
                                 <button
-                                    aria-label={`Delete ${materializedState.name}`}
+                                    aria-label={copy.deleteFrame(
+                                        materializedState.name
+                                    )}
                                     className='frame-card__button'
                                     onClick={() => {
                                         setDeleteCandidateId(state.id);
                                     }}
-                                    title='Delete frame'
+                                    title={copy.deleteFrame(
+                                        materializedState.name
+                                    )}
                                     type='button'
                                 >
                                     <X aria-hidden='true' size={16} />
