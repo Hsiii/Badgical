@@ -1,6 +1,7 @@
 import './BuilderDialogs.css';
 
-import type { ChangeEvent, JSX } from 'react';
+import { useEffect, useRef } from 'react';
+import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
 import { Upload, X } from 'lucide-react';
 
 import type { UiCopy } from '@/components/i18n';
@@ -34,6 +35,36 @@ export function BuilderDialogs({
     sourceDraft,
     startExistingDialogOpen,
 }: BuilderDialogsProps): JSX.Element {
+    const deleteDialogReference = useRef<HTMLElement | undefined>(undefined);
+    const deleteConfirmButtonReference = useRef<HTMLButtonElement | undefined>(
+        undefined
+    );
+    const deleteReturnFocusReference = useRef<HTMLElement | undefined>(
+        undefined
+    );
+
+    useEffect(() => {
+        if (deleteCandidateId === undefined) {
+            return undefined;
+        }
+
+        deleteReturnFocusReference.current =
+            document.activeElement instanceof HTMLElement
+                ? document.activeElement
+                : undefined;
+        deleteConfirmButtonReference.current?.focus();
+
+        return (): void => {
+            const returnFocusElement = deleteReturnFocusReference.current;
+
+            if (returnFocusElement?.isConnected === true) {
+                returnFocusElement.focus();
+            }
+
+            deleteReturnFocusReference.current = undefined;
+        };
+    }, [deleteCandidateId]);
+
     const uploadSourceFile = (event: ChangeEvent<HTMLInputElement>): void => {
         const input = event.currentTarget;
         const file = input.files?.[0];
@@ -53,6 +84,63 @@ export function BuilderDialogs({
         );
     };
 
+    const handleDeleteDialogKeyDown = (
+        event: KeyboardEvent<HTMLElement>
+    ): void => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            setDeleteCandidateId(undefined);
+            return;
+        }
+
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            confirmDeleteState();
+            return;
+        }
+
+        if (event.key !== 'Tab') {
+            return;
+        }
+
+        const dialogElement = deleteDialogReference.current;
+
+        if (dialogElement === undefined) {
+            return;
+        }
+
+        const focusableElements = [
+            ...dialogElement.querySelectorAll<HTMLButtonElement>(
+                'button:not(:disabled)'
+            ),
+        ];
+
+        if (focusableElements.length === 0) {
+            return;
+        }
+
+        const firstFocusableElement = focusableElements[0];
+        const lastFocusableElement =
+            focusableElements.at(-1) ?? firstFocusableElement;
+
+        if (
+            event.shiftKey &&
+            document.activeElement === firstFocusableElement
+        ) {
+            event.preventDefault();
+            lastFocusableElement.focus();
+            return;
+        }
+
+        if (
+            !event.shiftKey &&
+            document.activeElement === lastFocusableElement
+        ) {
+            event.preventDefault();
+            firstFocusableElement.focus();
+        }
+    };
+
     return (
         <>
             {deleteCandidateId === undefined ? undefined : (
@@ -62,6 +150,11 @@ export function BuilderDialogs({
                         aria-labelledby='delete-frame-title'
                         aria-modal='true'
                         className='confirm-dialog'
+                        onKeyDown={handleDeleteDialogKeyDown}
+                        ref={(element) => {
+                            deleteDialogReference.current =
+                                element ?? undefined;
+                        }}
                         role='dialog'
                     >
                         <div className='panel-heading'>
@@ -85,6 +178,10 @@ export function BuilderDialogs({
                             <button
                                 className='button button--primary'
                                 onClick={confirmDeleteState}
+                                ref={(element) => {
+                                    deleteConfirmButtonReference.current =
+                                        element ?? undefined;
+                                }}
                                 type='button'
                             >
                                 {copy.delete}
