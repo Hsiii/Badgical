@@ -47,6 +47,7 @@ export interface UiCopy {
     readonly primaryGreen: string;
     readonly primaryHex: string;
     readonly primaryRed: string;
+    readonly reorderFrame: (name: string) => string;
     readonly save: string;
     readonly searchBrand: string;
     readonly searchBrands: string;
@@ -117,6 +118,7 @@ export const uiCopy = {
         primaryGreen: 'Primary green',
         primaryHex: 'Primary hex',
         primaryRed: 'Primary red',
+        reorderFrame: (name) => `Drag ${name} to reorder`,
         save: 'Save',
         searchBrand: 'Search brand',
         searchBrands: 'Search brands',
@@ -194,6 +196,8 @@ export const uiCopy = {
         primaryGreen: '\u4E3B\u8981\u7DA0\u8272',
         primaryHex: '\u4E3B\u8981\u5341\u516D\u9032\u4F4D\u8272\u78BC',
         primaryRed: '\u4E3B\u8981\u7D05\u8272',
+        reorderFrame: (name) =>
+            `\u62D6\u66F3${name}\u4EE5\u91CD\u65B0\u6392\u5E8F`,
         save: '\u5132\u5B58',
         searchBrand: '\u641C\u5C0B\u54C1\u724C',
         searchBrands: '\u641C\u5C0B\u54C1\u724C',

@@ -736,6 +736,32 @@ export function App({
         );
     };
 
+    const moveFrame = (draggedFrameId: string, targetFrameId: string): void => {
+        if (draggedFrameId === targetFrameId) {
+            return;
+        }
+
+        setStates((currentStates) => {
+            const draggedIndex = currentStates.findIndex(
+                (state) => state.id === draggedFrameId
+            );
+            const targetIndex = currentStates.findIndex(
+                (state) => state.id === targetFrameId
+            );
+
+            if (draggedIndex === -1 || targetIndex === -1) {
+                return currentStates;
+            }
+
+            const nextStates = [...currentStates];
+            const [draggedState] = nextStates.splice(draggedIndex, 1);
+
+            nextStates.splice(targetIndex, 0, draggedState);
+
+            return nextStates;
+        });
+    };
+
     const updateAnimationDelaySeconds = (value: string): void => {
         const nextDelay = Number.parseFloat(value);
 
@@ -1080,6 +1106,7 @@ export function App({
                                 copy={copy}
                                 editFrame={editFrame}
                                 editingFrameId={editingFrameId}
+                                moveFrame={moveFrame}
                                 setDeleteCandidateId={setDeleteCandidateId}
                                 states={states}
                             />
