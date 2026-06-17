@@ -1,0 +1,22 @@
+{
+    "background_color": "#111321",
+    "description": "Build animated SVG badges from SVGL logos and export README-ready Markdown.",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "/favicon.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "/badgical-spark.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ],
+    "lang": "en",
+    "name": "Badgical",
+    "short_name": "Badgical",
+    "start_url": "/",
+    "theme_color": "#111321"
+}
