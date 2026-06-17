@@ -1,5 +1,6 @@
 import './AdvancedControls.css';
 
+import { useEffect, useState } from 'react';
 import type {
     CSSProperties,
     Dispatch,
@@ -7,7 +8,7 @@ import type {
     KeyboardEvent,
     SetStateAction,
 } from 'react';
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, Pipette, Plus } from 'lucide-react';
 
 import { maxFrames } from '@/components/badge-builder/constants';
 import type {
@@ -58,6 +59,27 @@ interface AdvancedControlsProps {
     readonly variantPreviews: readonly VariantPreview[];
 }
 
+interface EyeDropperInstance {
+    readonly open: () => Promise<{
+        readonly sRGBHex: string;
+    }>;
+}
+
+interface EyeDropperConstructor {
+    readonly prototype: EyeDropperInstance;
+    new (): {
+        readonly open: EyeDropperInstance['open'];
+    };
+}
+
+function getEyeDropperConstructor(): EyeDropperConstructor | undefined {
+    return (
+        globalThis as typeof globalThis & {
+            readonly EyeDropper?: EyeDropperConstructor;
+        }
+    ).EyeDropper;
+}
+
 function focusSiblingRgbInput(
     event: KeyboardEvent<HTMLInputElement>,
     direction: 1 | -1
@@ -105,6 +127,12 @@ export function AdvancedControls({
     updateDraftSaturationValue,
     variantPreviews,
 }: AdvancedControlsProps): JSX.Element {
+    const [eyeDropperSupported, setEyeDropperSupported] = useState(false);
+
+    useEffect(() => {
+        setEyeDropperSupported(getEyeDropperConstructor() !== undefined);
+    }, []);
+
     const handleRgbChannelKeyDown = (
         event: KeyboardEvent<HTMLInputElement>,
         channel: keyof RgbColor,
@@ -132,6 +160,21 @@ export function AdvancedControls({
 
             updateDraftColorChannel(channel, String(nextValue));
         }
+    };
+
+    const pickScreenColor = (): void => {
+        const EyeDropper = getEyeDropperConstructor();
+
+        if (EyeDropper === undefined) {
+            return;
+        }
+
+        new EyeDropper()
+            .open()
+            .then(({ sRGBHex }) => {
+                updateDraftColor(sRGBHex);
+            })
+            .catch(() => undefined);
     };
 
     return (
@@ -405,6 +448,19 @@ export function AdvancedControls({
                                             type='range'
                                             value={draftPrimaryHsv.hue}
                                         />
+                                        <button
+                                            aria-label={copy.pickScreenColor}
+                                            className='icon-button color-control__eyedropper'
+                                            disabled={!eyeDropperSupported}
+                                            onClick={pickScreenColor}
+                                            title={copy.pickScreenColor}
+                                            type='button'
+                                        >
+                                            <Pipette
+                                                aria-hidden='true'
+                                                size={16}
+                                            />
+                                        </button>
                                     </label>
                                 </div>
                             </div>

@@ -38,6 +38,7 @@ export interface UiCopy {
     readonly logoSvg: string;
     readonly noPreviewFrames: string;
     readonly noVariantPreview: string;
+    readonly pickScreenColor: string;
     readonly pickFirstFrame: string;
     readonly poweredBy: string;
     readonly primaryBlue: string;
@@ -106,6 +107,7 @@ export const uiCopy = {
         logoSvg: 'Logo SVG',
         noPreviewFrames: 'Add frames to preview the animated badge.',
         noVariantPreview: 'Pick a brand to preview badge variants.',
+        pickScreenColor: 'Pick primary color from screen',
         pickFirstFrame: 'Pick a brand and add the first frame.',
         poweredBy: 'Powered by',
         primaryBlue: 'Primary blue',
@@ -180,6 +182,8 @@ export const uiCopy = {
             '\u65B0\u589E\u5F71\u683C\u4EE5\u9810\u89BD\u52D5\u756B\u5FBD\u7AE0\u3002',
         noVariantPreview:
             '\u9078\u64C7\u54C1\u724C\u4EE5\u9810\u89BD\u5FBD\u7AE0\u6A23\u5F0F\u3002',
+        pickScreenColor:
+            '\u5F9E\u87A2\u5E55\u64C7\u9078\u4E3B\u8981\u984F\u8272',
         pickFirstFrame:
             '\u9078\u64C7\u54C1\u724C\u4E26\u65B0\u589E\u7B2C\u4E00\u500B\u5F71\u683C\u3002',
         poweredBy: '\u8CC7\u6599\u4F86\u6E90',

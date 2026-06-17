@@ -287,6 +287,10 @@
     grid-template-columns: var(--space-32) minmax(0, 1fr);
 }
 
+.color-control__hue-row {
+    grid-template-columns: var(--space-32) minmax(0, 1fr) var(--space-40);
+}
+
 .color-control__hex-row input {
     height: var(--space-48);
     min-height: var(--space-48);
@@ -311,6 +315,21 @@
 .color-control__hue-row {
     min-height: var(--space-48);
     padding: var(--space-8) 0;
+}
+
+.color-control__eyedropper {
+    width: var(--space-40);
+    height: var(--space-40);
+    min-height: var(--space-40);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-4);
+    background: var(--clr-surface-raised);
+}
+
+.color-control__eyedropper svg {
+    width: var(--space-16);
+    height: var(--space-16);
+    color: var(--clr-text-muted);
 }
 
 .color-control__rgb-row > span,
