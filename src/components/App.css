@@ -59,7 +59,7 @@
     display: grid;
     grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
     gap: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .panel-heading {

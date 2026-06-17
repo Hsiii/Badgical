@@ -10,8 +10,6 @@ export interface UiCopy {
     readonly animationDelay: string;
     readonly animationDelaySeconds: string;
     readonly animationLabels: Record<AnimationType, string>;
-    readonly animationLength: string;
-    readonly animationLengthSeconds: string;
     readonly animationType: string;
     readonly badgePreviewTitle: string;
     readonly badgeText: string;
@@ -38,6 +36,8 @@ export interface UiCopy {
     readonly exportBadge: string;
     readonly exportGuide: (path: string, repo: string) => string;
     readonly frameSettings: string;
+    readonly frameLength: string;
+    readonly frameLengthSeconds: string;
     readonly frames: string;
     readonly generatedPreviewAlt: string;
     readonly githubLabel: (stars?: string) => string;
@@ -64,6 +64,8 @@ export interface UiCopy {
     readonly svglLogos: string;
     readonly theme: string;
     readonly themeLabels: Record<ThemePreference, string>;
+    readonly transitionLength: string;
+    readonly transitionLengthSeconds: string;
     readonly updateFrame: string;
     readonly uploadSvgSource: string;
     readonly variantDefault: string;
@@ -84,14 +86,12 @@ export const uiCopy = {
     'en': {
         addFrame: 'Add Frame',
         advancedControlsLabel: 'Advanced badge controls',
-        animationDelay: 'Animation delay',
-        animationDelaySeconds: 'Animation delay seconds',
+        animationDelay: 'Delay',
+        animationDelaySeconds: 'Delay seconds',
         animationLabels: {
             slot: 'Slot',
             carousel: 'Carousel',
         },
-        animationLength: 'Animation length',
-        animationLengthSeconds: 'Animation length seconds',
         animationType: 'Animation type',
         badgePreviewTitle: 'Badge Preview',
         badgeText: 'Badge text',
@@ -121,6 +121,8 @@ export const uiCopy = {
         exportGuide: (path, repo) =>
             `Download the SVG and put it in ${path} in ${repo}. Then put the generated Markdown in that repository README.`,
         frameSettings: 'Frame settings',
+        frameLength: 'Frame length',
+        frameLengthSeconds: 'Frame length seconds',
         frames: 'Frames',
         generatedPreviewAlt: 'Generated animated badge preview',
         githubLabel: (stars) =>
@@ -158,6 +160,8 @@ export const uiCopy = {
             dark: 'Dark',
             system: 'System',
         },
+        transitionLength: 'Transition length',
+        transitionLengthSeconds: 'Transition length seconds',
         updateFrame: 'Update Frame',
         uploadSvgSource: 'Upload SVG',
         variantDefault: 'Default',
@@ -166,14 +170,12 @@ export const uiCopy = {
     'zh-Hant': {
         addFrame: '\u65B0\u589E\u5F71\u683C',
         advancedControlsLabel: '\u9032\u968E\u5FBD\u7AE0\u63A7\u5236',
-        animationDelay: '\u52D5\u756B\u5EF6\u9072',
-        animationDelaySeconds: '\u52D5\u756B\u5EF6\u9072\u79D2\u6578',
+        animationDelay: '\u5EF6\u9072',
+        animationDelaySeconds: '\u5EF6\u9072\u79D2\u6578',
         animationLabels: {
             slot: '\u5377\u52D5',
             carousel: '\u8F2A\u64AD',
         },
-        animationLength: '\u52D5\u756B\u9577\u5EA6',
-        animationLengthSeconds: '\u52D5\u756B\u9577\u5EA6\u79D2\u6578',
         animationType: '\u52D5\u756B\u985E\u578B',
         badgePreviewTitle: '\u5FBD\u7AE0\u9810\u89BD',
         badgeText: '\u5FBD\u7AE0\u6587\u5B57',
@@ -203,6 +205,8 @@ export const uiCopy = {
         exportGuide: (path, repo) =>
             `\u4E0B\u8F09 SVG \u4E26\u653E\u5230 ${repo} \u7684 ${path}\u3002\u63A5\u8457\u628A\u7522\u751F\u7684 Markdown \u653E\u9032\u8A72\u5132\u5B58\u5EAB\u7684 README\u3002`,
         frameSettings: '\u5F71\u683C\u8A2D\u5B9A',
+        frameLength: '\u5F71\u683C\u9577\u5EA6',
+        frameLengthSeconds: '\u5F71\u683C\u9577\u5EA6\u79D2\u6578',
         frames: '\u5F71\u683C',
         generatedPreviewAlt:
             '\u7522\u751F\u7684\u52D5\u756B\u5FBD\u7AE0\u9810\u89BD',
@@ -245,6 +249,8 @@ export const uiCopy = {
             dark: '\u6DF1\u8272',
             system: '\u7CFB\u7D71',
         },
+        transitionLength: '\u904E\u5834\u9577\u5EA6',
+        transitionLengthSeconds: '\u904E\u5834\u9577\u5EA6\u79D2\u6578',
         updateFrame: '\u66F4\u65B0\u5F71\u683C',
         uploadSvgSource: '\u4E0A\u50B3 SVG',
         variantDefault: '\u9810\u8A2D',

@@ -18,16 +18,22 @@ import {
     normalizeHexInput,
 } from '@/components/badge-builder/colors';
 import {
+    animationStartDelaySeconds,
     defaultBadgeDraft,
     defaultExportFolder,
     defaultExportRepo,
     defaultStates,
     exportFileName,
     frameSeconds,
+    maxAnimationStartDelaySeconds,
     maxFrameDelaySeconds,
     maxFrames,
     maxSvglResults,
+    maxTransitionSeconds,
+    minAnimationStartDelaySeconds,
     minFrameDelaySeconds,
+    minTransitionSeconds,
+    transitionSeconds,
 } from '@/components/badge-builder/constants';
 import { logoColorTouchesBadgeEdge } from '@/components/badge-builder/smart-recolor';
 import {
@@ -127,7 +133,12 @@ export function App({
     const [openPreferenceMenu, setOpenPreferenceMenu] = useState<
         PreferenceMenu | undefined
     >(undefined);
-    const [frameDelaySeconds, setFrameDelaySeconds] = useState(frameSeconds);
+    const [animationDelaySeconds, setAnimationDelaySeconds] = useState(
+        animationStartDelaySeconds
+    );
+    const [transitionLengthSeconds, setTransitionLengthSeconds] =
+        useState(transitionSeconds);
+    const [frameLengthSeconds, setFrameLengthSeconds] = useState(frameSeconds);
     const [animationType, setAnimationType] = useState<AnimationType>('slot');
     const [frameSettingsOpen, setFrameSettingsOpen] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<
@@ -142,8 +153,22 @@ export function App({
     );
     const resultsReference = useRef<HTMLDivElement | undefined>(undefined);
     const badgeSvg = useMemo(
-        () => buildBadgeSvg(states, frameDelaySeconds, false, animationType),
-        [animationType, frameDelaySeconds, states]
+        () =>
+            buildBadgeSvg(
+                states,
+                frameLengthSeconds,
+                false,
+                animationType,
+                animationDelaySeconds,
+                transitionLengthSeconds
+            ),
+        [
+            animationDelaySeconds,
+            animationType,
+            frameLengthSeconds,
+            states,
+            transitionLengthSeconds,
+        ]
     );
     const previewSource = useMemo(
         () => (badgeSvg === '' ? '' : toDataUri(badgeSvg)),
@@ -683,18 +708,51 @@ export function App({
         setExportCopyState('idle');
     };
 
-    const updateFrameDelaySeconds = (value: string): void => {
+    const updateAnimationDelaySeconds = (value: string): void => {
         const nextDelay = Number.parseFloat(value);
 
         if (Number.isNaN(nextDelay)) {
             return;
         }
 
-        setFrameDelaySeconds(
+        setAnimationDelaySeconds(
             Math.min(
-                maxFrameDelaySeconds,
-                Math.max(minFrameDelaySeconds, nextDelay)
+                maxAnimationStartDelaySeconds,
+                Math.max(minAnimationStartDelaySeconds, nextDelay)
             )
+        );
+    };
+
+    const updateTransitionLengthSeconds = (value: string): void => {
+        const nextLength = Number.parseFloat(value);
+
+        if (Number.isNaN(nextLength)) {
+            return;
+        }
+
+        setTransitionLengthSeconds(
+            Math.min(
+                Math.min(maxTransitionSeconds, frameLengthSeconds),
+                Math.max(minTransitionSeconds, nextLength)
+            )
+        );
+    };
+
+    const updateFrameLengthSeconds = (value: string): void => {
+        const nextLength = Number.parseFloat(value);
+
+        if (Number.isNaN(nextLength)) {
+            return;
+        }
+
+        const clampedLength = Math.min(
+            maxFrameDelaySeconds,
+            Math.max(minFrameDelaySeconds, nextLength)
+        );
+
+        setFrameLengthSeconds(clampedLength);
+        setTransitionLengthSeconds((currentLength) =>
+            Math.min(currentLength, clampedLength)
         );
     };
 
@@ -910,10 +968,11 @@ export function App({
                             />
 
                             <OutputPreview
+                                animationDelaySeconds={animationDelaySeconds}
                                 animationType={animationType}
                                 badgeSvg={badgeSvg}
                                 copy={copy}
-                                frameDelaySeconds={frameDelaySeconds}
+                                frameLengthSeconds={frameLengthSeconds}
                                 frameSettingsOpen={frameSettingsOpen}
                                 openPreferenceMenu={openPreferenceMenu}
                                 previewSource={previewSource}
@@ -921,9 +980,17 @@ export function App({
                                 setExportDialogOpen={setExportDialogOpen}
                                 setFrameSettingsOpen={setFrameSettingsOpen}
                                 setOpenPreferenceMenu={setOpenPreferenceMenu}
-                                statesLength={states.length}
-                                updateFrameDelaySeconds={
-                                    updateFrameDelaySeconds
+                                transitionLengthSeconds={
+                                    transitionLengthSeconds
+                                }
+                                updateAnimationDelaySeconds={
+                                    updateAnimationDelaySeconds
+                                }
+                                updateFrameLengthSeconds={
+                                    updateFrameLengthSeconds
+                                }
+                                updateTransitionLengthSeconds={
+                                    updateTransitionLengthSeconds
                                 }
                             />
                         </aside>

@@ -5,6 +5,7 @@ import {
     getRgbColor,
 } from '@/components/badge-builder/colors';
 import {
+    animationStartDelaySeconds,
     badgeHeight,
     defaultBadgeDraft,
     frameSeconds,
@@ -14,6 +15,7 @@ import {
     minBadgeWidth,
     textSize,
     textStart,
+    transitionSeconds,
 } from '@/components/badge-builder/constants';
 import type {
     AnimationType,
@@ -390,15 +392,14 @@ export const getBadgeWidth = (states: readonly BadgeState[]): number => {
 
 export const buildAnimationSteps = (
     stateCount: number,
-    distance: number
+    distance: number,
+    holdShare = 0.72
 ): string => {
     if (stateCount < 2) {
         return '0%,100%{transform:translateY(0)}';
     }
 
     const totalFrames = stateCount;
-    const holdShare = 0.72;
-
     return Array.from({ length: stateCount }, (_value, index) => {
         const frameStart = (index / totalFrames) * 100;
         const frameHoldEnd = ((index + holdShare) / totalFrames) * 100;
@@ -411,15 +412,14 @@ export const buildAnimationSteps = (
 
 export const buildCarouselAnimationSteps = (
     stateCount: number,
-    distance: number
+    distance: number,
+    holdShare = 0.72
 ): string => {
     if (stateCount < 2) {
         return '0%,100%{transform:translateX(0)}';
     }
 
     const totalFrames = stateCount;
-    const holdShare = 0.72;
-
     return Array.from({ length: stateCount }, (_value, index) => {
         const frameStart = (index / totalFrames) * 100;
         const frameHoldEnd = ((index + holdShare) / totalFrames) * 100;
@@ -432,9 +432,11 @@ export const buildCarouselAnimationSteps = (
 
 export const buildBadgeSvg = (
     states: readonly BadgeState[],
-    frameDelaySeconds = frameSeconds,
+    frameLengthSeconds = frameSeconds,
     preserveOriginalArtwork = false,
-    animationType: AnimationType = 'slot'
+    animationType: AnimationType = 'slot',
+    startDelaySeconds = animationStartDelaySeconds,
+    transitionLengthSeconds = transitionSeconds
 ): string => {
     const visibleStates = normalizeStates(states);
 
@@ -449,8 +451,8 @@ export const buildBadgeSvg = (
             ? [...visibleStates, firstState]
             : visibleStates;
     const duration = Math.max(
-        visibleStates.length * frameDelaySeconds,
-        frameDelaySeconds
+        visibleStates.length * frameLengthSeconds,
+        frameLengthSeconds
     );
     const slots = animatedStates
         .map((state, index) => {
@@ -505,13 +507,28 @@ export const buildBadgeSvg = (
             return `<g class="f"${transform}>${content}</g>`;
         })
         .join('');
+    const holdShare =
+        frameLengthSeconds <= 0
+            ? 0
+            : Math.max(
+                  0,
+                  Math.min(
+                      1,
+                      (frameLengthSeconds - transitionLengthSeconds) /
+                          frameLengthSeconds
+                  )
+              );
     const animationSteps =
         animationType === 'carousel'
-            ? buildCarouselAnimationSteps(visibleStates.length, width)
-            : buildAnimationSteps(visibleStates.length, badgeHeight);
+            ? buildCarouselAnimationSteps(
+                  visibleStates.length,
+                  width,
+                  holdShare
+              )
+            : buildAnimationSteps(visibleStates.length, badgeHeight, holdShare);
     const animationStyle =
         visibleStates.length > 1
-            ? `.s{animation:a ${duration}s ease-in-out 1.2s infinite}@keyframes a{${animationSteps}}@media (prefers-reduced-motion:reduce){.s{animation:none}.f:nth-child(n+2){display:none}}`
+            ? `.s{animation:a ${duration}s ease-in-out ${compactNumber(startDelaySeconds)}s infinite}@keyframes a{${animationSteps}}@media (prefers-reduced-motion:reduce){.s{animation:none}.f:nth-child(n+2){display:none}}`
             : '';
     const body = visibleStates.length > 1 ? `<g class="s">${slots}</g>` : slots;
     const style =
