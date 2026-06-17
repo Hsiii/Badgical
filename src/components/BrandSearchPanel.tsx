@@ -1,3 +1,5 @@
+import './BrandSearchPanel.css';
+
 import type { JSX } from 'react';
 import { Search } from 'lucide-react';
 

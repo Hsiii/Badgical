@@ -1,3 +1,5 @@
+import './Topbar.css';
+
 import type { Dispatch, JSX, SetStateAction } from 'react';
 import { ChevronDown, Languages, SunMoon } from 'lucide-react';
 

@@ -1,5 +1,7 @@
 'use client';
 
+import './App.css';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
 import { Copy, Download, MoreHorizontal, Pencil, Plus, X } from 'lucide-react';
