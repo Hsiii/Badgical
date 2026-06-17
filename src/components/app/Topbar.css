@@ -59,6 +59,11 @@
     min-width: 0;
 }
 
+.topbar-start-button {
+    justify-self: center;
+    min-height: var(--space-36);
+}
+
 .preference-menu {
     position: relative;
     min-width: calc(var(--space-48) * 2 + var(--space-40));
@@ -180,6 +185,7 @@
     }
 
     .brand-cluster,
+    .topbar-start-button,
     .topbar-actions {
         width: 100%;
     }
@@ -190,6 +196,10 @@
 
     .topbar-actions {
         justify-content: stretch;
+    }
+
+    .topbar-start-button {
+        justify-self: stretch;
     }
 
     .preference-menu {

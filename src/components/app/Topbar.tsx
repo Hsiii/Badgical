@@ -2,7 +2,7 @@ import './Topbar.css';
 
 import { useEffect, useState } from 'react';
 import type { Dispatch, JSX, SetStateAction } from 'react';
-import { ChevronDown, Languages, Star, SunMoon } from 'lucide-react';
+import { ChevronDown, Languages, Star, SunMoon, Upload } from 'lucide-react';
 
 import { GitHubMark } from '@/components/app/GitHubMark';
 import {
@@ -23,6 +23,7 @@ interface TopbarProps {
     readonly setLanguagePreference: Dispatch<
         SetStateAction<LanguagePreference>
     >;
+    readonly setStartExistingDialogOpen: (isOpen: boolean) => void;
     readonly setOpenPreferenceMenu: Dispatch<
         SetStateAction<PreferenceMenu | undefined>
     >;
@@ -56,6 +57,7 @@ export function Topbar({
     languagePreference,
     openPreferenceMenu,
     setLanguagePreference,
+    setStartExistingDialogOpen,
     setOpenPreferenceMenu,
     setThemePreference,
     themePreference,
@@ -129,6 +131,17 @@ export function Topbar({
             <h1 className='visually-hidden' id='builder-title'>
                 {copy.builderTitle}
             </h1>
+            <button
+                className='button button--secondary topbar-start-button'
+                onClick={() => {
+                    setStartExistingDialogOpen(true);
+                    setOpenPreferenceMenu(undefined);
+                }}
+                type='button'
+            >
+                <Upload aria-hidden='true' size={16} />
+                Start from existing
+            </button>
             <div className='topbar-actions'>
                 <div className='preference-menu'>
                     <button

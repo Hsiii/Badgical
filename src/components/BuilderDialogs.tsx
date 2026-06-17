@@ -26,8 +26,10 @@ interface BuilderDialogsProps {
     readonly setExportRepo: (repo: string) => void;
     readonly setSourceDialogOpen: (isOpen: boolean) => void;
     readonly setSourceDraft: (source: string) => void;
+    readonly setStartExistingDialogOpen: (isOpen: boolean) => void;
     readonly sourceDialogOpen: boolean;
     readonly sourceDraft: string;
+    readonly startExistingDialogOpen: boolean;
 }
 
 export function BuilderDialogs({
@@ -50,8 +52,10 @@ export function BuilderDialogs({
     setExportRepo,
     setSourceDialogOpen,
     setSourceDraft,
+    setStartExistingDialogOpen,
     sourceDialogOpen,
     sourceDraft,
+    startExistingDialogOpen,
 }: BuilderDialogsProps): JSX.Element {
     const uploadSourceFile = (event: ChangeEvent<HTMLInputElement>): void => {
         const input = event.currentTarget;
@@ -112,6 +116,48 @@ export function BuilderDialogs({
                     </section>
                 </div>
             )}
+
+            {startExistingDialogOpen ? (
+                <div className='confirm-backdrop' role='presentation'>
+                    <section
+                        aria-describedby='start-existing-description'
+                        aria-labelledby='start-existing-title'
+                        aria-modal='true'
+                        className='confirm-dialog'
+                        role='dialog'
+                    >
+                        <div className='panel-heading'>
+                            <h2 id='start-existing-title'>
+                                Start from existing
+                            </h2>
+                        </div>
+                        <p id='start-existing-description'>
+                            This will overwrite all current edits and frames.
+                            Continue?
+                        </p>
+                        <div className='confirm-dialog__actions'>
+                            <button
+                                className='button button--secondary'
+                                onClick={() => {
+                                    setStartExistingDialogOpen(false);
+                                }}
+                                type='button'
+                            >
+                                {copy.cancel}
+                            </button>
+                            <button
+                                className='button button--primary'
+                                onClick={() => {
+                                    setStartExistingDialogOpen(false);
+                                }}
+                                type='button'
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            ) : undefined}
 
             {sourceDialogOpen ? (
                 <div className='confirm-backdrop' role='presentation'>

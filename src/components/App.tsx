@@ -120,6 +120,8 @@ export function App({
     const [colorMode, setColorMode] = useState<ColorMode>('brand');
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
     const [exportDialogOpen, setExportDialogOpen] = useState(false);
+    const [startExistingDialogOpen, setStartExistingDialogOpen] =
+        useState(false);
     const [exportFolder, setExportFolder] = useState(defaultExportFolder);
     const [exportRepo, setExportRepo] = useState(defaultExportRepo);
     const [sourceDraft, setSourceDraft] = useState(defaultBadgeDraft.source);
@@ -886,6 +888,7 @@ export function App({
                     openPreferenceMenu={openPreferenceMenu}
                     setLanguagePreference={setLanguagePreference}
                     setOpenPreferenceMenu={setOpenPreferenceMenu}
+                    setStartExistingDialogOpen={setStartExistingDialogOpen}
                     setThemePreference={setThemePreference}
                     themePreference={themePreference}
                 />
@@ -1018,8 +1021,10 @@ export function App({
                 setExportRepo={setExportRepo}
                 setSourceDialogOpen={setSourceDialogOpen}
                 setSourceDraft={setSourceDraft}
+                setStartExistingDialogOpen={setStartExistingDialogOpen}
                 sourceDialogOpen={sourceDialogOpen}
                 sourceDraft={sourceDraft}
+                startExistingDialogOpen={startExistingDialogOpen}
             />
         </main>
     );
