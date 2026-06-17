@@ -197,7 +197,7 @@
     border: 0;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1080px) {
     .builder__workspace {
         padding: var(--space-16);
         overflow: auto;

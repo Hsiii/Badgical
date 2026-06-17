@@ -146,7 +146,7 @@
     min-height: 100%;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1080px) {
     .brand-results {
         max-height: calc(var(--space-48) * 8);
     }
