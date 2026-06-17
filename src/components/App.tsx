@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { JSX } from 'react';
+import type { CSSProperties, JSX } from 'react';
 import {
     ChevronDown,
     Copy,
@@ -132,6 +132,8 @@ const escapeXml = (value: string): string =>
 
 const compactNumber = (value: number): string =>
     Number(value.toFixed(2)).toString();
+
+const clampUnit = (value: number): number => Math.min(1, Math.max(0, value));
 
 const minifySvgSource = (source: string): string =>
     source
@@ -1213,6 +1215,31 @@ export function App(): JSX.Element {
         );
     };
 
+    const updateDraftSaturationValue = (
+        saturation: number,
+        value: number
+    ): void => {
+        const currentColor =
+            getRgbColor(draft.badgeColor) ??
+            getRgbColor(defaultBadgeDraft.badgeColor);
+
+        if (currentColor === undefined) {
+            return;
+        }
+
+        const currentHsv = getHsvColor(currentColor);
+
+        updateDraftColor(
+            getHexColor(
+                getRgbFromHsv({
+                    ...currentHsv,
+                    saturation: clampUnit(saturation),
+                    value: clampUnit(value),
+                })
+            )
+        );
+    };
+
     const chooseSearchResult = (result: SvglResult): void => {
         setSelectedResult(result);
         setSelectionStatus('loading');
@@ -1435,6 +1462,18 @@ export function App(): JSX.Element {
         draftPrimaryRgb === undefined
             ? { hue: 0, saturation: 0, value: 0 }
             : getHsvColor(draftPrimaryRgb);
+    const draftPrimaryHueColor = getHexColor(
+        getRgbFromHsv({
+            hue: draftPrimaryHsv.hue,
+            saturation: 1,
+            value: 1,
+        })
+    );
+    const colorPickerStyle = {
+        '--color-control-hue': draftPrimaryHueColor,
+        '--color-control-saturation': `${draftPrimaryHsv.saturation * 100}%`,
+        '--color-control-value': `${(1 - draftPrimaryHsv.value) * 100}%`,
+    } as CSSProperties;
     const variantPreviews = (
         [
             ['brand', 'Default'],
@@ -1453,6 +1492,18 @@ export function App(): JSX.Element {
             source: toDataUri(buildSingleBadgeSvg(variantDraft, 0)),
         };
     });
+    const updateColorPadFromPoint = (
+        clientX: number,
+        clientY: number,
+        element: HTMLElement
+    ): void => {
+        const rect = element.getBoundingClientRect();
+
+        updateDraftSaturationValue(
+            (clientX - rect.left) / rect.width,
+            1 - (clientY - rect.top) / rect.height
+        );
+    };
 
     return (
         <main className='app'>
@@ -1768,34 +1819,124 @@ export function App(): JSX.Element {
                                                     <span>Primary color</span>
                                                     <div className='color-control'>
                                                         <div
-                                                            aria-label={`Primary color ${draftPrimaryColor}`}
-                                                            className='color-control__pad'
-                                                            role='img'
-                                                            style={{
-                                                                background:
-                                                                    draftPrimaryColor,
-                                                            }}
-                                                        />
-
-                                                        <input
-                                                            aria-label='Primary color hue'
-                                                            className='color-control__hue'
-                                                            max='360'
-                                                            min='0'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateDraftHue(
-                                                                    event.target
-                                                                        .value
-                                                                );
-                                                            }}
-                                                            step='1'
-                                                            type='range'
-                                                            value={
-                                                                draftPrimaryHsv.hue
+                                                            className='color-control__visuals'
+                                                            style={
+                                                                colorPickerStyle
                                                             }
-                                                        />
+                                                        >
+                                                            <button
+                                                                aria-label={`Primary color saturation and brightness ${draftPrimaryColor}`}
+                                                                className='color-control__pad'
+                                                                onKeyDown={(
+                                                                    event
+                                                                ) => {
+                                                                    const step =
+                                                                        event.shiftKey
+                                                                            ? 0.12
+                                                                            : 0.04;
+
+                                                                    switch (
+                                                                        event.key
+                                                                    ) {
+                                                                        case 'ArrowLeft': {
+                                                                            event.preventDefault();
+                                                                            updateDraftSaturationValue(
+                                                                                draftPrimaryHsv.saturation -
+                                                                                    step,
+                                                                                draftPrimaryHsv.value
+                                                                            );
+                                                                            break;
+                                                                        }
+
+                                                                        case 'ArrowRight': {
+                                                                            event.preventDefault();
+                                                                            updateDraftSaturationValue(
+                                                                                draftPrimaryHsv.saturation +
+                                                                                    step,
+                                                                                draftPrimaryHsv.value
+                                                                            );
+                                                                            break;
+                                                                        }
+
+                                                                        case 'ArrowUp': {
+                                                                            event.preventDefault();
+                                                                            updateDraftSaturationValue(
+                                                                                draftPrimaryHsv.saturation,
+                                                                                draftPrimaryHsv.value +
+                                                                                    step
+                                                                            );
+                                                                            break;
+                                                                        }
+
+                                                                        case 'ArrowDown': {
+                                                                            event.preventDefault();
+                                                                            updateDraftSaturationValue(
+                                                                                draftPrimaryHsv.saturation,
+                                                                                draftPrimaryHsv.value -
+                                                                                    step
+                                                                            );
+                                                                            break;
+                                                                        }
+
+                                                                        default: {
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                onPointerDown={(
+                                                                    event
+                                                                ) => {
+                                                                    event.currentTarget.setPointerCapture(
+                                                                        event.pointerId
+                                                                    );
+                                                                    updateColorPadFromPoint(
+                                                                        event.clientX,
+                                                                        event.clientY,
+                                                                        event.currentTarget
+                                                                    );
+                                                                }}
+                                                                onPointerMove={(
+                                                                    event
+                                                                ) => {
+                                                                    if (
+                                                                        event.buttons !==
+                                                                        1
+                                                                    ) {
+                                                                        return;
+                                                                    }
+
+                                                                    updateColorPadFromPoint(
+                                                                        event.clientX,
+                                                                        event.clientY,
+                                                                        event.currentTarget
+                                                                    );
+                                                                }}
+                                                                type='button'
+                                                            >
+                                                                <span className='color-control__dot' />
+                                                            </button>
+
+                                                            <input
+                                                                aria-label='Primary color hue'
+                                                                className='color-control__hue'
+                                                                max='360'
+                                                                min='0'
+                                                                onChange={(
+                                                                    event
+                                                                ) => {
+                                                                    updateDraftHue(
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                step='1'
+                                                                type='range'
+                                                                value={
+                                                                    draftPrimaryHsv.hue
+                                                                }
+                                                            />
+                                                        </div>
 
                                                         <div className='color-control__inputs'>
                                                             <div className='color-control__rgb-row'>

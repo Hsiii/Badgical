@@ -38,6 +38,8 @@
     --clr-hue-cyan: #00ffff;
     --clr-hue-blue: #0000ff;
     --clr-hue-magenta: #ff00ff;
+    --clr-picker-light: #ffffff;
+    --clr-picker-dark: #000000;
 }
 
 :root[data-theme='dark'] {

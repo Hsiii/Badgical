@@ -643,27 +643,64 @@ textarea {
 
 .color-control {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-8);
+    grid-template-columns:
+        minmax(calc(var(--space-48) * 3), 1fr)
+        minmax(calc(var(--space-48) * 4), 1.2fr);
+    gap: var(--space-12);
     align-items: stretch;
     min-width: 0;
     min-height: 0;
 }
 
+.color-control__visuals {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) var(--space-20);
+    gap: var(--space-8);
+    min-width: 0;
+    min-height: 0;
+}
+
 .color-control__pad {
+    position: relative;
     width: 100%;
-    height: calc(var(--space-48) * 2);
+    aspect-ratio: 1;
+    min-height: calc(var(--space-48) * 2);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
+    background:
+        linear-gradient(to top, var(--clr-picker-dark), transparent),
+        linear-gradient(to right, var(--clr-picker-light), transparent),
+        var(--color-control-hue);
     box-shadow: inset 0 0 0 1px var(--clr-edge-shadow);
+    cursor: crosshair;
+}
+
+.color-control__dot {
+    position: absolute;
+    left: var(--color-control-saturation);
+    top: var(--color-control-value);
+    width: var(--space-16);
+    height: var(--space-16);
+    border: 2px solid var(--clr-text-on-primary);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--clr-edge-shadow);
+    transform: translate(-50%, -50%);
 }
 
 .color-control__hue {
+    appearance: none;
     width: 100%;
     min-width: 0;
-    height: var(--space-16);
+    height: var(--space-20);
     border-radius: var(--space-8);
     accent-color: var(--clr-accent);
+    background: transparent;
+    cursor: pointer;
+}
+
+.color-control__hue::-webkit-slider-runnable-track {
+    height: var(--space-8);
+    border-radius: var(--space-8);
     background: linear-gradient(
         90deg,
         var(--clr-hue-red),
@@ -674,19 +711,41 @@ textarea {
         var(--clr-hue-magenta),
         var(--clr-hue-red)
     );
-    cursor: pointer;
 }
 
-.color-control__hue::-webkit-slider-runnable-track {
-    height: var(--space-8);
-    border-radius: var(--space-8);
-    background: transparent;
+.color-control__hue::-webkit-slider-thumb {
+    appearance: none;
+    width: var(--space-16);
+    height: var(--space-16);
+    margin-top: calc(var(--space-4) * -1);
+    border: 2px solid var(--clr-text-on-primary);
+    border-radius: 50%;
+    background: var(--color-control-hue);
+    box-shadow: 0 0 0 1px var(--clr-edge-shadow);
 }
 
 .color-control__hue::-moz-range-track {
     height: var(--space-8);
     border-radius: var(--space-8);
-    background: transparent;
+    background: linear-gradient(
+        90deg,
+        var(--clr-hue-red),
+        var(--clr-hue-yellow),
+        var(--clr-hue-green),
+        var(--clr-hue-cyan),
+        var(--clr-hue-blue),
+        var(--clr-hue-magenta),
+        var(--clr-hue-red)
+    );
+}
+
+.color-control__hue::-moz-range-thumb {
+    width: var(--space-16);
+    height: var(--space-16);
+    border: 2px solid var(--clr-text-on-primary);
+    border-radius: 50%;
+    background: var(--color-control-hue);
+    box-shadow: 0 0 0 1px var(--clr-edge-shadow);
 }
 
 .color-control__inputs {
@@ -1104,6 +1163,7 @@ textarea {
     .advanced-controls,
     .advanced-panel,
     .brand-results,
+    .color-control,
     .export-dialog__actions,
     .export-fields {
         grid-template-columns: 1fr;
