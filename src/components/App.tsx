@@ -1122,7 +1122,7 @@ export function App(): JSX.Element {
         }
 
         return {
-            smartRecolor: false,
+            smartRecolor: draft.smartRecolor,
             badgeColor: nextBrandColor,
             logoColor: nextBrandColor,
             preserveOriginalArtwork: true,
