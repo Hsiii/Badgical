@@ -1763,10 +1763,12 @@ export function App(): JSX.Element {
                                     className='advanced-panel'
                                 >
                                     <div className='advanced-controls'>
+                                        <h2 className='advanced-controls__title'>
+                                            Custom Edits
+                                        </h2>
                                         <div className='advanced-controls__left'>
                                             <div className='advanced-top-row'>
                                                 <div className='field advanced-svg-field'>
-                                                    <span>SVG</span>
                                                     <button
                                                         aria-label='Edit SVG source'
                                                         className='advanced-logo-preview'
@@ -1793,7 +1795,6 @@ export function App(): JSX.Element {
                                                 </div>
 
                                                 <label className='field advanced-text-field'>
-                                                    <span>Text</span>
                                                     <span className='advanced-text-input'>
                                                         <input
                                                             aria-label='Badge text'
@@ -1819,7 +1820,6 @@ export function App(): JSX.Element {
                                             </div>
 
                                             <div className='field advanced-color-field'>
-                                                <span>Primary color</span>
                                                 <div className='color-control'>
                                                     <div
                                                         className='color-control__visuals'

@@ -590,11 +590,18 @@ textarea {
 
 .advanced-controls {
     display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: var(--space-12);
     min-width: 0;
     min-height: 0;
     padding: var(--space-16);
     border-radius: var(--space-8);
     background: transparent;
+}
+
+.advanced-controls__title {
+    color: var(--clr-text);
+    font: var(--font-ui-heading);
 }
 
 .advanced-controls__left {
@@ -612,7 +619,7 @@ textarea {
     display: grid;
     grid-template-columns: calc(var(--space-48) + var(--space-8)) minmax(0, 1fr);
     gap: var(--space-8);
-    align-items: end;
+    align-items: center;
     min-width: 0;
 }
 
@@ -640,15 +647,6 @@ textarea {
 
 .advanced-color-field {
     min-height: 0;
-}
-
-.advanced-asset-row .field > span:not(.advanced-text-input),
-.advanced-top-row .field > span:not(.advanced-text-input),
-.advanced-color-field > span {
-    min-height: var(--space-32);
-    overflow: visible;
-    text-overflow: clip;
-    white-space: normal;
 }
 
 .advanced-preview-stack {
