@@ -45,6 +45,11 @@
     font: var(--font-ui-control);
 }
 
+.search-shell input::placeholder {
+    color: var(--clr-text);
+    opacity: 0.56;
+}
+
 .search-shell input:focus-visible {
     outline: 0;
 }
