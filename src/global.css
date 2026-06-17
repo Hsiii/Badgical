@@ -367,6 +367,7 @@ textarea {
 
 .preference-menu {
     position: relative;
+    width: calc(var(--space-48) * 2);
     min-width: 0;
 }
 
@@ -375,6 +376,7 @@ textarea {
     gap: var(--space-8);
     align-items: center;
     justify-content: center;
+    width: 100%;
     min-height: var(--space-32);
     padding: 0 var(--space-8);
     border: 1px solid var(--clr-border);
@@ -396,7 +398,7 @@ textarea {
     z-index: 5;
     display: grid;
     gap: var(--space-4);
-    min-width: 100%;
+    width: 100%;
     padding: var(--space-4);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
@@ -729,10 +731,13 @@ textarea {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-8);
+    place-items: center;
     min-width: 0;
 }
 
 .advanced-preview-empty {
+    grid-column: 1 / -1;
+    width: 100%;
     min-height: 100%;
 }
 
