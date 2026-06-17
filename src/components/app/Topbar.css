@@ -53,13 +53,12 @@
 
 .preference-menu {
     position: relative;
-    width: calc(var(--space-48) * 2 + var(--space-24));
-    min-width: 0;
+    min-width: calc(var(--space-48) * 2 + var(--space-40));
 }
 
 .preference-trigger {
     display: grid;
-    grid-template-columns: var(--space-16) minmax(0, 1fr) var(--space-16);
+    grid-template-columns: var(--space-16) max-content var(--space-16);
     gap: var(--space-8);
     align-items: center;
     justify-content: space-between;
@@ -79,9 +78,7 @@
 }
 
 .preference-trigger span {
-    overflow: hidden;
     text-align: center;
-    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
