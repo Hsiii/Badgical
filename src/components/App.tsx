@@ -1764,31 +1764,8 @@ export function App(): JSX.Element {
                                 >
                                     <div className='advanced-controls'>
                                         <div className='advanced-controls__left'>
-                                            <label className='field advanced-text-field'>
-                                                <span>Text</span>
-                                                <span className='advanced-text-input'>
-                                                    <input
-                                                        aria-label='Badge text'
-                                                        onChange={(event) => {
-                                                            setDraft(
-                                                                (
-                                                                    currentDraft
-                                                                ) => ({
-                                                                    ...currentDraft,
-                                                                    name: event
-                                                                        .target
-                                                                        .value,
-                                                                })
-                                                            );
-                                                        }}
-                                                        placeholder='Badge text'
-                                                        value={draft.name}
-                                                    />
-                                                </span>
-                                            </label>
-
-                                            <div className='advanced-asset-row'>
-                                                <div className='field'>
+                                            <div className='advanced-top-row'>
+                                                <div className='field advanced-svg-field'>
                                                     <span>SVG</span>
                                                     <button
                                                         aria-label='Edit SVG source'
@@ -1815,107 +1792,222 @@ export function App(): JSX.Element {
                                                     </button>
                                                 </div>
 
-                                                <div className='field advanced-color-field'>
-                                                    <span>Primary color</span>
-                                                    <div className='color-control'>
-                                                        <div
-                                                            className='color-control__visuals'
-                                                            style={
-                                                                colorPickerStyle
-                                                            }
+                                                <label className='field advanced-text-field'>
+                                                    <span>Text</span>
+                                                    <span className='advanced-text-input'>
+                                                        <input
+                                                            aria-label='Badge text'
+                                                            onChange={(
+                                                                event
+                                                            ) => {
+                                                                setDraft(
+                                                                    (
+                                                                        currentDraft
+                                                                    ) => ({
+                                                                        ...currentDraft,
+                                                                        name: event
+                                                                            .target
+                                                                            .value,
+                                                                    })
+                                                                );
+                                                            }}
+                                                            placeholder='Badge text'
+                                                            value={draft.name}
+                                                        />
+                                                    </span>
+                                                </label>
+                                            </div>
+
+                                            <div className='field advanced-color-field'>
+                                                <span>Primary color</span>
+                                                <div className='color-control'>
+                                                    <div
+                                                        className='color-control__visuals'
+                                                        style={colorPickerStyle}
+                                                    >
+                                                        <button
+                                                            aria-label={`Primary color saturation and brightness ${draftPrimaryColor}`}
+                                                            className='color-control__pad'
+                                                            onKeyDown={(
+                                                                event
+                                                            ) => {
+                                                                const step =
+                                                                    event.shiftKey
+                                                                        ? 0.12
+                                                                        : 0.04;
+
+                                                                switch (
+                                                                    event.key
+                                                                ) {
+                                                                    case 'ArrowLeft': {
+                                                                        event.preventDefault();
+                                                                        updateDraftSaturationValue(
+                                                                            draftPrimaryHsv.saturation -
+                                                                                step,
+                                                                            draftPrimaryHsv.value
+                                                                        );
+                                                                        break;
+                                                                    }
+
+                                                                    case 'ArrowRight': {
+                                                                        event.preventDefault();
+                                                                        updateDraftSaturationValue(
+                                                                            draftPrimaryHsv.saturation +
+                                                                                step,
+                                                                            draftPrimaryHsv.value
+                                                                        );
+                                                                        break;
+                                                                    }
+
+                                                                    case 'ArrowUp': {
+                                                                        event.preventDefault();
+                                                                        updateDraftSaturationValue(
+                                                                            draftPrimaryHsv.saturation,
+                                                                            draftPrimaryHsv.value +
+                                                                                step
+                                                                        );
+                                                                        break;
+                                                                    }
+
+                                                                    case 'ArrowDown': {
+                                                                        event.preventDefault();
+                                                                        updateDraftSaturationValue(
+                                                                            draftPrimaryHsv.saturation,
+                                                                            draftPrimaryHsv.value -
+                                                                                step
+                                                                        );
+                                                                        break;
+                                                                    }
+
+                                                                    default: {
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }}
+                                                            onPointerDown={(
+                                                                event
+                                                            ) => {
+                                                                event.currentTarget.setPointerCapture(
+                                                                    event.pointerId
+                                                                );
+                                                                updateColorPadFromPoint(
+                                                                    event.clientX,
+                                                                    event.clientY,
+                                                                    event.currentTarget
+                                                                );
+                                                            }}
+                                                            onPointerMove={(
+                                                                event
+                                                            ) => {
+                                                                if (
+                                                                    event.buttons !==
+                                                                    1
+                                                                ) {
+                                                                    return;
+                                                                }
+
+                                                                updateColorPadFromPoint(
+                                                                    event.clientX,
+                                                                    event.clientY,
+                                                                    event.currentTarget
+                                                                );
+                                                            }}
+                                                            type='button'
                                                         >
-                                                            <button
-                                                                aria-label={`Primary color saturation and brightness ${draftPrimaryColor}`}
-                                                                className='color-control__pad'
-                                                                onKeyDown={(
+                                                            <span className='color-control__dot' />
+                                                        </button>
+                                                    </div>
+
+                                                    <div className='color-control__inputs'>
+                                                        <label className='color-control__hex-row'>
+                                                            <span>Hex</span>
+                                                            <input
+                                                                aria-label='Primary hex'
+                                                                onChange={(
                                                                     event
                                                                 ) => {
-                                                                    const step =
-                                                                        event.shiftKey
-                                                                            ? 0.12
-                                                                            : 0.04;
+                                                                    updateDraftColor(
+                                                                        event
+                                                                            .target
+                                                                            .value
+                                                                    );
+                                                                }}
+                                                                value={
+                                                                    draftPrimaryColor
+                                                                }
+                                                            />
+                                                        </label>
 
-                                                                    switch (
-                                                                        event.key
-                                                                    ) {
-                                                                        case 'ArrowLeft': {
-                                                                            event.preventDefault();
-                                                                            updateDraftSaturationValue(
-                                                                                draftPrimaryHsv.saturation -
-                                                                                    step,
-                                                                                draftPrimaryHsv.value
-                                                                            );
-                                                                            break;
-                                                                        }
-
-                                                                        case 'ArrowRight': {
-                                                                            event.preventDefault();
-                                                                            updateDraftSaturationValue(
-                                                                                draftPrimaryHsv.saturation +
-                                                                                    step,
-                                                                                draftPrimaryHsv.value
-                                                                            );
-                                                                            break;
-                                                                        }
-
-                                                                        case 'ArrowUp': {
-                                                                            event.preventDefault();
-                                                                            updateDraftSaturationValue(
-                                                                                draftPrimaryHsv.saturation,
-                                                                                draftPrimaryHsv.value +
-                                                                                    step
-                                                                            );
-                                                                            break;
-                                                                        }
-
-                                                                        case 'ArrowDown': {
-                                                                            event.preventDefault();
-                                                                            updateDraftSaturationValue(
-                                                                                draftPrimaryHsv.saturation,
-                                                                                draftPrimaryHsv.value -
-                                                                                    step
-                                                                            );
-                                                                            break;
-                                                                        }
-
-                                                                        default: {
-                                                                            break;
-                                                                        }
+                                                        <div className='color-control__rgb-row'>
+                                                            <span>RGB</span>
+                                                            <div className='color-control__rgb-group'>
+                                                                <input
+                                                                    aria-label='Primary red'
+                                                                    max='255'
+                                                                    min='0'
+                                                                    onChange={(
+                                                                        event
+                                                                    ) => {
+                                                                        updateDraftColorChannel(
+                                                                            'red',
+                                                                            event
+                                                                                .target
+                                                                                .value
+                                                                        );
+                                                                    }}
+                                                                    type='number'
+                                                                    value={
+                                                                        draftPrimaryRgb?.red ??
+                                                                        0
                                                                     }
-                                                                }}
-                                                                onPointerDown={(
-                                                                    event
-                                                                ) => {
-                                                                    event.currentTarget.setPointerCapture(
-                                                                        event.pointerId
-                                                                    );
-                                                                    updateColorPadFromPoint(
-                                                                        event.clientX,
-                                                                        event.clientY,
-                                                                        event.currentTarget
-                                                                    );
-                                                                }}
-                                                                onPointerMove={(
-                                                                    event
-                                                                ) => {
-                                                                    if (
-                                                                        event.buttons !==
-                                                                        1
-                                                                    ) {
-                                                                        return;
+                                                                />
+                                                                <span>,</span>
+                                                                <input
+                                                                    aria-label='Primary green'
+                                                                    max='255'
+                                                                    min='0'
+                                                                    onChange={(
+                                                                        event
+                                                                    ) => {
+                                                                        updateDraftColorChannel(
+                                                                            'green',
+                                                                            event
+                                                                                .target
+                                                                                .value
+                                                                        );
+                                                                    }}
+                                                                    type='number'
+                                                                    value={
+                                                                        draftPrimaryRgb?.green ??
+                                                                        0
                                                                     }
+                                                                />
+                                                                <span>,</span>
+                                                                <input
+                                                                    aria-label='Primary blue'
+                                                                    max='255'
+                                                                    min='0'
+                                                                    onChange={(
+                                                                        event
+                                                                    ) => {
+                                                                        updateDraftColorChannel(
+                                                                            'blue',
+                                                                            event
+                                                                                .target
+                                                                                .value
+                                                                        );
+                                                                    }}
+                                                                    type='number'
+                                                                    value={
+                                                                        draftPrimaryRgb?.blue ??
+                                                                        0
+                                                                    }
+                                                                />
+                                                            </div>
+                                                        </div>
 
-                                                                    updateColorPadFromPoint(
-                                                                        event.clientX,
-                                                                        event.clientY,
-                                                                        event.currentTarget
-                                                                    );
-                                                                }}
-                                                                type='button'
-                                                            >
-                                                                <span className='color-control__dot' />
-                                                            </button>
-
+                                                        <label className='color-control__hue-row'>
+                                                            <span>Hue</span>
                                                             <input
                                                                 aria-label='Primary color hue'
                                                                 className='color-control__hue'
@@ -1936,106 +2028,7 @@ export function App(): JSX.Element {
                                                                     draftPrimaryHsv.hue
                                                                 }
                                                             />
-                                                        </div>
-
-                                                        <div className='color-control__inputs'>
-                                                            <div className='color-control__rgb-row'>
-                                                                <span>RGB</span>
-                                                                <label className='color-control__channel'>
-                                                                    <span>
-                                                                        R
-                                                                    </span>
-                                                                    <input
-                                                                        aria-label='Primary red'
-                                                                        max='255'
-                                                                        min='0'
-                                                                        onChange={(
-                                                                            event
-                                                                        ) => {
-                                                                            updateDraftColorChannel(
-                                                                                'red',
-                                                                                event
-                                                                                    .target
-                                                                                    .value
-                                                                            );
-                                                                        }}
-                                                                        type='number'
-                                                                        value={
-                                                                            draftPrimaryRgb?.red ??
-                                                                            0
-                                                                        }
-                                                                    />
-                                                                </label>
-                                                                <label className='color-control__channel'>
-                                                                    <span>
-                                                                        G
-                                                                    </span>
-                                                                    <input
-                                                                        aria-label='Primary green'
-                                                                        max='255'
-                                                                        min='0'
-                                                                        onChange={(
-                                                                            event
-                                                                        ) => {
-                                                                            updateDraftColorChannel(
-                                                                                'green',
-                                                                                event
-                                                                                    .target
-                                                                                    .value
-                                                                            );
-                                                                        }}
-                                                                        type='number'
-                                                                        value={
-                                                                            draftPrimaryRgb?.green ??
-                                                                            0
-                                                                        }
-                                                                    />
-                                                                </label>
-                                                                <label className='color-control__channel'>
-                                                                    <span>
-                                                                        B
-                                                                    </span>
-                                                                    <input
-                                                                        aria-label='Primary blue'
-                                                                        max='255'
-                                                                        min='0'
-                                                                        onChange={(
-                                                                            event
-                                                                        ) => {
-                                                                            updateDraftColorChannel(
-                                                                                'blue',
-                                                                                event
-                                                                                    .target
-                                                                                    .value
-                                                                            );
-                                                                        }}
-                                                                        type='number'
-                                                                        value={
-                                                                            draftPrimaryRgb?.blue ??
-                                                                            0
-                                                                        }
-                                                                    />
-                                                                </label>
-                                                            </div>
-                                                            <label className='color-control__hex-row'>
-                                                                <span>Hex</span>
-                                                                <input
-                                                                    aria-label='Primary hex'
-                                                                    onChange={(
-                                                                        event
-                                                                    ) => {
-                                                                        updateDraftColor(
-                                                                            event
-                                                                                .target
-                                                                                .value
-                                                                        );
-                                                                    }}
-                                                                    value={
-                                                                        draftPrimaryColor
-                                                                    }
-                                                                />
-                                                            </label>
-                                                        </div>
+                                                        </label>
                                                     </div>
                                                 </div>
                                             </div>
