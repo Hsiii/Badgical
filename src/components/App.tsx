@@ -58,6 +58,18 @@ type VariantMode = Exclude<ColorMode, 'custom'>;
 type SelectionStatus = 'idle' | 'loading' | 'ready';
 type LanguagePreference = 'en' | 'zh-Hant';
 type ThemePreference = 'light' | 'dark' | 'system';
+type PreferenceMenu = 'language' | 'theme';
+
+const languagePreferenceLabels = {
+    'en': 'EN',
+    'zh-Hant': 'ZH-TW',
+} as const satisfies Record<LanguagePreference, string>;
+
+const themePreferenceLabels = {
+    light: 'Light',
+    dark: 'Dark',
+    system: 'System',
+} as const satisfies Record<ThemePreference, string>;
 
 const defaultBadgeDraft: EditorDraft = {
     allCaps: false,
@@ -826,6 +838,9 @@ export function App(): JSX.Element {
         useState<LanguagePreference>('en');
     const [themePreference, setThemePreference] =
         useState<ThemePreference>('system');
+    const [openPreferenceMenu, setOpenPreferenceMenu] = useState<
+        PreferenceMenu | undefined
+    >(undefined);
     const [frameDelaySeconds, setFrameDelaySeconds] = useState(frameSeconds);
     const [frameSettingsOpen, setFrameSettingsOpen] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<
@@ -1451,57 +1466,116 @@ export function App(): JSX.Element {
                         Badgical badge builder
                     </h1>
                     <div className='topbar-actions'>
-                        <label className='select-control'>
-                            <Languages
-                                aria-hidden='true'
-                                className='select-control__icon'
-                                size={16}
-                            />
-                            <select
-                                aria-label='Language'
-                                className='toolbar-select'
-                                onChange={(event) => {
-                                    setLanguagePreference(
-                                        event.target.value as LanguagePreference
+                        <div className='preference-menu'>
+                            <button
+                                aria-expanded={
+                                    openPreferenceMenu === 'language'
+                                }
+                                aria-haspopup='menu'
+                                className='preference-trigger'
+                                onClick={() => {
+                                    setOpenPreferenceMenu((currentMenu) =>
+                                        currentMenu === 'language'
+                                            ? undefined
+                                            : 'language'
                                     );
                                 }}
-                                value={languagePreference}
+                                type='button'
                             >
-                                <option value='en'>EN</option>
-                                <option value='zh-Hant'>ZH-TW</option>
-                            </select>
-                            <ChevronDown
-                                aria-hidden='true'
-                                className='select-control__chevron'
-                                size={16}
-                            />
-                        </label>
-                        <label className='select-control'>
-                            <SunMoon
-                                aria-hidden='true'
-                                className='select-control__icon'
-                                size={16}
-                            />
-                            <select
-                                aria-label='Theme'
-                                className='toolbar-select'
-                                onChange={(event) => {
-                                    setThemePreference(
-                                        event.target.value as ThemePreference
+                                <Languages aria-hidden='true' size={16} />
+                                <span>
+                                    {
+                                        languagePreferenceLabels[
+                                            languagePreference
+                                        ]
+                                    }
+                                </span>
+                                <ChevronDown aria-hidden='true' size={16} />
+                            </button>
+                            {openPreferenceMenu === 'language' ? (
+                                <div
+                                    aria-label='Language'
+                                    className='preference-options'
+                                    role='menu'
+                                >
+                                    {(
+                                        Object.entries(
+                                            languagePreferenceLabels
+                                        ) as Array<[LanguagePreference, string]>
+                                    ).map(([value, label]) => (
+                                        <button
+                                            aria-checked={
+                                                languagePreference === value
+                                            }
+                                            className='preference-option'
+                                            key={value}
+                                            onClick={() => {
+                                                setLanguagePreference(value);
+                                                setOpenPreferenceMenu(
+                                                    undefined
+                                                );
+                                            }}
+                                            role='menuitemradio'
+                                            type='button'
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : undefined}
+                        </div>
+                        <div className='preference-menu'>
+                            <button
+                                aria-expanded={openPreferenceMenu === 'theme'}
+                                aria-haspopup='menu'
+                                className='preference-trigger'
+                                onClick={() => {
+                                    setOpenPreferenceMenu((currentMenu) =>
+                                        currentMenu === 'theme'
+                                            ? undefined
+                                            : 'theme'
                                     );
                                 }}
-                                value={themePreference}
+                                type='button'
                             >
-                                <option value='light'>Light</option>
-                                <option value='dark'>Dark</option>
-                                <option value='system'>System</option>
-                            </select>
-                            <ChevronDown
-                                aria-hidden='true'
-                                className='select-control__chevron'
-                                size={16}
-                            />
-                        </label>
+                                <SunMoon aria-hidden='true' size={16} />
+                                <span>
+                                    {themePreferenceLabels[themePreference]}
+                                </span>
+                                <ChevronDown aria-hidden='true' size={16} />
+                            </button>
+                            {openPreferenceMenu === 'theme' ? (
+                                <div
+                                    aria-label='Theme'
+                                    className='preference-options'
+                                    role='menu'
+                                >
+                                    {(
+                                        Object.entries(
+                                            themePreferenceLabels
+                                        ) as Array<[ThemePreference, string]>
+                                    ).map(([value, label]) => (
+                                        <button
+                                            aria-checked={
+                                                themePreference === value
+                                            }
+                                            className='preference-option'
+                                            key={value}
+                                            onClick={() => {
+                                                setThemePreference(value);
+                                                setOpenPreferenceMenu(
+                                                    undefined
+                                                );
+                                            }}
+                                            role='menuitemradio'
+                                            type='button'
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : undefined}
+                        </div>
                         <a
                             aria-label='Open Badgical on GitHub'
                             className='icon-button'
