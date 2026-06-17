@@ -2,15 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
-import {
-    Copy,
-    Download,
-    MoreHorizontal,
-    Pencil,
-    Plus,
-    Search,
-    X,
-} from 'lucide-react';
+import { Copy, Download, MoreHorizontal, Pencil, Plus, X } from 'lucide-react';
 
 import {
     buildBadgeSvg,
@@ -28,7 +20,6 @@ import {
     getReadableInk,
     getRgbColor,
     getRgbFromHsv,
-    getSvglRoute,
     getSvglSourceUrl,
     isSvglApiError,
     isSvglNotFoundResponse,
@@ -42,7 +33,6 @@ import {
     minFrameDelaySeconds,
     normalizeHexInput,
     sortSvglResults,
-    svglUrl,
     toDataUri,
 } from './badge-builder/domain.js';
 import type {
@@ -58,6 +48,7 @@ import type {
     ThemePreference,
     VariantMode,
 } from './badge-builder/domain.js';
+import { BrandSearchPanel } from './BrandSearchPanel.js';
 import { Topbar } from './Topbar.js';
 
 export function App(): JSX.Element {
@@ -776,110 +767,25 @@ export function App(): JSX.Element {
                                     <h2 id='content-title'>Badge Content</h2>
                                 </div>
 
-                                <section
-                                    aria-label='Search brands'
-                                    className='search-panel'
-                                >
-                                    <div
-                                        className='search-shell'
-                                        onClick={() => {
-                                            searchInputReference.current?.focus();
-                                        }}
-                                    >
-                                        <label className='search-field__input'>
-                                            <Search
-                                                aria-hidden='true'
-                                                size={24}
-                                            />
-                                            <input
-                                                aria-label='Search brand'
-                                                autoFocus
-                                                onChange={(event) => {
-                                                    setQuery(
-                                                        event.target.value
-                                                    );
-                                                    setSelectedResult(
-                                                        undefined
-                                                    );
-                                                    setSelectionStatus('idle');
-                                                }}
-                                                placeholder='Search...'
-                                                ref={(element) => {
-                                                    searchInputReference.current =
-                                                        element ?? undefined;
-                                                }}
-                                                value={query}
-                                            />
-                                        </label>
-                                        <div
-                                            className='search-actions'
-                                            onClick={(event) => {
-                                                event.stopPropagation();
-                                            }}
-                                        >
-                                            <a
-                                                className='powered-by'
-                                                href={svglUrl}
-                                                rel='noreferrer'
-                                                target='_blank'
-                                            >
-                                                Powered by <span>Svgl</span>
-                                            </a>
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        aria-busy={resultsAreLoading}
-                                        className='brand-results'
-                                        ref={(element) => {
-                                            resultsReference.current =
-                                                element ?? undefined;
-                                        }}
-                                    >
-                                        {visibleResults.length === 0 ? (
-                                            <div
-                                                aria-hidden='true'
-                                                className='search-empty'
-                                            />
-                                        ) : (
-                                            <div
-                                                aria-label='SVGL logos'
-                                                className='brand-results__canvas'
-                                            >
-                                                {visibleResults.map(
-                                                    (result) => (
-                                                        <button
-                                                            aria-current={
-                                                                result.id ===
-                                                                selectedResult?.id
-                                                                    ? 'true'
-                                                                    : undefined
-                                                            }
-                                                            className='brand-result'
-                                                            key={result.id}
-                                                            onClick={() => {
-                                                                chooseSearchResult(
-                                                                    result
-                                                                );
-                                                            }}
-                                                            type='button'
-                                                        >
-                                                            <img
-                                                                alt=''
-                                                                src={getSvglRoute(
-                                                                    result.route
-                                                                )}
-                                                            />
-                                                            <span>
-                                                                {result.title}
-                                                            </span>
-                                                        </button>
-                                                    )
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                </section>
+                                <BrandSearchPanel
+                                    chooseSearchResult={chooseSearchResult}
+                                    query={query}
+                                    resultsAreLoading={resultsAreLoading}
+                                    searchInputElement={
+                                        searchInputReference.current
+                                    }
+                                    selectedResult={selectedResult}
+                                    setQuery={setQuery}
+                                    setResultsElement={(element) => {
+                                        resultsReference.current = element;
+                                    }}
+                                    setSearchInputElement={(element) => {
+                                        searchInputReference.current = element;
+                                    }}
+                                    setSelectedResult={setSelectedResult}
+                                    setSelectionStatus={setSelectionStatus}
+                                    visibleResults={visibleResults}
+                                />
 
                                 <section
                                     aria-label='Advanced badge controls'
