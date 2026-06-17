@@ -1,6 +1,6 @@
 import './FrameRail.css';
 
-import type { JSX } from 'react';
+import type { JSX, KeyboardEvent } from 'react';
 import { MoreHorizontal, Pencil, X } from 'lucide-react';
 
 import {
@@ -38,6 +38,25 @@ export function FrameRail({
     states,
     updateFrameDelaySeconds,
 }: FrameRailProps): JSX.Element {
+    const handleDelayKeyDown = (
+        event: KeyboardEvent<HTMLInputElement>
+    ): void => {
+        if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
+            return;
+        }
+
+        event.preventDefault();
+
+        const direction = event.key === 'ArrowUp' ? 1 : -1;
+        const step = event.shiftKey ? 1 : 0.2;
+        const nextDelay = Math.min(
+            maxFrameDelaySeconds,
+            Math.max(minFrameDelaySeconds, frameDelaySeconds + direction * step)
+        );
+
+        updateFrameDelaySeconds(nextDelay.toFixed(1));
+    };
+
     return (
         <section className='frames'>
             <div className='panel-heading'>
@@ -80,6 +99,7 @@ export function FrameRail({
                             <label className='settings-value-row'>
                                 <input
                                     aria-label='Animation delay seconds'
+                                    inputMode='decimal'
                                     max={maxFrameDelaySeconds}
                                     min={minFrameDelaySeconds}
                                     onChange={(event) => {
@@ -87,8 +107,10 @@ export function FrameRail({
                                             event.target.value
                                         );
                                     }}
+                                    onKeyDown={handleDelayKeyDown}
+                                    pattern='[0-9]*[.]?[0-9]*'
                                     step='0.2'
-                                    type='number'
+                                    type='text'
                                     value={frameDelaySeconds}
                                 />
                                 <span>Sec</span>
