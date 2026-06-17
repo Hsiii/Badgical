@@ -45,6 +45,8 @@ type SvglSearchStatus = 'idle' | 'loading' | 'empty' | 'ready' | 'error';
 type ColorMode = 'brand' | 'inverse' | 'custom';
 type VariantMode = Exclude<ColorMode, 'custom'>;
 type SelectionStatus = 'idle' | 'loading' | 'ready';
+type LanguagePreference = 'en' | 'zh-Hant';
+type ThemePreference = 'light' | 'dark' | 'system';
 
 const defaultBadgeDraft: EditorDraft = {
     allCaps: false,
@@ -802,6 +804,10 @@ export function App(): JSX.Element {
     const [exportFolder, setExportFolder] = useState(defaultExportFolder);
     const [exportRepo, setExportRepo] = useState(defaultExportRepo);
     const [sourceDraft, setSourceDraft] = useState(defaultBadgeDraft.source);
+    const [languagePreference, setLanguagePreference] =
+        useState<LanguagePreference>('en');
+    const [themePreference, setThemePreference] =
+        useState<ThemePreference>('system');
     const [deleteCandidateId, setDeleteCandidateId] = useState<
         string | undefined
     >(undefined);
@@ -831,6 +837,36 @@ export function App(): JSX.Element {
         hasActiveDraft && isSvgSource(materializedDraft.source)
             ? toDataUri(materializedDraft.source)
             : undefined;
+    useEffect(() => {
+        const systemThemeQuery = globalThis.matchMedia(
+            '(prefers-color-scheme: dark)'
+        );
+        const applyThemePreference = (): void => {
+            let activeTheme = themePreference;
+
+            if (themePreference === 'system') {
+                activeTheme = systemThemeQuery.matches ? 'dark' : 'light';
+            }
+
+            document.documentElement.dataset.theme = activeTheme;
+        };
+
+        applyThemePreference();
+
+        if (themePreference !== 'system') {
+            return undefined;
+        }
+
+        systemThemeQuery.addEventListener('change', applyThemePreference);
+
+        return (): void => {
+            systemThemeQuery.removeEventListener(
+                'change',
+                applyThemePreference
+            );
+        };
+    }, [themePreference]);
+
     useEffect(() => {
         const abortController = new AbortController();
 
@@ -1377,14 +1413,6 @@ export function App(): JSX.Element {
                         Badgical badge builder
                     </h1>
                     <a
-                        className='powered-by'
-                        href={svglUrl}
-                        rel='noreferrer'
-                        target='_blank'
-                    >
-                        Powered by <span>Svgl</span>
-                    </a>
-                    <a
                         aria-label='Open Badgical on GitHub'
                         className='icon-button'
                         href={githubUrl}
@@ -1442,6 +1470,58 @@ export function App(): JSX.Element {
                                                 value={query}
                                             />
                                         </label>
+                                        <div
+                                            className='search-actions'
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                            }}
+                                        >
+                                            <a
+                                                className='powered-by'
+                                                href={svglUrl}
+                                                rel='noreferrer'
+                                                target='_blank'
+                                            >
+                                                Powered by <span>Svgl</span>
+                                            </a>
+                                            <select
+                                                aria-label='Language'
+                                                className='toolbar-select'
+                                                onChange={(event) => {
+                                                    setLanguagePreference(
+                                                        event.target
+                                                            .value as LanguagePreference
+                                                    );
+                                                }}
+                                                value={languagePreference}
+                                            >
+                                                <option value='en'>EN</option>
+                                                <option value='zh-Hant'>
+                                                    ZH-TW
+                                                </option>
+                                            </select>
+                                            <select
+                                                aria-label='Theme'
+                                                className='toolbar-select'
+                                                onChange={(event) => {
+                                                    setThemePreference(
+                                                        event.target
+                                                            .value as ThemePreference
+                                                    );
+                                                }}
+                                                value={themePreference}
+                                            >
+                                                <option value='light'>
+                                                    Light
+                                                </option>
+                                                <option value='dark'>
+                                                    Dark
+                                                </option>
+                                                <option value='system'>
+                                                    System
+                                                </option>
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div

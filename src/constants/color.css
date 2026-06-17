@@ -30,3 +30,29 @@
     --clr-edge-shadow: rgb(48 51 76 / 16%);
     --clr-edge-shadow-light: rgb(255 255 255 / 88%);
 }
+
+:root[data-theme='dark'] {
+    --clr-bg: #141522;
+    --clr-bg-subtle: #252744;
+    --clr-surface: #191b2c;
+    --clr-surface-raised: #20233a;
+    --clr-card: #20233a;
+    --clr-text-on-primary: #ffffff;
+    --clr-text: #f4f3fb;
+    --clr-text-muted: #c9c7dc;
+    --clr-border: #3b3e5f;
+    --clr-border-strong: #b195df;
+    --clr-accent: #8290f0;
+    --clr-accent-strong: #9aa5ff;
+    --clr-accent-soft: #303455;
+    --clr-brand: #b195df;
+    --clr-brand-soft: #303455;
+    --clr-control: #252744;
+    --clr-guide-bg: #252744;
+    --clr-guide-accent: #b195df;
+    --clr-warning: #9aa5ff;
+    --clr-danger: #ff8b85;
+    --clr-backdrop: rgb(7 8 14 / 56%);
+    --clr-edge-shadow: rgb(0 0 0 / 32%);
+    --clr-edge-shadow-light: rgb(0 0 0 / 20%);
+}
