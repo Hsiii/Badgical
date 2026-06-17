@@ -45,17 +45,15 @@ type SvglSearchStatus = 'idle' | 'loading' | 'empty' | 'ready' | 'error';
 type ColorMode = 'brand' | 'inverse' | 'custom';
 type VariantMode = Exclude<ColorMode, 'custom'>;
 type SelectionStatus = 'idle' | 'loading' | 'ready';
-const defaultBadgeSource =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="spark-fill" x1="8" x2="24" y1="22" y2="2" gradientUnits="userSpaceOnUse"><stop stop-color="#7436d9"/><stop offset="1" stop-color="#ffc2f7"/></linearGradient><path id="spark-shape" d="M18 9C20.240000000000002 14.76 20.240000000000002 14.76 26 17C20.240000000000002 19.240000000000002 20.240000000000002 19.240000000000002 18 25C15.76 19.240000000000002 15.76 19.240000000000002 10 17C15.76 14.76 15.76 14.76 18 9Z"/><g id="badge-shape"><rect x="3.2" y="20.8" width="26.8" height="9.2" rx="2.4"/><rect x="18.6" y="20.8" width="11.4" height="9.2" rx="2.4"/></g></defs><g transform="translate(1.4 -1.625)"><use href="#badge-shape" fill="#112255" transform="translate(-2 -3.75)"/><use href="#spark-shape" fill="url(#spark-fill)"/></g></svg>';
 
 const defaultBadgeDraft: EditorDraft = {
     allCaps: false,
     smartRecolor: false,
     badgeColor: '#5968c9',
     logoColor: '#ffffff',
-    name: 'Badgical',
+    name: '',
     preserveOriginalArtwork: false,
-    source: defaultBadgeSource,
+    source: '',
     textColor: '#ffffff',
 };
 
@@ -826,17 +824,13 @@ export function App(): JSX.Element {
         },
         0
     );
-    const draftLogoSource = isSvgSource(materializedDraft.source)
-        ? toDataUri(materializedDraft.source)
-        : undefined;
-    const draftPreviewSource = toDataUri(
-        buildSingleBadgeSvg(
-            materializedDraft,
-            0,
-            materializedDraft.preserveOriginalArtwork
-        )
-    );
-
+    const hasActiveDraft =
+        editingFrameId !== undefined ||
+        (selectedResult !== undefined && selectionStatus === 'ready');
+    const draftLogoSource =
+        hasActiveDraft && isSvgSource(materializedDraft.source)
+            ? toDataUri(materializedDraft.source)
+            : undefined;
     useEffect(() => {
         const abortController = new AbortController();
 
@@ -1558,27 +1552,25 @@ export function App(): JSX.Element {
                                                 </div>
 
                                                 <div className='field advanced-color-field'>
-                                                    <span>Primary Color</span>
+                                                    <span>Primary color</span>
                                                     <div className='color-control'>
-                                                        <label className='color-control__swatch'>
-                                                            <input
-                                                                aria-label='Primary color'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateDraftColor(
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                title='Primary color'
-                                                                type='color'
-                                                                value={
-                                                                    draftPrimaryColor
-                                                                }
-                                                            />
-                                                        </label>
+                                                        <input
+                                                            aria-label='Primary color'
+                                                            className='color-control__swatch'
+                                                            onChange={(
+                                                                event
+                                                            ) => {
+                                                                updateDraftColor(
+                                                                    event.target
+                                                                        .value
+                                                                );
+                                                            }}
+                                                            title='Primary color'
+                                                            type='color'
+                                                            value={
+                                                                draftPrimaryColor
+                                                            }
+                                                        />
 
                                                         <input
                                                             aria-label='Primary color hue'
@@ -1684,39 +1676,42 @@ export function App(): JSX.Element {
                                     </div>
 
                                     <div className='advanced-preview-stack'>
-                                        <div className='advanced-preview'>
-                                            <img
-                                                alt='Current badge draft preview'
-                                                src={draftPreviewSource}
-                                            />
-                                        </div>
-
                                         <div
                                             aria-label='Badge variants'
                                             className='variant-options'
                                         >
-                                            {variantPreviews.map((variant) => (
-                                                <button
-                                                    aria-pressed={
-                                                        colorMode ===
-                                                        variant.mode
-                                                    }
-                                                    className='variant-card'
-                                                    key={variant.mode}
-                                                    onClick={() => {
-                                                        selectColorMode(
-                                                            variant.mode
-                                                        );
-                                                    }}
-                                                    type='button'
-                                                >
-                                                    <img
-                                                        alt=''
-                                                        src={variant.source}
-                                                    />
-                                                    <span>{variant.label}</span>
-                                                </button>
-                                            ))}
+                                            {hasActiveDraft
+                                                ? variantPreviews.map(
+                                                      (variant) => (
+                                                          <button
+                                                              aria-pressed={
+                                                                  colorMode ===
+                                                                  variant.mode
+                                                              }
+                                                              className='variant-card'
+                                                              key={variant.mode}
+                                                              onClick={() => {
+                                                                  selectColorMode(
+                                                                      variant.mode
+                                                                  );
+                                                              }}
+                                                              type='button'
+                                                          >
+                                                              <img
+                                                                  alt=''
+                                                                  src={
+                                                                      variant.source
+                                                                  }
+                                                              />
+                                                              <span>
+                                                                  {
+                                                                      variant.label
+                                                                  }
+                                                              </span>
+                                                          </button>
+                                                      )
+                                                  )
+                                                : undefined}
                                         </div>
 
                                         <button
