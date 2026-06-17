@@ -16,25 +16,18 @@ export interface UiCopy {
     readonly badgeVariantsLabel: string;
     readonly builderTitle: string;
     readonly cancel: string;
-    readonly chooseAssetFolder: string;
-    readonly chooseTargetRepo: string;
     readonly close: string;
-    readonly copied: string;
-    readonly copyMarkdown: string;
     readonly contentTitle: string;
     readonly customEdits: string;
     readonly delete: string;
     readonly deleteFrame: (name: string) => string;
     readonly deleteFrameDescription: string;
     readonly deleteFrameTitle: string;
-    readonly downloadSvg: string;
+    readonly downloadFile: (fileName: string) => string;
     readonly editFrame: (name: string) => string;
     readonly editSvgSource: string;
     readonly editSvgSourceDescription: string;
     readonly export: string;
-    readonly exportAnimatedSvg: string;
-    readonly exportBadge: string;
-    readonly exportGuide: (path: string, repo: string) => string;
     readonly frameSettings: string;
     readonly frameLength: string;
     readonly frameLengthSeconds: string;
@@ -53,8 +46,6 @@ export interface UiCopy {
     readonly primaryGreen: string;
     readonly primaryHex: string;
     readonly primaryRed: string;
-    readonly readmeAlt: (names: readonly string[]) => string;
-    readonly readmeMarkdown: string;
     readonly save: string;
     readonly searchBrand: string;
     readonly searchBrands: string;
@@ -72,16 +63,6 @@ export interface UiCopy {
     readonly variantInverse: string;
 }
 
-const englishListFormatter = new Intl.ListFormat('en', {
-    style: 'long',
-    type: 'conjunction',
-});
-
-const traditionalChineseListFormatter = new Intl.ListFormat('zh-Hant', {
-    style: 'long',
-    type: 'conjunction',
-});
-
 export const uiCopy = {
     'en': {
         addFrame: 'Add Frame',
@@ -98,11 +79,7 @@ export const uiCopy = {
         badgeVariantsLabel: 'Badge variants',
         builderTitle: 'Badgical badge builder',
         cancel: 'Cancel',
-        chooseAssetFolder: 'Choose asset folder',
-        chooseTargetRepo: 'Choose target repo',
         close: 'Close',
-        copied: 'Copied',
-        copyMarkdown: 'Copy Markdown',
         contentTitle: 'Badge Content',
         customEdits: 'Custom Edits',
         delete: 'Delete',
@@ -110,16 +87,12 @@ export const uiCopy = {
         deleteFrameDescription:
             'This removes the frame from the badge animation.',
         deleteFrameTitle: 'Delete Frame',
-        downloadSvg: 'Download SVG',
+        downloadFile: (fileName) => `Download ${fileName}`,
         editFrame: (name) => `Edit ${name}`,
         editSvgSource: 'Edit SVG Source',
         editSvgSourceDescription:
             'Edit the raw SVG source used for this badge frame.',
         export: 'Export',
-        exportAnimatedSvg: 'Export animated SVG',
-        exportBadge: 'Export Badge',
-        exportGuide: (path, repo) =>
-            `Download the SVG and put it in ${path} in ${repo}. Then put the generated Markdown in that repository README.`,
         frameSettings: 'Frame settings',
         frameLength: 'Frame length',
         frameLengthSeconds: 'Frame length seconds',
@@ -142,11 +115,6 @@ export const uiCopy = {
         primaryGreen: 'Primary green',
         primaryHex: 'Primary hex',
         primaryRed: 'Primary red',
-        readmeAlt: (names) =>
-            names.length === 0
-                ? 'Animated badge'
-                : `Animated badge cycling through ${englishListFormatter.format(names)}`,
-        readmeMarkdown: 'README Markdown',
         save: 'Save',
         searchBrand: 'Search brand',
         searchBrands: 'Search brands',
@@ -182,11 +150,7 @@ export const uiCopy = {
         badgeVariantsLabel: '\u5FBD\u7AE0\u6A23\u5F0F',
         builderTitle: 'Badgical \u5FBD\u7AE0\u7522\u751F\u5668',
         cancel: '\u53D6\u6D88',
-        chooseAssetFolder: '\u9078\u64C7\u7D20\u6750\u8CC7\u6599\u593E',
-        chooseTargetRepo: '\u9078\u64C7\u76EE\u6A19\u5132\u5B58\u5EAB',
         close: '\u95DC\u9589',
-        copied: '\u5DF2\u8907\u88FD',
-        copyMarkdown: '\u8907\u88FD Markdown',
         contentTitle: '\u5FBD\u7AE0\u5167\u5BB9',
         customEdits: '\u81EA\u8A02\u7DE8\u8F2F',
         delete: '\u522A\u9664',
@@ -194,16 +158,12 @@ export const uiCopy = {
         deleteFrameDescription:
             '\u9019\u6703\u5F9E\u5FBD\u7AE0\u52D5\u756B\u4E2D\u79FB\u9664\u6B64\u5F71\u683C\u3002',
         deleteFrameTitle: '\u522A\u9664\u5F71\u683C',
-        downloadSvg: '\u4E0B\u8F09 SVG',
+        downloadFile: (fileName) => `\u4E0B\u8F09 ${fileName}`,
         editFrame: (name) => `\u7DE8\u8F2F ${name}`,
         editSvgSource: '\u7DE8\u8F2F SVG \u539F\u59CB\u78BC',
         editSvgSourceDescription:
             '\u7DE8\u8F2F\u6B64\u5FBD\u7AE0\u5F71\u683C\u4F7F\u7528\u7684\u539F\u59CB SVG\u3002',
         export: '\u532F\u51FA',
-        exportAnimatedSvg: '\u532F\u51FA\u52D5\u756B SVG',
-        exportBadge: '\u532F\u51FA\u5FBD\u7AE0',
-        exportGuide: (path, repo) =>
-            `\u4E0B\u8F09 SVG \u4E26\u653E\u5230 ${repo} \u7684 ${path}\u3002\u63A5\u8457\u628A\u7522\u751F\u7684 Markdown \u653E\u9032\u8A72\u5132\u5B58\u5EAB\u7684 README\u3002`,
         frameSettings: '\u5F71\u683C\u8A2D\u5B9A',
         frameLength: '\u5F71\u683C\u9577\u5EA6',
         frameLengthSeconds: '\u5F71\u683C\u9577\u5EA6\u79D2\u6578',
@@ -230,11 +190,6 @@ export const uiCopy = {
         primaryGreen: '\u4E3B\u8981\u7DA0\u8272',
         primaryHex: '\u4E3B\u8981\u5341\u516D\u9032\u4F4D\u8272\u78BC',
         primaryRed: '\u4E3B\u8981\u7D05\u8272',
-        readmeAlt: (names) =>
-            names.length === 0
-                ? '\u52D5\u756B\u5FBD\u7AE0'
-                : `\u8F2A\u64AD ${traditionalChineseListFormatter.format(names)} \u7684\u52D5\u756B\u5FBD\u7AE0`,
-        readmeMarkdown: 'README Markdown',
         save: '\u5132\u5B58',
         searchBrand: '\u641C\u5C0B\u54C1\u724C',
         searchBrands: '\u641C\u5C0B\u54C1\u724C',

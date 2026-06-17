@@ -22,30 +22,11 @@
     width: min(100%, calc(var(--space-48) * 14));
 }
 
-.export-dialog {
-    width: min(100%, calc(var(--space-48) * 10));
-}
-
 .dialog-close-button {
     width: var(--space-32);
     height: var(--space-32);
     min-height: var(--space-32);
     justify-self: end;
-}
-
-.export-guide {
-    color: var(--clr-text);
-    font: var(--font-ui-caption);
-}
-
-.export-guide code {
-    font: var(--font-ui-code);
-}
-
-.export-fields {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-12);
 }
 
 .source-dialog__field textarea {
@@ -75,8 +56,4 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-8);
-}
-
-.export-dialog__actions {
-    grid-template-columns: 1fr;
 }

@@ -52,6 +52,4 @@ export const logoEdgeAlphaThreshold = 24;
 export const logoEdgeColorDistance = 72;
 export const githubUrl = 'https://github.com/Hsiii/Badgical';
 export const svglUrl = 'https://svgl.app';
-export const defaultExportFolder = 'assets/badges/';
-export const defaultExportRepo = 'username/repo';
 export const exportFileName = 'animated-badge.svg';

@@ -1,30 +1,17 @@
 import './BuilderDialogs.css';
 
-import type { ChangeEvent, Dispatch, JSX, SetStateAction } from 'react';
-import { Copy, Download, Upload, X } from 'lucide-react';
+import type { ChangeEvent, JSX } from 'react';
+import { Upload, X } from 'lucide-react';
 
-import { defaultExportFolder } from '@/components/badge-builder/constants';
 import type { UiCopy } from '@/components/i18n';
 
 interface BuilderDialogsProps {
     readonly confirmDeleteState: () => void;
     readonly copy: UiCopy;
-    readonly copyReadmeMarkdown: () => void;
     readonly deleteCandidateId: string | undefined;
-    readonly downloadSvg: () => void;
-    readonly exportCopyState: 'idle' | 'markdown';
-    readonly exportDialogOpen: boolean;
-    readonly exportFolder: string;
-    readonly exportPath: string;
-    readonly exportRepo: string;
     readonly openExistingBadgePicker: () => void;
-    readonly normalizedExportRepo: string;
     readonly saveSourceDialog: () => void;
     readonly setDeleteCandidateId: (id: string | undefined) => void;
-    readonly setExportCopyState: Dispatch<SetStateAction<'idle' | 'markdown'>>;
-    readonly setExportDialogOpen: (isOpen: boolean) => void;
-    readonly setExportFolder: (folder: string) => void;
-    readonly setExportRepo: (repo: string) => void;
     readonly setSourceDialogOpen: (isOpen: boolean) => void;
     readonly setSourceDraft: (source: string) => void;
     readonly setStartExistingDialogOpen: (isOpen: boolean) => void;
@@ -36,22 +23,10 @@ interface BuilderDialogsProps {
 export function BuilderDialogs({
     confirmDeleteState,
     copy,
-    copyReadmeMarkdown,
     deleteCandidateId,
-    downloadSvg,
-    exportCopyState,
-    exportDialogOpen,
-    exportFolder,
-    exportPath,
-    exportRepo,
     openExistingBadgePicker,
-    normalizedExportRepo,
     saveSourceDialog,
     setDeleteCandidateId,
-    setExportCopyState,
-    setExportDialogOpen,
-    setExportFolder,
-    setExportRepo,
     setSourceDialogOpen,
     setSourceDraft,
     setStartExistingDialogOpen,
@@ -219,85 +194,6 @@ export function BuilderDialogs({
                                 type='button'
                             >
                                 {copy.save}
-                            </button>
-                        </div>
-                    </section>
-                </div>
-            ) : undefined}
-
-            {exportDialogOpen ? (
-                <div className='confirm-backdrop' role='presentation'>
-                    <section
-                        aria-describedby='export-dialog-description'
-                        aria-labelledby='export-dialog-title'
-                        aria-modal='true'
-                        className='confirm-dialog export-dialog'
-                        role='dialog'
-                    >
-                        <div className='panel-heading'>
-                            <h2 id='export-dialog-title'>{copy.exportBadge}</h2>
-                            <button
-                                aria-label={copy.close}
-                                className='icon-button dialog-close-button'
-                                onClick={() => {
-                                    setExportDialogOpen(false);
-                                }}
-                                type='button'
-                            >
-                                <X aria-hidden='true' size={16} />
-                            </button>
-                        </div>
-
-                        <div className='export-fields'>
-                            <label className='field'>
-                                <span>{copy.chooseTargetRepo}</span>
-                                <input
-                                    onChange={(event) => {
-                                        setExportRepo(event.target.value);
-                                        setExportCopyState('idle');
-                                    }}
-                                    placeholder='username/repo'
-                                    value={exportRepo}
-                                />
-                            </label>
-                            <label className='field'>
-                                <span>{copy.chooseAssetFolder}</span>
-                                <input
-                                    onChange={(event) => {
-                                        setExportFolder(event.target.value);
-                                        setExportCopyState('idle');
-                                    }}
-                                    placeholder={defaultExportFolder}
-                                    value={exportFolder}
-                                />
-                            </label>
-                        </div>
-
-                        <p
-                            className='export-guide'
-                            id='export-dialog-description'
-                        >
-                            {copy.exportGuide(exportPath, normalizedExportRepo)}
-                        </p>
-
-                        <div className='confirm-dialog__actions export-dialog__actions'>
-                            <button
-                                className='button button--primary'
-                                onClick={copyReadmeMarkdown}
-                                type='button'
-                            >
-                                <Copy aria-hidden='true' size={16} />
-                                {exportCopyState === 'markdown'
-                                    ? copy.copied
-                                    : copy.copyMarkdown}
-                            </button>
-                            <button
-                                className='button button--primary'
-                                onClick={downloadSvg}
-                                type='button'
-                            >
-                                <Download aria-hidden='true' size={16} />
-                                {copy.downloadSvg}
                             </button>
                         </div>
                     </section>

@@ -20,8 +20,6 @@ import {
 import {
     animationStartDelaySeconds,
     defaultBadgeDraft,
-    defaultExportFolder,
-    defaultExportRepo,
     defaultStates,
     exportFileName,
     frameSeconds,
@@ -104,9 +102,6 @@ export function App({
     initialLanguageResolved,
 }: AppProps): JSX.Element {
     const [states, setStates] = useState(defaultStates);
-    const [exportCopyState, setExportCopyState] = useState<'idle' | 'markdown'>(
-        'idle'
-    );
     const [query, setQuery] = useState('');
     const [catalogResults, setCatalogResults] = useState<readonly SvglResult[]>(
         []
@@ -123,11 +118,8 @@ export function App({
     const [brandColor, setBrandColor] = useState(defaultBadgeDraft.badgeColor);
     const [colorMode, setColorMode] = useState<ColorMode>('brand');
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
-    const [exportDialogOpen, setExportDialogOpen] = useState(false);
     const [startExistingDialogOpen, setStartExistingDialogOpen] =
         useState(false);
-    const [exportFolder, setExportFolder] = useState(defaultExportFolder);
-    const [exportRepo, setExportRepo] = useState(defaultExportRepo);
     const [sourceDraft, setSourceDraft] = useState(defaultBadgeDraft.source);
     const [languagePreference, setLanguagePreference] =
         useState<LanguagePreference>(initialLanguagePreference);
@@ -633,7 +625,6 @@ export function App({
                     }));
                     setColorMode(selectionColorMode);
                     setSourceDraft(source);
-                    setExportCopyState('idle');
                     setSelectionStatus('ready');
                 }
             )
@@ -658,7 +649,6 @@ export function App({
             source: sourceDraft,
         }));
         setSourceDialogOpen(false);
-        setExportCopyState('idle');
     };
 
     const editFrame = (state: BadgeState): void => {
@@ -705,7 +695,6 @@ export function App({
                 )
             );
             setEditingFrameId(undefined);
-            setExportCopyState('idle');
             return;
         }
 
@@ -714,7 +703,6 @@ export function App({
                 ? currentStates
                 : [...currentStates, nextState]
         );
-        setExportCopyState('idle');
     };
 
     const updateAnimationDelaySeconds = (value: string): void => {
@@ -776,7 +764,6 @@ export function App({
 
         setStates(remainingStates);
 
-        setExportCopyState('idle');
         setDeleteCandidateId(undefined);
     };
 
@@ -889,7 +876,6 @@ export function App({
                 setSourceDraft(nextDraft.source);
                 setSelectedResult(undefined);
                 setEditingFrameId(undefined);
-                setExportCopyState('idle');
             },
             () => {
                 input.value = '';
@@ -907,7 +893,7 @@ export function App({
         const link = document.createElement('a');
 
         link.href = url;
-        link.download = 'animated-badge.svg';
+        link.download = exportFileName;
         document.body.append(link);
         link.click();
         link.remove();
@@ -918,33 +904,6 @@ export function App({
             0,
             url
         );
-    };
-
-    const normalizedExportFolder = exportFolder
-        .trim()
-        .replace(/^\/+/u, '')
-        .replaceAll(/\/{2,}/gu, '/');
-    const exportPath =
-        normalizedExportFolder === ''
-            ? exportFileName
-            : `${normalizedExportFolder.replace(/\/?$/u, '/')}${exportFileName}`;
-    const trimmedExportRepo = exportRepo.trim();
-    const normalizedExportRepo =
-        trimmedExportRepo === '' ? defaultExportRepo : trimmedExportRepo;
-    const rawGithubUrl = `https://raw.githubusercontent.com/${normalizedExportRepo}/HEAD/${exportPath}`;
-    const badgeNames = states.map((state) => materializeState(state, 0).name);
-    const readmeAltText = copy.readmeAlt(badgeNames);
-    const readmeMarkdown = `![${readmeAltText}](${rawGithubUrl})`;
-
-    const copyReadmeMarkdown = (): void => {
-        navigator.clipboard
-            .writeText(readmeMarkdown)
-            .then(() => {
-                setExportCopyState('markdown');
-            })
-            .catch(() => {
-                setExportCopyState('idle');
-            });
     };
 
     const searchTerm = query.trim();
@@ -1099,12 +1058,12 @@ export function App({
                                 animationType={animationType}
                                 badgeSvg={badgeSvg}
                                 copy={copy}
+                                downloadSvg={downloadSvg}
                                 frameLengthSeconds={frameLengthSeconds}
                                 frameSettingsOpen={frameSettingsOpen}
                                 openPreferenceMenu={openPreferenceMenu}
                                 previewSource={previewSource}
                                 setAnimationType={setAnimationType}
-                                setExportDialogOpen={setExportDialogOpen}
                                 setFrameSettingsOpen={setFrameSettingsOpen}
                                 setOpenPreferenceMenu={setOpenPreferenceMenu}
                                 transitionLengthSeconds={
@@ -1139,22 +1098,10 @@ export function App({
             <BuilderDialogs
                 confirmDeleteState={confirmDeleteState}
                 copy={copy}
-                copyReadmeMarkdown={copyReadmeMarkdown}
                 deleteCandidateId={deleteCandidateId}
-                downloadSvg={downloadSvg}
-                exportCopyState={exportCopyState}
-                exportDialogOpen={exportDialogOpen}
-                exportFolder={exportFolder}
-                exportPath={exportPath}
-                exportRepo={exportRepo}
-                normalizedExportRepo={normalizedExportRepo}
                 openExistingBadgePicker={openExistingBadgePicker}
                 saveSourceDialog={saveSourceDialog}
                 setDeleteCandidateId={setDeleteCandidateId}
-                setExportCopyState={setExportCopyState}
-                setExportDialogOpen={setExportDialogOpen}
-                setExportFolder={setExportFolder}
-                setExportRepo={setExportRepo}
                 setSourceDialogOpen={setSourceDialogOpen}
                 setSourceDraft={setSourceDraft}
                 setStartExistingDialogOpen={setStartExistingDialogOpen}

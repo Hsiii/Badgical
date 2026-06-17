@@ -4,6 +4,7 @@ import type { Dispatch, JSX, KeyboardEvent, SetStateAction } from 'react';
 import { ChevronDown, Download, Timer, WandSparkles } from 'lucide-react';
 
 import {
+    exportFileName,
     maxAnimationStartDelaySeconds,
     maxFrameDelaySeconds,
     maxTransitionSeconds,
@@ -24,10 +25,10 @@ interface OutputPreviewProps {
     readonly copy: UiCopy;
     readonly frameLengthSeconds: number;
     readonly frameSettingsOpen: boolean;
+    readonly downloadSvg: () => void;
     readonly openPreferenceMenu: PreferenceMenu | undefined;
     readonly previewSource: string;
     readonly setAnimationType: Dispatch<SetStateAction<AnimationType>>;
-    readonly setExportDialogOpen: (isOpen: boolean) => void;
     readonly setFrameSettingsOpen: (
         updater: (isOpen: boolean) => boolean
     ) => void;
@@ -47,10 +48,10 @@ export function OutputPreview({
     copy,
     frameLengthSeconds,
     frameSettingsOpen,
+    downloadSvg,
     openPreferenceMenu,
     previewSource,
     setAnimationType,
-    setExportDialogOpen,
     setFrameSettingsOpen,
     setOpenPreferenceMenu,
     transitionLengthSeconds,
@@ -268,13 +269,11 @@ export function OutputPreview({
 
                 <div className='output__actions'>
                     <button
-                        aria-label={copy.exportAnimatedSvg}
+                        aria-label={copy.downloadFile(exportFileName)}
                         className='button button--primary'
                         disabled={badgeSvg === ''}
-                        onClick={() => {
-                            setExportDialogOpen(true);
-                        }}
-                        title={copy.export}
+                        onClick={downloadSvg}
+                        title={copy.downloadFile(exportFileName)}
                         type='button'
                     >
                         <Download aria-hidden='true' size={16} />
