@@ -60,25 +60,17 @@ import type {
 } from '@/components/badge-builder/types';
 import { BuilderDialogs } from '@/components/BuilderDialogs';
 import { FrameRail } from '@/components/FrameRail';
-import { getSupportedLanguagePreference, uiCopy } from '@/components/i18n';
+import { uiCopy } from '@/components/i18n';
 import { OutputPreview } from '@/components/OutputPreview';
 
-function getInitialLanguagePreference(): LanguagePreference {
+function getClientLanguagePreference(): LanguagePreference {
     const runtimeWindow = (globalThis as { readonly window?: Window }).window;
 
     if (runtimeWindow === undefined) {
         return 'en';
     }
 
-    const { location, navigator } = runtimeWindow;
-    const urlLanguage = getSupportedLanguagePreference(
-        new URLSearchParams(location.search).get('lang') ?? undefined
-    );
-
-    if (urlLanguage !== undefined) {
-        return urlLanguage;
-    }
-
+    const { navigator } = runtimeWindow;
     const browserLanguages =
         navigator.languages.length > 0
             ? navigator.languages
@@ -91,7 +83,15 @@ function getInitialLanguagePreference(): LanguagePreference {
         : 'en';
 }
 
-export function App(): JSX.Element {
+interface AppProps {
+    readonly initialLanguagePreference: LanguagePreference;
+    readonly initialLanguageResolved: boolean;
+}
+
+export function App({
+    initialLanguagePreference,
+    initialLanguageResolved,
+}: AppProps): JSX.Element {
     const [states, setStates] = useState(defaultStates);
     const [exportCopyState, setExportCopyState] = useState<'idle' | 'markdown'>(
         'idle'
@@ -118,7 +118,10 @@ export function App(): JSX.Element {
     const [exportRepo, setExportRepo] = useState(defaultExportRepo);
     const [sourceDraft, setSourceDraft] = useState(defaultBadgeDraft.source);
     const [languagePreference, setLanguagePreference] =
-        useState<LanguagePreference>(getInitialLanguagePreference);
+        useState<LanguagePreference>(initialLanguagePreference);
+    const [languageResolved, setLanguageResolved] = useState(
+        initialLanguageResolved
+    );
     const [themePreference, setThemePreference] =
         useState<ThemePreference>('system');
     const [openPreferenceMenu, setOpenPreferenceMenu] = useState<
@@ -190,6 +193,19 @@ export function App(): JSX.Element {
     }, [themePreference]);
 
     useEffect(() => {
+        if (languageResolved) {
+            return;
+        }
+
+        setLanguagePreference(getClientLanguagePreference());
+        setLanguageResolved(true);
+    }, [languageResolved]);
+
+    useEffect(() => {
+        if (!languageResolved) {
+            return;
+        }
+
         document.documentElement.lang = languagePreference;
 
         const url = new URL(globalThis.location.href);
@@ -205,7 +221,7 @@ export function App(): JSX.Element {
             '',
             `${url.pathname}${url.search}${url.hash}`
         );
-    }, [languagePreference]);
+    }, [languagePreference, languageResolved]);
 
     useEffect(() => {
         const abortController = new AbortController();
