@@ -39,7 +39,15 @@
 }
 
 .settings-value-row input {
+    width: 100%;
     min-width: 0;
+    min-height: var(--space-40);
+    padding: 0 var(--space-12);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-4);
+    background: var(--clr-surface-raised);
+    color: var(--clr-text);
+    font: var(--font-ui-control);
 }
 
 .settings-value-row span {
