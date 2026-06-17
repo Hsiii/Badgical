@@ -266,6 +266,23 @@ textarea {
     accent-color: var(--clr-accent);
 }
 
+.settings-value-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    gap: var(--space-8);
+    align-items: center;
+}
+
+.settings-value-row input {
+    min-width: 0;
+}
+
+.settings-value-row span {
+    color: var(--clr-text-muted);
+    font: var(--font-ui-label);
+    white-space: nowrap;
+}
+
 .search-panel,
 .advanced-panel {
     display: grid;

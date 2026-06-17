@@ -2008,9 +2008,9 @@ export function App(): JSX.Element {
                                                         }
                                                     />
                                                 </label>
-                                                <label className='field'>
-                                                    <span>Seconds</span>
+                                                <label className='settings-value-row'>
                                                     <input
+                                                        aria-label='Animation delay seconds'
                                                         max={
                                                             maxFrameDelaySeconds
                                                         }
@@ -2029,6 +2029,7 @@ export function App(): JSX.Element {
                                                             frameDelaySeconds
                                                         }
                                                     />
+                                                    <span>Sec</span>
                                                 </label>
                                             </div>
                                         ) : undefined}
