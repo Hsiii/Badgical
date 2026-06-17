@@ -186,9 +186,18 @@
 }
 
 .icon-button.panel-menu__button {
+    width: var(--space-32);
+    height: var(--space-32);
+    min-height: var(--space-32);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
+}
+
+.icon-button.panel-menu__button svg {
+    width: var(--space-16);
+    height: var(--space-16);
+    color: var(--clr-text-muted);
 }
 
 .visually-hidden {

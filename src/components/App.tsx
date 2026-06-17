@@ -916,25 +916,26 @@ export function App({
                                 copy={copy}
                                 editFrame={editFrame}
                                 editingFrameId={editingFrameId}
-                                frameDelaySeconds={frameDelaySeconds}
-                                frameSettingsOpen={frameSettingsOpen}
                                 setDeleteCandidateId={setDeleteCandidateId}
-                                setFrameSettingsOpen={setFrameSettingsOpen}
                                 states={states}
-                                updateFrameDelaySeconds={
-                                    updateFrameDelaySeconds
-                                }
                             />
 
                             <OutputPreview
                                 animationType={animationType}
                                 badgeSvg={badgeSvg}
                                 copy={copy}
+                                frameDelaySeconds={frameDelaySeconds}
+                                frameSettingsOpen={frameSettingsOpen}
                                 openPreferenceMenu={openPreferenceMenu}
                                 previewSource={previewSource}
                                 setAnimationType={setAnimationType}
                                 setExportDialogOpen={setExportDialogOpen}
+                                setFrameSettingsOpen={setFrameSettingsOpen}
                                 setOpenPreferenceMenu={setOpenPreferenceMenu}
+                                statesLength={states.length}
+                                updateFrameDelaySeconds={
+                                    updateFrameDelaySeconds
+                                }
                             />
                         </aside>
                     </section>
