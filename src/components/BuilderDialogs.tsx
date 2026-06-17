@@ -97,11 +97,11 @@ export function BuilderDialogs({
                         role='dialog'
                     >
                         <div className='panel-heading'>
-                            <h2 id='source-dialog-title'>SVG Source</h2>
+                            <h2 id='source-dialog-title'>Edit SVG Source</h2>
                         </div>
                         <label className='field source-dialog__field'>
-                            <span>Logo SVG</span>
                             <textarea
+                                aria-label='Logo SVG'
                                 onChange={(event) => {
                                     setSourceDraft(event.target.value);
                                 }}
