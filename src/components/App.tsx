@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
 
 import { AdvancedControls } from '@/components/AdvancedControls';
+import { BrandSearchPanel } from '@/components/app/BrandSearchPanel';
+import { Topbar } from '@/components/app/Topbar';
 import {
     clampUnit,
     getHexColor,
@@ -56,11 +58,9 @@ import type {
     ThemePreference,
     VariantMode,
 } from '@/components/badge-builder/types';
-import { BrandSearchPanel } from '@/components/BrandSearchPanel';
 import { BuilderDialogs } from '@/components/BuilderDialogs';
 import { FrameRail } from '@/components/FrameRail';
 import { OutputPreview } from '@/components/OutputPreview';
-import { Topbar } from '@/components/Topbar';
 
 export function App(): JSX.Element {
     const [states, setStates] = useState(defaultStates);

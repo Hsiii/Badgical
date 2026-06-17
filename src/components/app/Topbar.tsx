@@ -3,6 +3,7 @@ import './Topbar.css';
 import type { Dispatch, JSX, SetStateAction } from 'react';
 import { ChevronDown, Languages, SunMoon } from 'lucide-react';
 
+import { GitHubMark } from '@/components/app/GitHubMark';
 import {
     githubUrl,
     languagePreferenceLabels,
@@ -13,7 +14,6 @@ import type {
     PreferenceMenu,
     ThemePreference,
 } from '@/components/badge-builder/types';
-import { GitHubMark } from '@/components/GitHubMark';
 
 interface TopbarProps {
     readonly languagePreference: LanguagePreference;
