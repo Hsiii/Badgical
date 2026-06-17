@@ -666,13 +666,19 @@ export function App({
     const saveSourceDialog = (): void => {
         const extractedBrandColor =
             getPrimarySvgColor(sourceDraft) ?? defaultBadgeDraft.badgeColor;
+        const selectionColorMode = colorMode === 'custom' ? 'brand' : colorMode;
+        const modeDraft = applyColorMode(
+            extractedBrandColor,
+            selectionColorMode
+        );
 
         setBrandColor(extractedBrandColor);
         setDraft((currentDraft) => ({
             ...currentDraft,
-            ...applyColorMode(extractedBrandColor, colorMode, currentDraft),
+            ...modeDraft,
             source: sourceDraft,
         }));
+        setColorMode(selectionColorMode);
         setSourceDialogOpen(false);
     };
 
