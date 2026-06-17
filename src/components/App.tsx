@@ -3,7 +3,7 @@
 import './App.css';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { CSSProperties, JSX } from 'react';
+import type { ChangeEvent, CSSProperties, JSX } from 'react';
 
 import { AdvancedControls } from '@/components/AdvancedControls';
 import { BrandSearchPanel } from '@/components/app/BrandSearchPanel';
@@ -39,6 +39,7 @@ import { logoColorTouchesBadgeEdge } from '@/components/badge-builder/smart-reco
 import {
     buildBadgeSvg,
     buildSingleBadgeSvg,
+    ensureSvgNamespace,
     isSvgSource,
     materializeState,
     toDataUri,
@@ -94,6 +95,9 @@ interface AppProps {
     readonly initialLanguagePreference: LanguagePreference;
     readonly initialLanguageResolved: boolean;
 }
+
+const serializeSvgElement = (element: SVGSVGElement): string =>
+    ensureSvgNamespace(new XMLSerializer().serializeToString(element));
 
 export function App({
     initialLanguagePreference,
@@ -151,6 +155,9 @@ export function App({
     );
     const copy = uiCopy[languagePreference];
     const searchInputReference = useRef<HTMLInputElement | undefined>(
+        undefined
+    );
+    const existingBadgeInputReference = useRef<HTMLInputElement | undefined>(
         undefined
     );
     const resultsReference = useRef<HTMLDivElement | undefined>(undefined);
@@ -773,6 +780,123 @@ export function App({
         setDeleteCandidateId(undefined);
     };
 
+    const parseExistingBadgeStates = (source: string): BadgeState[] => {
+        const document = new DOMParser().parseFromString(
+            source,
+            'image/svg+xml'
+        );
+
+        if (document.querySelector('parsererror') !== null) {
+            return [];
+        }
+
+        const frameElements = [...document.querySelectorAll('g.f')];
+        const importedStates = frameElements
+            .map((frameElement, index): BadgeState | undefined => {
+                const badgeColor =
+                    frameElement.querySelector('rect')?.getAttribute('fill') ??
+                    defaultBadgeDraft.badgeColor;
+                const textElement = frameElement.querySelector('text');
+                const sourceElement = frameElement.querySelector('svg');
+                const name =
+                    textElement?.textContent.trim() ??
+                    `Frame ${String(index + 1)}`;
+
+                if (sourceElement === null && name === '') {
+                    return undefined;
+                }
+
+                return {
+                    allCaps: false,
+                    smartRecolor: false,
+                    badgeColor,
+                    id: crypto.randomUUID(),
+                    logoColor:
+                        textElement?.getAttribute('fill') ??
+                        defaultBadgeDraft.logoColor,
+                    name,
+                    preserveOriginalArtwork: sourceElement !== null,
+                    source:
+                        sourceElement === null
+                            ? ''
+                            : serializeSvgElement(sourceElement),
+                    textColor:
+                        textElement?.getAttribute('fill') ??
+                        getReadableInk(badgeColor),
+                };
+            })
+            .filter((state): state is BadgeState => state !== undefined);
+
+        if (importedStates.length > 1) {
+            const [firstState] = importedStates;
+            const lastState = importedStates.at(-1);
+
+            if (
+                lastState !== undefined &&
+                firstState.name === lastState.name &&
+                firstState.badgeColor === lastState.badgeColor &&
+                firstState.source === lastState.source &&
+                firstState.textColor === lastState.textColor
+            ) {
+                return importedStates.slice(0, -1);
+            }
+        }
+
+        return importedStates;
+    };
+
+    const openExistingBadgePicker = (): void => {
+        existingBadgeInputReference.current?.click();
+    };
+
+    const uploadExistingBadge = (
+        event: ChangeEvent<HTMLInputElement>
+    ): void => {
+        const input = event.currentTarget;
+        const file = input.files?.[0];
+
+        if (file === undefined) {
+            return;
+        }
+
+        file.text().then(
+            (source) => {
+                const importedStates = parseExistingBadgeStates(source);
+
+                input.value = '';
+
+                if (importedStates.length === 0) {
+                    return;
+                }
+
+                const [firstState] = importedStates;
+                const nextDraft = materializeState(firstState, 0);
+
+                setStates(importedStates);
+                setDraft({
+                    allCaps: nextDraft.allCaps ?? false,
+                    smartRecolor: nextDraft.smartRecolor ?? false,
+                    badgeColor: nextDraft.badgeColor,
+                    logoColor: nextDraft.logoColor,
+                    name: nextDraft.name,
+                    preserveOriginalArtwork:
+                        nextDraft.preserveOriginalArtwork ?? false,
+                    source: nextDraft.source,
+                    textColor: nextDraft.textColor,
+                });
+                setBrandColor(nextDraft.badgeColor);
+                setColorMode('custom');
+                setSourceDraft(nextDraft.source);
+                setSelectedResult(undefined);
+                setEditingFrameId(undefined);
+                setExportCopyState('idle');
+            },
+            () => {
+                input.value = '';
+            }
+        );
+    };
+
     const downloadSvg = (): void => {
         if (badgeSvg === '') {
             return;
@@ -1001,6 +1125,17 @@ export function App({
                 </div>
             </section>
 
+            <input
+                accept='.svg,image/svg+xml'
+                aria-label='Upload existing animated badge'
+                className='visually-hidden'
+                onChange={uploadExistingBadge}
+                ref={(element) => {
+                    existingBadgeInputReference.current = element ?? undefined;
+                }}
+                type='file'
+            />
+
             <BuilderDialogs
                 confirmDeleteState={confirmDeleteState}
                 copy={copy}
@@ -1013,6 +1148,7 @@ export function App({
                 exportPath={exportPath}
                 exportRepo={exportRepo}
                 normalizedExportRepo={normalizedExportRepo}
+                openExistingBadgePicker={openExistingBadgePicker}
                 saveSourceDialog={saveSourceDialog}
                 setDeleteCandidateId={setDeleteCandidateId}
                 setExportCopyState={setExportCopyState}

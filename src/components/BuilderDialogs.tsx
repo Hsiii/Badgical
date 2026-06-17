@@ -17,6 +17,7 @@ interface BuilderDialogsProps {
     readonly exportFolder: string;
     readonly exportPath: string;
     readonly exportRepo: string;
+    readonly openExistingBadgePicker: () => void;
     readonly normalizedExportRepo: string;
     readonly saveSourceDialog: () => void;
     readonly setDeleteCandidateId: (id: string | undefined) => void;
@@ -43,6 +44,7 @@ export function BuilderDialogs({
     exportFolder,
     exportPath,
     exportRepo,
+    openExistingBadgePicker,
     normalizedExportRepo,
     saveSourceDialog,
     setDeleteCandidateId,
@@ -149,6 +151,7 @@ export function BuilderDialogs({
                                 className='button button--primary'
                                 onClick={() => {
                                     setStartExistingDialogOpen(false);
+                                    openExistingBadgePicker();
                                 }}
                                 type='button'
                             >
