@@ -32,6 +32,12 @@
     --clr-scrollbar-thumb: rgb(89 104 201 / 44%);
     --clr-scrollbar-thumb-hover: rgb(89 104 201 / 64%);
     --clr-scrollbar-track: rgb(219 218 236 / 40%);
+    --clr-hue-red: #ff0000;
+    --clr-hue-yellow: #ffff00;
+    --clr-hue-green: #00ff00;
+    --clr-hue-cyan: #00ffff;
+    --clr-hue-blue: #0000ff;
+    --clr-hue-magenta: #ff00ff;
 }
 
 :root[data-theme='dark'] {

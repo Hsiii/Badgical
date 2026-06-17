@@ -1747,7 +1747,10 @@ export function App(): JSX.Element {
                                                     >
                                                         {draftLogoSource ===
                                                         undefined ? (
-                                                            <span>No logo</span>
+                                                            <span
+                                                                aria-hidden='true'
+                                                                className='logo-placeholder'
+                                                            />
                                                         ) : (
                                                             <img
                                                                 alt=''
@@ -1762,22 +1765,14 @@ export function App(): JSX.Element {
                                                 <div className='field advanced-color-field'>
                                                     <span>Primary color</span>
                                                     <div className='color-control'>
-                                                        <input
-                                                            aria-label='Primary color'
-                                                            className='color-control__swatch'
-                                                            onChange={(
-                                                                event
-                                                            ) => {
-                                                                updateDraftColor(
-                                                                    event.target
-                                                                        .value
-                                                                );
+                                                        <div
+                                                            aria-label={`Primary color ${draftPrimaryColor}`}
+                                                            className='color-control__pad'
+                                                            role='img'
+                                                            style={{
+                                                                background:
+                                                                    draftPrimaryColor,
                                                             }}
-                                                            title='Primary color'
-                                                            type='color'
-                                                            value={
-                                                                draftPrimaryColor
-                                                            }
                                                         />
 
                                                         <input
@@ -1801,81 +1796,102 @@ export function App(): JSX.Element {
                                                         />
 
                                                         <div className='color-control__inputs'>
-                                                            <input
-                                                                aria-label='Primary red'
-                                                                max='255'
-                                                                min='0'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateDraftColorChannel(
-                                                                        'red',
+                                                            <div className='color-control__rgb-row'>
+                                                                <span>RGB</span>
+                                                                <label className='color-control__channel'>
+                                                                    <span>
+                                                                        R
+                                                                    </span>
+                                                                    <input
+                                                                        aria-label='Primary red'
+                                                                        max='255'
+                                                                        min='0'
+                                                                        onChange={(
+                                                                            event
+                                                                        ) => {
+                                                                            updateDraftColorChannel(
+                                                                                'red',
+                                                                                event
+                                                                                    .target
+                                                                                    .value
+                                                                            );
+                                                                        }}
+                                                                        type='number'
+                                                                        value={
+                                                                            draftPrimaryRgb?.red ??
+                                                                            0
+                                                                        }
+                                                                    />
+                                                                </label>
+                                                                <label className='color-control__channel'>
+                                                                    <span>
+                                                                        G
+                                                                    </span>
+                                                                    <input
+                                                                        aria-label='Primary green'
+                                                                        max='255'
+                                                                        min='0'
+                                                                        onChange={(
+                                                                            event
+                                                                        ) => {
+                                                                            updateDraftColorChannel(
+                                                                                'green',
+                                                                                event
+                                                                                    .target
+                                                                                    .value
+                                                                            );
+                                                                        }}
+                                                                        type='number'
+                                                                        value={
+                                                                            draftPrimaryRgb?.green ??
+                                                                            0
+                                                                        }
+                                                                    />
+                                                                </label>
+                                                                <label className='color-control__channel'>
+                                                                    <span>
+                                                                        B
+                                                                    </span>
+                                                                    <input
+                                                                        aria-label='Primary blue'
+                                                                        max='255'
+                                                                        min='0'
+                                                                        onChange={(
+                                                                            event
+                                                                        ) => {
+                                                                            updateDraftColorChannel(
+                                                                                'blue',
+                                                                                event
+                                                                                    .target
+                                                                                    .value
+                                                                            );
+                                                                        }}
+                                                                        type='number'
+                                                                        value={
+                                                                            draftPrimaryRgb?.blue ??
+                                                                            0
+                                                                        }
+                                                                    />
+                                                                </label>
+                                                            </div>
+                                                            <label className='color-control__hex-row'>
+                                                                <span>Hex</span>
+                                                                <input
+                                                                    aria-label='Primary hex'
+                                                                    onChange={(
                                                                         event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='number'
-                                                                value={
-                                                                    draftPrimaryRgb?.red ??
-                                                                    0
-                                                                }
-                                                            />
-                                                            <input
-                                                                aria-label='Primary green'
-                                                                max='255'
-                                                                min='0'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateDraftColorChannel(
-                                                                        'green',
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='number'
-                                                                value={
-                                                                    draftPrimaryRgb?.green ??
-                                                                    0
-                                                                }
-                                                            />
-                                                            <input
-                                                                aria-label='Primary blue'
-                                                                max='255'
-                                                                min='0'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateDraftColorChannel(
-                                                                        'blue',
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type='number'
-                                                                value={
-                                                                    draftPrimaryRgb?.blue ??
-                                                                    0
-                                                                }
-                                                            />
-                                                            <input
-                                                                aria-label='Primary hex'
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    updateDraftColor(
-                                                                        event
-                                                                            .target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                value={
-                                                                    draftPrimaryColor
-                                                                }
-                                                            />
+                                                                    ) => {
+                                                                        updateDraftColor(
+                                                                            event
+                                                                                .target
+                                                                                .value
+                                                                        );
+                                                                    }}
+                                                                    value={
+                                                                        draftPrimaryColor
+                                                                    }
+                                                                />
+                                                            </label>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1888,38 +1904,43 @@ export function App(): JSX.Element {
                                             aria-label='Badge variants'
                                             className='variant-options'
                                         >
-                                            {hasActiveDraft
-                                                ? variantPreviews.map(
-                                                      (variant) => (
-                                                          <button
-                                                              aria-pressed={
-                                                                  colorMode ===
-                                                                  variant.mode
-                                                              }
-                                                              className='variant-card'
-                                                              key={variant.mode}
-                                                              onClick={() => {
-                                                                  selectColorMode(
-                                                                      variant.mode
-                                                                  );
-                                                              }}
-                                                              type='button'
-                                                          >
-                                                              <img
-                                                                  alt=''
-                                                                  src={
-                                                                      variant.source
-                                                                  }
-                                                              />
-                                                              <span>
-                                                                  {
-                                                                      variant.label
-                                                                  }
-                                                              </span>
-                                                          </button>
-                                                      )
-                                                  )
-                                                : undefined}
+                                            {hasActiveDraft ? (
+                                                variantPreviews.map(
+                                                    (variant) => (
+                                                        <button
+                                                            aria-pressed={
+                                                                colorMode ===
+                                                                variant.mode
+                                                            }
+                                                            className='variant-card'
+                                                            key={variant.mode}
+                                                            onClick={() => {
+                                                                selectColorMode(
+                                                                    variant.mode
+                                                                );
+                                                            }}
+                                                            type='button'
+                                                        >
+                                                            <img
+                                                                alt=''
+                                                                src={
+                                                                    variant.source
+                                                                }
+                                                            />
+                                                            <span>
+                                                                {variant.label}
+                                                            </span>
+                                                        </button>
+                                                    )
+                                                )
+                                            ) : (
+                                                <div className='empty-state advanced-preview-empty'>
+                                                    <p>
+                                                        Pick a brand to preview
+                                                        badge variants.
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <button
