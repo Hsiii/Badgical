@@ -59,6 +59,9 @@ export const isSvgSource = (source: string): boolean =>
 export const compactColor = (color: string): string =>
     color.replace(/^#([\dA-Fa-f])\1([\dA-Fa-f])\2([\dA-Fa-f])\3$/, '#$1$2$3');
 
+export const logoTextGap = textStart - logoX - logoSize;
+export const estimatedCharacterWidth = 7;
+
 export const colorizeSvgContent = (content: string, color: string): string =>
     content
         .replaceAll(
@@ -154,7 +157,8 @@ export const inlineSvgArtwork = (
     source: string,
     logoColor: string,
     preserveOriginalArtwork = false,
-    smartRecolorBadgeColor?: string
+    smartRecolorBadgeColor?: string,
+    artworkX = logoX
 ): string => {
     const svgSource = minifySvgSource(source)
         .replaceAll(/<\?xml[\S\s]*?\?>/g, '')
@@ -162,7 +166,7 @@ export const inlineSvgArtwork = (
     const svgMatch = /^<svg\b([^>]*)>([\S\s]*)<\/svg>$/iu.exec(svgSource);
 
     if (svgMatch === null) {
-        return `<image x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}" href="${escapeXml(toDataUri(source))}"/>`;
+        return `<image x="${compactNumber(artworkX)}" y="${logoY}" width="${logoSize}" height="${logoSize}" href="${escapeXml(toDataUri(source))}"/>`;
     }
 
     const [, attributes, content] = svgMatch;
@@ -176,10 +180,10 @@ export const inlineSvgArtwork = (
                 ? content
                 : smartRecolorSvgContent(content, smartRecolorBadgeColor);
 
-        return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}>${artworkContent}</svg>`;
+        return `<svg x="${compactNumber(artworkX)}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}>${artworkContent}</svg>`;
     }
 
-    return `<svg x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}><g fill="${escapeXml(logoColor)}" stroke="${escapeXml(logoColor)}" style="color:${escapeXml(logoColor)}">${colorizeSvgContent(content, logoColor)}</g></svg>`;
+    return `<svg x="${compactNumber(artworkX)}" y="${logoY}" width="${logoSize}" height="${logoSize}"${viewBoxAttribute}><g fill="${escapeXml(logoColor)}" stroke="${escapeXml(logoColor)}" style="color:${escapeXml(logoColor)}">${colorizeSvgContent(content, logoColor)}</g></svg>`;
 };
 
 export const toDataUri = (source: string): string => {
@@ -226,6 +230,12 @@ export const materializeState = (
 export const getDisplayName = (state: BadgeState): string =>
     state.allCaps === true ? state.name.toUpperCase() : state.name;
 
+export const getEstimatedTextWidth = (state: BadgeState): number =>
+    Math.ceil(getDisplayName(state).length * estimatedCharacterWidth);
+
+export const getBadgeContentWidth = (state: BadgeState): number =>
+    logoSize + logoTextGap + getEstimatedTextWidth(state);
+
 export const normalizeStates = (
     states: readonly BadgeState[]
 ): readonly BadgeState[] =>
@@ -241,16 +251,16 @@ export const normalizeStates = (
         );
 
 export const getBadgeWidth = (states: readonly BadgeState[]): number => {
-    let longestName = 0;
+    let longestContentWidth = 0;
 
     for (const state of states) {
-        longestName = Math.max(longestName, state.name.length);
+        longestContentWidth = Math.max(
+            longestContentWidth,
+            getBadgeContentWidth(state)
+        );
     }
 
-    return Math.max(
-        minBadgeWidth,
-        textStart + textPadding + Math.ceil(longestName * 7)
-    );
+    return Math.max(minBadgeWidth, longestContentWidth + textPadding);
 };
 
 export const buildAnimationSteps = (stateCount: number): string => {
@@ -284,7 +294,6 @@ export const buildBadgeSvg = (
 
     const firstState = visibleStates[0];
     const width = getBadgeWidth(visibleStates);
-    const textX = (textStart + width) / 2;
     const animatedStates =
         visibleStates.length > 1
             ? [...visibleStates, firstState]
@@ -308,7 +317,11 @@ export const buildBadgeSvg = (
                 preservesArtwork && state.smartRecolor === true
                     ? state.badgeColor
                     : undefined;
-            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preservesArtwork, smartRecolorBadgeColor)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${textX}" y="18" text-anchor="middle"${textAttributes}>${escapeXml(getDisplayName(state))}</text>`;
+            const displayName = getDisplayName(state);
+            const contentWidth = getBadgeContentWidth(state);
+            const contentX = (width - contentWidth) / 2;
+            const textX = contentX + logoSize + logoTextGap;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preservesArtwork, smartRecolorBadgeColor, contentX)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${compactNumber(textX)}" y="18" text-anchor="start"${textAttributes}>${escapeXml(displayName)}</text>`;
 
             if (visibleStates.length === 1) {
                 return content;
