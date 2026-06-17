@@ -39,4 +39,23 @@ export default [
             'n/file-extension-in-import': 'off',
         },
     },
+
+    {
+        files: ['src/**/index.{ts,tsx}'],
+        rules: {
+            'no-restricted-syntax': [
+                'error',
+                {
+                    selector: 'ExportAllDeclaration',
+                    message:
+                        'Do not use barrel files; import modules directly.',
+                },
+                {
+                    selector: 'ExportNamedDeclaration',
+                    message:
+                        'Do not use barrel files; import modules directly.',
+                },
+            ],
+        },
+    },
 ];
