@@ -10,6 +10,7 @@ import type {
 } from 'react';
 import { Pencil, Pipette, Plus } from 'lucide-react';
 
+import { normalizeHexInput } from '@/components/badge-builder/colors';
 import { maxFrames } from '@/components/badge-builder/constants';
 import type {
     ColorMode,
@@ -105,6 +106,29 @@ function focusSiblingRgbInput(
     nextInput.select();
 }
 
+const getRgbInputValue = (
+    color: RgbColor | undefined,
+    channel: keyof RgbColor
+): string => String(color?.[channel] ?? 0);
+
+const getRgbInputValues = (
+    color: RgbColor | undefined
+): Record<keyof RgbColor, string> => ({
+    blue: getRgbInputValue(color, 'blue'),
+    green: getRgbInputValue(color, 'green'),
+    red: getRgbInputValue(color, 'red'),
+});
+
+const normalizeRgbInput = (value: string): number | undefined => {
+    const trimmedValue = value.trim();
+
+    if (!/^\d+$/u.test(trimmedValue)) {
+        return undefined;
+    }
+
+    return Math.min(255, Math.max(0, Number.parseInt(trimmedValue, 10)));
+};
+
 export function AdvancedControls({
     addDraftFrame,
     colorMode,
@@ -128,16 +152,68 @@ export function AdvancedControls({
     variantPreviews,
 }: AdvancedControlsProps): JSX.Element {
     const [eyeDropperSupported, setEyeDropperSupported] = useState(false);
+    const [hexInput, setHexInput] = useState(draftPrimaryColor);
+    const [rgbInputs, setRgbInputs] = useState(() =>
+        getRgbInputValues(draftPrimaryRgb)
+    );
 
     useEffect(() => {
         setEyeDropperSupported(getEyeDropperConstructor() !== undefined);
     }, []);
 
+    useEffect(() => {
+        setHexInput(draftPrimaryColor);
+    }, [draftPrimaryColor]);
+
+    useEffect(() => {
+        setRgbInputs(getRgbInputValues(draftPrimaryRgb));
+    }, [draftPrimaryRgb?.blue, draftPrimaryRgb?.green, draftPrimaryRgb?.red]);
+
+    const commitHexInput = (): void => {
+        const normalizedColor = normalizeHexInput(hexInput);
+
+        if (normalizedColor === undefined) {
+            setHexInput(draftPrimaryColor);
+            return;
+        }
+
+        setHexInput(normalizedColor);
+        updateDraftColor(normalizedColor);
+    };
+
+    const resetRgbChannelInput = (channel: keyof RgbColor): void => {
+        setRgbInputs({
+            ...rgbInputs,
+            [channel]: getRgbInputValue(draftPrimaryRgb, channel),
+        });
+    };
+
+    const commitRgbChannelInput = (channel: keyof RgbColor): void => {
+        const normalizedValue = normalizeRgbInput(rgbInputs[channel]);
+
+        if (normalizedValue === undefined) {
+            resetRgbChannelInput(channel);
+            return;
+        }
+
+        setRgbInputs({
+            ...rgbInputs,
+            [channel]: String(normalizedValue),
+        });
+        updateDraftColorChannel(channel, String(normalizedValue));
+    };
+
     const handleRgbChannelKeyDown = (
         event: KeyboardEvent<HTMLInputElement>,
         channel: keyof RgbColor,
-        currentValue: number
+        currentValue: number | undefined
     ): void => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            commitRgbChannelInput(channel);
+            return;
+        }
+
         if (event.key === 'ArrowLeft') {
             focusSiblingRgbInput(event, -1);
             return;
@@ -155,9 +231,13 @@ export function AdvancedControls({
             const step = event.shiftKey ? 10 : 1;
             const nextValue = Math.min(
                 255,
-                Math.max(0, currentValue + direction * step)
+                Math.max(0, (currentValue ?? 0) + direction * step)
             );
 
+            setRgbInputs({
+                ...rgbInputs,
+                [channel]: String(nextValue),
+            });
             updateDraftColorChannel(channel, String(nextValue));
         }
     };
@@ -317,12 +397,19 @@ export function AdvancedControls({
                                             <span>Hex</span>
                                             <input
                                                 aria-label={copy.primaryHex}
+                                                onBlur={commitHexInput}
                                                 onChange={(event) => {
-                                                    updateDraftColor(
+                                                    setHexInput(
                                                         event.target.value
                                                     );
                                                 }}
-                                                value={draftPrimaryColor}
+                                                onKeyDown={(event) => {
+                                                    if (event.key === 'Enter') {
+                                                        event.preventDefault();
+                                                        commitHexInput();
+                                                    }
+                                                }}
+                                                value={hexInput}
                                             />
                                         </label>
 
@@ -335,27 +422,31 @@ export function AdvancedControls({
                                                             copy.primaryRed
                                                         }
                                                         inputMode='numeric'
-                                                        onChange={(event) => {
-                                                            updateDraftColorChannel(
-                                                                'red',
-                                                                event.target
-                                                                    .value
+                                                        onBlur={() => {
+                                                            commitRgbChannelInput(
+                                                                'red'
                                                             );
+                                                        }}
+                                                        onChange={(event) => {
+                                                            setRgbInputs({
+                                                                ...rgbInputs,
+                                                                red: event
+                                                                    .target
+                                                                    .value,
+                                                            });
                                                         }}
                                                         onKeyDown={(event) => {
                                                             handleRgbChannelKeyDown(
                                                                 event,
                                                                 'red',
-                                                                draftPrimaryRgb?.red ??
-                                                                    0
+                                                                normalizeRgbInput(
+                                                                    rgbInputs.red
+                                                                )
                                                             );
                                                         }}
                                                         pattern='[0-9]*'
                                                         type='text'
-                                                        value={
-                                                            draftPrimaryRgb?.red ??
-                                                            0
-                                                        }
+                                                        value={rgbInputs.red}
                                                     />
                                                 </span>
                                                 <span
@@ -370,27 +461,31 @@ export function AdvancedControls({
                                                             copy.primaryGreen
                                                         }
                                                         inputMode='numeric'
-                                                        onChange={(event) => {
-                                                            updateDraftColorChannel(
-                                                                'green',
-                                                                event.target
-                                                                    .value
+                                                        onBlur={() => {
+                                                            commitRgbChannelInput(
+                                                                'green'
                                                             );
+                                                        }}
+                                                        onChange={(event) => {
+                                                            setRgbInputs({
+                                                                ...rgbInputs,
+                                                                green: event
+                                                                    .target
+                                                                    .value,
+                                                            });
                                                         }}
                                                         onKeyDown={(event) => {
                                                             handleRgbChannelKeyDown(
                                                                 event,
                                                                 'green',
-                                                                draftPrimaryRgb?.green ??
-                                                                    0
+                                                                normalizeRgbInput(
+                                                                    rgbInputs.green
+                                                                )
                                                             );
                                                         }}
                                                         pattern='[0-9]*'
                                                         type='text'
-                                                        value={
-                                                            draftPrimaryRgb?.green ??
-                                                            0
-                                                        }
+                                                        value={rgbInputs.green}
                                                     />
                                                 </span>
                                                 <span
@@ -405,27 +500,31 @@ export function AdvancedControls({
                                                             copy.primaryBlue
                                                         }
                                                         inputMode='numeric'
-                                                        onChange={(event) => {
-                                                            updateDraftColorChannel(
-                                                                'blue',
-                                                                event.target
-                                                                    .value
+                                                        onBlur={() => {
+                                                            commitRgbChannelInput(
+                                                                'blue'
                                                             );
+                                                        }}
+                                                        onChange={(event) => {
+                                                            setRgbInputs({
+                                                                ...rgbInputs,
+                                                                blue: event
+                                                                    .target
+                                                                    .value,
+                                                            });
                                                         }}
                                                         onKeyDown={(event) => {
                                                             handleRgbChannelKeyDown(
                                                                 event,
                                                                 'blue',
-                                                                draftPrimaryRgb?.blue ??
-                                                                    0
+                                                                normalizeRgbInput(
+                                                                    rgbInputs.blue
+                                                                )
                                                             );
                                                         }}
                                                         pattern='[0-9]*'
                                                         type='text'
-                                                        value={
-                                                            draftPrimaryRgb?.blue ??
-                                                            0
-                                                        }
+                                                        value={rgbInputs.blue}
                                                     />
                                                 </span>
                                             </div>

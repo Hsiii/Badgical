@@ -1,5 +1,6 @@
 import './OutputPreview.css';
 
+import { useEffect, useState } from 'react';
 import type { Dispatch, JSX, KeyboardEvent, SetStateAction } from 'react';
 import { ChevronDown, Download, Timer, WandSparkles } from 'lucide-react';
 
@@ -60,13 +61,57 @@ export function OutputPreview({
     updateFrameLengthSeconds,
     updateTransitionLengthSeconds,
 }: OutputPreviewProps): JSX.Element {
+    const [animationDelayInput, setAnimationDelayInput] = useState(
+        String(animationDelaySeconds)
+    );
+    const [frameLengthInput, setFrameLengthInput] = useState(
+        String(frameLengthSeconds)
+    );
+    const [transitionLengthInput, setTransitionLengthInput] = useState(
+        String(transitionLengthSeconds)
+    );
+
+    useEffect(() => {
+        setAnimationDelayInput(String(animationDelaySeconds));
+    }, [animationDelaySeconds]);
+
+    useEffect(() => {
+        setFrameLengthInput(String(frameLengthSeconds));
+    }, [frameLengthSeconds]);
+
+    useEffect(() => {
+        setTransitionLengthInput(String(transitionLengthSeconds));
+    }, [transitionLengthSeconds]);
+
+    const commitTimingInput = (
+        inputValue: string,
+        currentValue: number,
+        updateValue: (value: string) => void,
+        setInputValue: Dispatch<SetStateAction<string>>
+    ): void => {
+        if (Number.isNaN(Number.parseFloat(inputValue))) {
+            setInputValue(String(currentValue));
+            return;
+        }
+
+        updateValue(inputValue);
+    };
+
     const handleTimingKeyDown = (
         event: KeyboardEvent<HTMLInputElement>,
+        inputValue: string,
         value: number,
         min: number,
         max: number,
-        updateValue: (value: string) => void
+        updateValue: (value: string) => void,
+        setInputValue: Dispatch<SetStateAction<string>>
     ): void => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            commitTimingInput(inputValue, value, updateValue, setInputValue);
+            return;
+        }
+
         if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
             return;
         }
@@ -80,6 +125,7 @@ export function OutputPreview({
             Math.max(min, value + direction * step)
         );
 
+        setInputValue(nextValue.toFixed(1));
         updateValue(nextValue.toFixed(1));
     };
 
@@ -113,24 +159,34 @@ export function OutputPreview({
                                             inputMode='decimal'
                                             max={maxAnimationStartDelaySeconds}
                                             min={minAnimationStartDelaySeconds}
+                                            onBlur={() => {
+                                                commitTimingInput(
+                                                    animationDelayInput,
+                                                    animationDelaySeconds,
+                                                    updateAnimationDelaySeconds,
+                                                    setAnimationDelayInput
+                                                );
+                                            }}
                                             onChange={(event) => {
-                                                updateAnimationDelaySeconds(
+                                                setAnimationDelayInput(
                                                     event.target.value
                                                 );
                                             }}
                                             onKeyDown={(event) => {
                                                 handleTimingKeyDown(
                                                     event,
+                                                    animationDelayInput,
                                                     animationDelaySeconds,
                                                     minAnimationStartDelaySeconds,
                                                     maxAnimationStartDelaySeconds,
-                                                    updateAnimationDelaySeconds
+                                                    updateAnimationDelaySeconds,
+                                                    setAnimationDelayInput
                                                 );
                                             }}
                                             pattern='[0-9]*[.]?[0-9]*'
                                             step='0.2'
                                             type='text'
-                                            value={animationDelaySeconds}
+                                            value={animationDelayInput}
                                         />
                                         <span>{copy.secondsUnit}</span>
                                     </span>
@@ -148,27 +204,37 @@ export function OutputPreview({
                                                 frameLengthSeconds
                                             )}
                                             min={minTransitionSeconds}
+                                            onBlur={() => {
+                                                commitTimingInput(
+                                                    transitionLengthInput,
+                                                    transitionLengthSeconds,
+                                                    updateTransitionLengthSeconds,
+                                                    setTransitionLengthInput
+                                                );
+                                            }}
                                             onChange={(event) => {
-                                                updateTransitionLengthSeconds(
+                                                setTransitionLengthInput(
                                                     event.target.value
                                                 );
                                             }}
                                             onKeyDown={(event) => {
                                                 handleTimingKeyDown(
                                                     event,
+                                                    transitionLengthInput,
                                                     transitionLengthSeconds,
                                                     minTransitionSeconds,
                                                     Math.min(
                                                         maxTransitionSeconds,
                                                         frameLengthSeconds
                                                     ),
-                                                    updateTransitionLengthSeconds
+                                                    updateTransitionLengthSeconds,
+                                                    setTransitionLengthInput
                                                 );
                                             }}
                                             pattern='[0-9]*[.]?[0-9]*'
                                             step='0.2'
                                             type='text'
-                                            value={transitionLengthSeconds}
+                                            value={transitionLengthInput}
                                         />
                                         <span>{copy.secondsUnit}</span>
                                     </span>
@@ -181,24 +247,34 @@ export function OutputPreview({
                                             inputMode='decimal'
                                             max={maxFrameDelaySeconds}
                                             min={minFrameDelaySeconds}
+                                            onBlur={() => {
+                                                commitTimingInput(
+                                                    frameLengthInput,
+                                                    frameLengthSeconds,
+                                                    updateFrameLengthSeconds,
+                                                    setFrameLengthInput
+                                                );
+                                            }}
                                             onChange={(event) => {
-                                                updateFrameLengthSeconds(
+                                                setFrameLengthInput(
                                                     event.target.value
                                                 );
                                             }}
                                             onKeyDown={(event) => {
                                                 handleTimingKeyDown(
                                                     event,
+                                                    frameLengthInput,
                                                     frameLengthSeconds,
                                                     minFrameDelaySeconds,
                                                     maxFrameDelaySeconds,
-                                                    updateFrameLengthSeconds
+                                                    updateFrameLengthSeconds,
+                                                    setFrameLengthInput
                                                 );
                                             }}
                                             pattern='[0-9]*[.]?[0-9]*'
                                             step='0.2'
                                             type='text'
-                                            value={frameLengthSeconds}
+                                            value={frameLengthInput}
                                         />
                                         <span>{copy.secondsUnit}</span>
                                     </span>
