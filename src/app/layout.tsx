@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { Mansalva } from 'next/font/google';
 
 import '../global.css';
+import '../components/App.css';
 
 // Next font loaders are named with uppercase identifiers.
 // eslint-disable-next-line new-cap
