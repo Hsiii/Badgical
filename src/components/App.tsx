@@ -340,7 +340,8 @@ export function App(): JSX.Element {
 
     const applyColorMode = (
         nextBrandColor: string,
-        mode: ColorMode
+        mode: ColorMode,
+        baseDraft: EditorDraft = draft
     ): Pick<
         EditorDraft,
         | 'smartRecolor'
@@ -363,16 +364,16 @@ export function App(): JSX.Element {
 
         if (mode === 'custom') {
             return {
-                smartRecolor: draft.smartRecolor,
-                badgeColor: draft.badgeColor,
-                logoColor: draft.logoColor,
-                preserveOriginalArtwork: draft.preserveOriginalArtwork,
-                textColor: draft.textColor,
+                smartRecolor: baseDraft.smartRecolor,
+                badgeColor: baseDraft.badgeColor,
+                logoColor: baseDraft.logoColor,
+                preserveOriginalArtwork: baseDraft.preserveOriginalArtwork,
+                textColor: baseDraft.textColor,
             };
         }
 
         return {
-            smartRecolor: draft.smartRecolor,
+            smartRecolor: baseDraft.smartRecolor,
             badgeColor: nextBrandColor,
             logoColor: nextBrandColor,
             preserveOriginalArtwork: true,
@@ -386,7 +387,7 @@ export function App(): JSX.Element {
     ): void => {
         setDraft((currentDraft) => ({
             ...currentDraft,
-            ...applyColorMode(nextBrandColor, mode),
+            ...applyColorMode(nextBrandColor, mode, currentDraft),
         }));
     };
 
@@ -491,6 +492,8 @@ export function App(): JSX.Element {
     };
 
     const chooseSearchResult = (result: SvglResult): void => {
+        const selectionColorMode = colorMode === 'custom' ? 'brand' : colorMode;
+
         setSelectedResult(result);
         setSelectionStatus('loading');
         setEditingFrameId(undefined);
@@ -507,7 +510,7 @@ export function App(): JSX.Element {
                     getPrimarySvgColor(source) ?? defaultBadgeDraft.badgeColor;
                 const modeDraft = applyColorMode(
                     extractedBrandColor,
-                    colorMode
+                    selectionColorMode
                 );
                 const smartRecolor = await logoColorTouchesBadgeEdge(
                     source,
@@ -533,6 +536,7 @@ export function App(): JSX.Element {
                         name: result.title,
                         source,
                     }));
+                    setColorMode(selectionColorMode);
                     setSourceDraft(source);
                     setExportCopyState('idle');
                     setSelectionStatus('ready');
@@ -555,7 +559,7 @@ export function App(): JSX.Element {
         setBrandColor(extractedBrandColor);
         setDraft((currentDraft) => ({
             ...currentDraft,
-            ...applyColorMode(extractedBrandColor, colorMode),
+            ...applyColorMode(extractedBrandColor, colorMode, currentDraft),
             source: sourceDraft,
         }));
         setSourceDialogOpen(false);
@@ -732,7 +736,7 @@ export function App(): JSX.Element {
     ).map(([mode, label]) => {
         const variantDraft = {
             ...draft,
-            ...applyColorMode(brandColor, mode),
+            ...applyColorMode(brandColor, mode, draft),
             id: `variant-${mode}`,
         };
 
