@@ -1,7 +1,7 @@
 import './BuilderDialogs.css';
 
-import type { Dispatch, JSX, SetStateAction } from 'react';
-import { Copy, Download, X } from 'lucide-react';
+import type { ChangeEvent, Dispatch, JSX, SetStateAction } from 'react';
+import { Copy, Download, Upload, X } from 'lucide-react';
 
 import { defaultExportFolder } from '@/components/badge-builder/constants';
 import type { UiCopy } from '@/components/i18n';
@@ -53,6 +53,25 @@ export function BuilderDialogs({
     sourceDialogOpen,
     sourceDraft,
 }: BuilderDialogsProps): JSX.Element {
+    const uploadSourceFile = (event: ChangeEvent<HTMLInputElement>): void => {
+        const input = event.currentTarget;
+        const file = input.files?.[0];
+
+        if (file === undefined) {
+            return;
+        }
+
+        file.text().then(
+            (source) => {
+                setSourceDraft(source);
+                input.value = '';
+            },
+            () => {
+                input.value = '';
+            }
+        );
+    };
+
     return (
         <>
             {deleteCandidateId === undefined ? undefined : (
@@ -107,6 +126,16 @@ export function BuilderDialogs({
                             <h2 id='source-dialog-title'>
                                 {copy.editSvgSource}
                             </h2>
+                            <button
+                                aria-label={copy.close}
+                                className='icon-button dialog-close-button'
+                                onClick={() => {
+                                    setSourceDialogOpen(false);
+                                }}
+                                type='button'
+                            >
+                                <X aria-hidden='true' size={16} />
+                            </button>
                         </div>
                         <p
                             className='visually-hidden'
@@ -124,15 +153,17 @@ export function BuilderDialogs({
                             />
                         </label>
                         <div className='confirm-dialog__actions'>
-                            <button
-                                className='button button--secondary'
-                                onClick={() => {
-                                    setSourceDialogOpen(false);
-                                }}
-                                type='button'
-                            >
-                                {copy.cancel}
-                            </button>
+                            <label className='button button--secondary source-dialog__upload'>
+                                <Upload aria-hidden='true' size={16} />
+                                {copy.uploadSvgSource}
+                                <input
+                                    accept='.svg,image/svg+xml'
+                                    aria-label={copy.uploadSvgSource}
+                                    className='visually-hidden'
+                                    onChange={uploadSourceFile}
+                                    type='file'
+                                />
+                            </label>
                             <button
                                 className='button button--primary'
                                 onClick={saveSourceDialog}
@@ -158,7 +189,7 @@ export function BuilderDialogs({
                             <h2 id='export-dialog-title'>{copy.exportBadge}</h2>
                             <button
                                 aria-label={copy.close}
-                                className='icon-button export-dialog__close'
+                                className='icon-button dialog-close-button'
                                 onClick={() => {
                                     setExportDialogOpen(false);
                                 }}

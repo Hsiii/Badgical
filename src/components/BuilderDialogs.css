@@ -26,7 +26,7 @@
     width: min(100%, calc(var(--space-48) * 10));
 }
 
-.export-dialog__close {
+.dialog-close-button {
     width: var(--space-32);
     height: var(--space-32);
     min-height: var(--space-32);
@@ -60,6 +60,10 @@
 
 .source-dialog__field textarea {
     min-height: calc(var(--space-48) * 7);
+}
+
+.source-dialog__upload {
+    cursor: pointer;
 }
 
 .confirm-dialog p {

@@ -65,6 +65,7 @@ export interface UiCopy {
     readonly theme: string;
     readonly themeLabels: Record<ThemePreference, string>;
     readonly updateFrame: string;
+    readonly uploadSvgSource: string;
     readonly variantDefault: string;
     readonly variantInverse: string;
 }
@@ -158,6 +159,7 @@ export const uiCopy = {
             system: 'System',
         },
         updateFrame: 'Update Frame',
+        uploadSvgSource: 'Upload SVG',
         variantDefault: 'Default',
         variantInverse: 'Inverse',
     },
@@ -244,6 +246,7 @@ export const uiCopy = {
             system: '\u7CFB\u7D71',
         },
         updateFrame: '\u66F4\u65B0\u5F71\u683C',
+        uploadSvgSource: '\u4E0A\u50B3 SVG',
         variantDefault: '\u9810\u8A2D',
         variantInverse: '\u53CD\u76F8',
     },
