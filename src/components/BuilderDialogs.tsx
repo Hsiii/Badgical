@@ -142,18 +142,9 @@ export function BuilderDialogs({
                             <h2 id='export-dialog-title'>Export Badge</h2>
                         </div>
 
-                        <div className='export-guide'>
-                            <p>
-                                Download the SVG, place it at{' '}
-                                <code>{exportPath}</code> in{' '}
-                                <code>{normalizedExportRepo}</code>, then paste
-                                the README Markdown below.
-                            </p>
-                        </div>
-
                         <div className='export-fields'>
                             <label className='field'>
-                                <span>Repository</span>
+                                <span>Choose target repo</span>
                                 <input
                                     onChange={(event) => {
                                         setExportRepo(event.target.value);
@@ -164,7 +155,7 @@ export function BuilderDialogs({
                                 />
                             </label>
                             <label className='field'>
-                                <span>Folder</span>
+                                <span>Choose asset folder</span>
                                 <input
                                     onChange={(event) => {
                                         setExportFolder(event.target.value);
@@ -175,6 +166,13 @@ export function BuilderDialogs({
                                 />
                             </label>
                         </div>
+
+                        <p className='export-guide'>
+                            Download the SVG and put it in{' '}
+                            <code>{exportPath}</code> in{' '}
+                            <code>{normalizedExportRepo}</code>. Then put the
+                            generated Markdown in that repository README.
+                        </p>
 
                         <label className='field export-field'>
                             <span>README Markdown</span>

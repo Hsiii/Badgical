@@ -27,9 +27,6 @@
 }
 
 .export-guide {
-    padding: var(--space-12);
-    border-radius: var(--space-8);
-    background: var(--clr-control);
     color: var(--clr-text);
     font: var(--font-ui-caption);
 }
