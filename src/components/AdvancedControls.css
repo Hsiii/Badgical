@@ -153,7 +153,7 @@
     grid-template-columns:
         minmax(calc(var(--space-48) * 3), calc(var(--space-48) * 4))
         minmax(calc(var(--space-48) * 4), 1.2fr);
-    gap: var(--space-8);
+    gap: var(--space-16);
     align-items: stretch;
     min-width: 0;
     min-height: 0;
