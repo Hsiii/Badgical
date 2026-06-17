@@ -185,6 +185,12 @@
     height: var(--space-24);
 }
 
+.icon-button.panel-menu__button {
+    border: 1px solid var(--clr-border);
+    border-radius: var(--space-4);
+    background: var(--clr-surface-raised);
+}
+
 .visually-hidden {
     position: absolute;
     width: 1px;

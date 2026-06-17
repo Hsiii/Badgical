@@ -1,7 +1,7 @@
 import './FrameRail.css';
 
 import type { JSX, KeyboardEvent } from 'react';
-import { MoreHorizontal, X } from 'lucide-react';
+import { Timer, X } from 'lucide-react';
 
 import {
     maxFrameDelaySeconds,
@@ -41,6 +41,11 @@ export function FrameRail({
     states,
     updateFrameDelaySeconds,
 }: FrameRailProps): JSX.Element {
+    const frameCount = Math.max(states.length, 1);
+    const animationLengthSeconds = frameDelaySeconds * frameCount;
+    const minAnimationLengthSeconds = minFrameDelaySeconds * frameCount;
+    const maxAnimationLengthSeconds = maxFrameDelaySeconds * frameCount;
+
     const handleDelayKeyDown = (
         event: KeyboardEvent<HTMLInputElement>
     ): void => {
@@ -58,6 +63,43 @@ export function FrameRail({
         );
 
         updateFrameDelaySeconds(nextDelay.toFixed(1));
+    };
+
+    const updateAnimationLengthSeconds = (value: string): void => {
+        const nextLength = Number.parseFloat(value);
+
+        if (Number.isNaN(nextLength)) {
+            return;
+        }
+
+        const clampedLength = Math.min(
+            maxAnimationLengthSeconds,
+            Math.max(minAnimationLengthSeconds, nextLength)
+        );
+
+        updateFrameDelaySeconds((clampedLength / frameCount).toFixed(1));
+    };
+
+    const handleLengthKeyDown = (
+        event: KeyboardEvent<HTMLInputElement>
+    ): void => {
+        if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
+            return;
+        }
+
+        event.preventDefault();
+
+        const direction = event.key === 'ArrowUp' ? 1 : -1;
+        const step = event.shiftKey ? 1 : 0.2;
+        const nextLength = Math.min(
+            maxAnimationLengthSeconds,
+            Math.max(
+                minAnimationLengthSeconds,
+                animationLengthSeconds + direction * step
+            )
+        );
+
+        updateAnimationLengthSeconds(nextLength.toFixed(1));
     };
 
     return (
@@ -80,43 +122,55 @@ export function FrameRail({
                         title={copy.frameSettings}
                         type='button'
                     >
-                        <MoreHorizontal aria-hidden='true' size={20} />
+                        <Timer aria-hidden='true' size={20} />
                     </button>
                     {frameSettingsOpen ? (
                         <div className='settings-popover'>
-                            <label className='field'>
+                            <label className='settings-value-field'>
                                 <span>{copy.animationDelay}</span>
-                                <input
-                                    max={maxFrameDelaySeconds}
-                                    min={minFrameDelaySeconds}
-                                    onChange={(event) => {
-                                        updateFrameDelaySeconds(
-                                            event.target.value
-                                        );
-                                    }}
-                                    step='0.2'
-                                    type='range'
-                                    value={frameDelaySeconds}
-                                />
+                                <span className='settings-value-row'>
+                                    <input
+                                        aria-label={copy.animationDelaySeconds}
+                                        inputMode='decimal'
+                                        max={maxFrameDelaySeconds}
+                                        min={minFrameDelaySeconds}
+                                        onChange={(event) => {
+                                            updateFrameDelaySeconds(
+                                                event.target.value
+                                            );
+                                        }}
+                                        onKeyDown={handleDelayKeyDown}
+                                        pattern='[0-9]*[.]?[0-9]*'
+                                        step='0.2'
+                                        type='text'
+                                        value={frameDelaySeconds}
+                                    />
+                                    <span>{copy.secondsUnit}</span>
+                                </span>
                             </label>
-                            <label className='settings-value-row'>
-                                <input
-                                    aria-label={copy.animationDelaySeconds}
-                                    inputMode='decimal'
-                                    max={maxFrameDelaySeconds}
-                                    min={minFrameDelaySeconds}
-                                    onChange={(event) => {
-                                        updateFrameDelaySeconds(
-                                            event.target.value
-                                        );
-                                    }}
-                                    onKeyDown={handleDelayKeyDown}
-                                    pattern='[0-9]*[.]?[0-9]*'
-                                    step='0.2'
-                                    type='text'
-                                    value={frameDelaySeconds}
-                                />
-                                <span>{copy.secondsUnit}</span>
+                            <label className='settings-value-field'>
+                                <span>{copy.animationLength}</span>
+                                <span className='settings-value-row'>
+                                    <input
+                                        aria-label={copy.animationLengthSeconds}
+                                        inputMode='decimal'
+                                        max={maxAnimationLengthSeconds}
+                                        min={minAnimationLengthSeconds}
+                                        onChange={(event) => {
+                                            updateAnimationLengthSeconds(
+                                                event.target.value
+                                            );
+                                        }}
+                                        onKeyDown={handleLengthKeyDown}
+                                        pattern='[0-9]*[.]?[0-9]*'
+                                        step='0.2'
+                                        type='text'
+                                        value={animationLengthSeconds.toFixed(
+                                            1
+                                        )}
+                                    />
+                                    <span>{copy.secondsUnit}</span>
+                                </span>
                             </label>
                         </div>
                     ) : undefined}

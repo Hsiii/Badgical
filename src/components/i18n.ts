@@ -10,6 +10,8 @@ export interface UiCopy {
     readonly animationDelay: string;
     readonly animationDelaySeconds: string;
     readonly animationLabels: Record<AnimationType, string>;
+    readonly animationLength: string;
+    readonly animationLengthSeconds: string;
     readonly animationType: string;
     readonly badgePreviewTitle: string;
     readonly badgeText: string;
@@ -87,6 +89,8 @@ export const uiCopy = {
             slot: 'Slot',
             carousel: 'Carousel',
         },
+        animationLength: 'Animation length',
+        animationLengthSeconds: 'Animation length seconds',
         animationType: 'Animation type',
         badgePreviewTitle: 'Badge Preview',
         badgeText: 'Badge text',
@@ -166,6 +170,8 @@ export const uiCopy = {
             slot: '\u5377\u52D5',
             carousel: '\u8F2A\u64AD',
         },
+        animationLength: '\u52D5\u756B\u9577\u5EA6',
+        animationLengthSeconds: '\u52D5\u756B\u9577\u5EA6\u79D2\u6578',
         animationType: '\u52D5\u756B\u985E\u578B',
         badgePreviewTitle: '\u5FBD\u7AE0\u9810\u89BD',
         badgeText: '\u5FBD\u7AE0\u6587\u5B57',
