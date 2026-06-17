@@ -7,36 +7,42 @@ import type { CSSProperties, JSX } from 'react';
 import { Copy, Download, MoreHorizontal, Pencil, Plus, X } from 'lucide-react';
 
 import {
-    buildBadgeSvg,
-    buildSingleBadgeSvg,
     clampUnit,
+    getHexColor,
+    getHsvColor,
+    getReadableInk,
+    getRgbColor,
+    getRgbFromHsv,
+    normalizeHexInput,
+} from '@/components/badge-builder/colors';
+import {
     defaultBadgeDraft,
     defaultExportFolder,
     defaultExportRepo,
     defaultStates,
     exportFileName,
     frameSeconds,
-    getHexColor,
-    getHsvColor,
-    getPrimarySvgColor,
-    getReadableInk,
-    getRgbColor,
-    getRgbFromHsv,
-    getSvglSourceUrl,
-    isSvglApiError,
-    isSvglNotFoundResponse,
-    isSvglResultList,
-    isSvgSource,
-    logoColorTouchesBadgeEdge,
-    materializeState,
     maxFrameDelaySeconds,
     maxFrames,
     maxSvglResults,
     minFrameDelaySeconds,
-    normalizeHexInput,
-    sortSvglResults,
+} from '@/components/badge-builder/constants';
+import { logoColorTouchesBadgeEdge } from '@/components/badge-builder/smart-recolor';
+import {
+    buildBadgeSvg,
+    buildSingleBadgeSvg,
+    isSvgSource,
+    materializeState,
     toDataUri,
-} from '@/components/badge-builder/domain';
+} from '@/components/badge-builder/svg';
+import {
+    getPrimarySvgColor,
+    getSvglSourceUrl,
+    isSvglApiError,
+    isSvglNotFoundResponse,
+    isSvglResultList,
+    sortSvglResults,
+} from '@/components/badge-builder/svgl';
 import type {
     BadgeState,
     ColorMode,
@@ -49,7 +55,7 @@ import type {
     SvglSearchStatus,
     ThemePreference,
     VariantMode,
-} from '@/components/badge-builder/domain';
+} from '@/components/badge-builder/types';
 import { BrandSearchPanel } from '@/components/BrandSearchPanel';
 import { Topbar } from '@/components/Topbar';
 

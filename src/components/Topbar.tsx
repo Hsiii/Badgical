@@ -7,12 +7,12 @@ import {
     githubUrl,
     languagePreferenceLabels,
     themePreferenceLabels,
-} from '@/components/badge-builder/domain';
+} from '@/components/badge-builder/constants';
 import type {
     LanguagePreference,
     PreferenceMenu,
     ThemePreference,
-} from '@/components/badge-builder/domain';
+} from '@/components/badge-builder/types';
 import { GitHubMark } from '@/components/GitHubMark';
 
 interface TopbarProps {
