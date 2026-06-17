@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import { Copy, Download, Pencil, Plus, Search, X } from 'lucide-react';
+import {
+    Copy,
+    Download,
+    MoreHorizontal,
+    Pencil,
+    Plus,
+    Search,
+    X,
+} from 'lucide-react';
 
 interface BadgeState {
     allCaps?: boolean;
@@ -70,6 +78,8 @@ const minBadgeWidth = 90;
 const textPadding = 16;
 const textSize = 10;
 const frameSeconds = 2.4;
+const minFrameDelaySeconds = 0.4;
+const maxFrameDelaySeconds = 8;
 const maxFrames = 20;
 const maxSvglResults = 8;
 const logoEdgeCanvasSize = 64;
@@ -612,6 +622,7 @@ const buildAnimationSteps = (stateCount: number): string => {
 
 const buildBadgeSvg = (
     states: readonly BadgeState[],
+    frameDelaySeconds = frameSeconds,
     preserveOriginalArtwork = false
 ): string => {
     const visibleStates = normalizeStates(states);
@@ -628,8 +639,8 @@ const buildBadgeSvg = (
             ? [...visibleStates, firstState]
             : visibleStates;
     const duration = Math.max(
-        visibleStates.length * frameSeconds,
-        frameSeconds
+        visibleStates.length * frameDelaySeconds,
+        frameDelaySeconds
     );
     const slots = animatedStates
         .map((state, index) => {
@@ -673,7 +684,11 @@ const buildSingleBadgeSvg = (
     index: number,
     preserveOriginalArtwork = false
 ): string =>
-    buildBadgeSvg([materializeState(state, index)], preserveOriginalArtwork);
+    buildBadgeSvg(
+        [materializeState(state, index)],
+        frameSeconds,
+        preserveOriginalArtwork
+    );
 
 const getSvglRoute = (route: string | SvglRouteOptions): string =>
     typeof route === 'string' ? route : route.light;
@@ -808,6 +823,8 @@ export function App(): JSX.Element {
         useState<LanguagePreference>('en');
     const [themePreference, setThemePreference] =
         useState<ThemePreference>('system');
+    const [frameDelaySeconds, setFrameDelaySeconds] = useState(frameSeconds);
+    const [frameSettingsOpen, setFrameSettingsOpen] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<
         string | undefined
     >(undefined);
@@ -818,7 +835,10 @@ export function App(): JSX.Element {
         undefined
     );
     const resultsReference = useRef<HTMLDivElement | undefined>(undefined);
-    const badgeSvg = useMemo(() => buildBadgeSvg(states), [states]);
+    const badgeSvg = useMemo(
+        () => buildBadgeSvg(states, frameDelaySeconds),
+        [frameDelaySeconds, states]
+    );
     const previewSource = useMemo(
         () => (badgeSvg === '' ? '' : toDataUri(badgeSvg)),
         [badgeSvg]
@@ -1302,6 +1322,21 @@ export function App(): JSX.Element {
                 : [...currentStates, nextState]
         );
         setExportCopyState('idle');
+    };
+
+    const updateFrameDelaySeconds = (value: string): void => {
+        const nextDelay = Number.parseFloat(value);
+
+        if (Number.isNaN(nextDelay)) {
+            return;
+        }
+
+        setFrameDelaySeconds(
+            Math.min(
+                maxFrameDelaySeconds,
+                Math.max(minFrameDelaySeconds, nextDelay)
+            )
+        );
     };
 
     const confirmDeleteState = (): void => {
@@ -1832,10 +1867,79 @@ export function App(): JSX.Element {
                         >
                             <section className='frames'>
                                 <div className='panel-heading'>
-                                    <h2 id='frames-title'>Frames</h2>
-                                    <span className='panel-meta'>
-                                        {states.length}/{maxFrames}
-                                    </span>
+                                    <div className='panel-title-row'>
+                                        <h2 id='frames-title'>Frames</h2>
+                                        <span className='panel-meta'>
+                                            {states.length}/{maxFrames}
+                                        </span>
+                                    </div>
+                                    <div className='panel-menu'>
+                                        <button
+                                            aria-expanded={frameSettingsOpen}
+                                            aria-label='Frame settings'
+                                            className='icon-button panel-menu__button'
+                                            onClick={() => {
+                                                setFrameSettingsOpen(
+                                                    (isOpen) => !isOpen
+                                                );
+                                            }}
+                                            title='Frame settings'
+                                            type='button'
+                                        >
+                                            <MoreHorizontal
+                                                aria-hidden='true'
+                                                size={20}
+                                            />
+                                        </button>
+                                        {frameSettingsOpen ? (
+                                            <div className='settings-popover'>
+                                                <label className='field'>
+                                                    <span>Animation delay</span>
+                                                    <input
+                                                        max={
+                                                            maxFrameDelaySeconds
+                                                        }
+                                                        min={
+                                                            minFrameDelaySeconds
+                                                        }
+                                                        onChange={(event) => {
+                                                            updateFrameDelaySeconds(
+                                                                event.target
+                                                                    .value
+                                                            );
+                                                        }}
+                                                        step='0.2'
+                                                        type='range'
+                                                        value={
+                                                            frameDelaySeconds
+                                                        }
+                                                    />
+                                                </label>
+                                                <label className='field'>
+                                                    <span>Seconds</span>
+                                                    <input
+                                                        max={
+                                                            maxFrameDelaySeconds
+                                                        }
+                                                        min={
+                                                            minFrameDelaySeconds
+                                                        }
+                                                        onChange={(event) => {
+                                                            updateFrameDelaySeconds(
+                                                                event.target
+                                                                    .value
+                                                            );
+                                                        }}
+                                                        step='0.2'
+                                                        type='number'
+                                                        value={
+                                                            frameDelaySeconds
+                                                        }
+                                                    />
+                                                </label>
+                                            </div>
+                                        ) : undefined}
+                                    </div>
                                 </div>
 
                                 <div
@@ -1917,7 +2021,7 @@ export function App(): JSX.Element {
 
                             <section aria-label='Preview' className='output'>
                                 <div className='panel-heading'>
-                                    <h2>Preview</h2>
+                                    <h2>The Badgic</h2>
                                 </div>
                                 <div className='output__showcase'>
                                     <div className='preview'>
