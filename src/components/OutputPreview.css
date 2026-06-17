@@ -48,3 +48,9 @@
     grid-template-columns: 1fr;
     gap: var(--space-8);
 }
+
+@media (max-width: 640px) {
+    .output {
+        min-height: calc(var(--space-48) * 5);
+    }
+}

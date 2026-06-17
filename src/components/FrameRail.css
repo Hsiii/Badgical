@@ -168,3 +168,9 @@
         max-height: calc(var(--space-48) * 8);
     }
 }
+
+@media (max-width: 640px) {
+    .frames {
+        min-height: calc(var(--space-48) * 5);
+    }
+}

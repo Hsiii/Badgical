@@ -161,7 +161,9 @@
     }
 
     .search-shell {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr) max-content;
+        gap: var(--space-8);
+        padding: 0 var(--space-8);
     }
 
     .search-actions {

@@ -173,6 +173,27 @@
 
 @media (max-width: 640px) {
     .topbar {
-        min-height: 56px;
+        grid-template-columns: 1fr;
+        gap: var(--space-8);
+        min-height: 0;
+        padding: var(--space-8) var(--space-16);
+    }
+
+    .brand-cluster,
+    .topbar-actions {
+        width: 100%;
+    }
+
+    .brand-cluster {
+        justify-content: space-between;
+    }
+
+    .topbar-actions {
+        justify-content: stretch;
+    }
+
+    .preference-menu {
+        flex: 1 1 0;
+        min-width: 0;
     }
 }
