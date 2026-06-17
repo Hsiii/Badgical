@@ -1,27 +1,37 @@
-<p align="center">
-  <img src="./public/badgical-spark.svg" alt="Badgical spark logo" width="96" height="96" />
-</p>
-
 # Badgical
 
-Animated SVG badge builder built with Next.js App Router.
+Badgical is a small web app for building animated SVG badges from [SVGL](https://svgl.app/) logos.
 
-## Install
+Use it to make README badges that rotate through products, tools, sponsors, or project stack items without hand-editing SVG.
+
+<p align="center">
+  <img src="./public/badgical-desktop.png" alt="Badgical desktop interface with a carousel badge preview and several selected logo frames" width="900" />
+</p>
+
+## What It Does
+
+- Searches the SVGL logo catalog.
+- Builds badge frames with editable text, colors, and SVG source.
+- Supports slot and carousel animations.
+- Exports a standalone animated SVG.
+- Generates README Markdown with a useful alt description.
+- Includes English and Traditional Chinese UI.
+
+## Development
 
 ```bash
 bun install
-```
-
-## Develop
-
-```bash
 bun run dev
 ```
 
-## Check
+## Checks
 
 ```bash
 bun run check
 ```
 
-This project includes `bunfig.toml` with `minimumReleaseAge = 604800`.
+`bun run check` runs TypeScript, ESLint, Prettier, and a production Next.js build.
+
+## Notes
+
+Badgical is built with Next.js App Router and uses SVGL as the logo source.
