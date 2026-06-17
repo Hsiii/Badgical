@@ -29,6 +29,9 @@
     --clr-backdrop: rgb(48 51 76 / 28%);
     --clr-edge-shadow: rgb(48 51 76 / 16%);
     --clr-edge-shadow-light: rgb(255 255 255 / 88%);
+    --clr-scrollbar-thumb: rgb(89 104 201 / 44%);
+    --clr-scrollbar-thumb-hover: rgb(89 104 201 / 64%);
+    --clr-scrollbar-track: rgb(219 218 236 / 40%);
 }
 
 :root[data-theme='dark'] {
@@ -55,4 +58,7 @@
     --clr-backdrop: rgb(7 8 14 / 56%);
     --clr-edge-shadow: rgb(0 0 0 / 32%);
     --clr-edge-shadow-light: rgb(0 0 0 / 20%);
+    --clr-scrollbar-thumb: rgb(130 144 240 / 44%);
+    --clr-scrollbar-thumb-hover: rgb(130 144 240 / 64%);
+    --clr-scrollbar-track: rgb(37 39 68 / 72%);
 }
