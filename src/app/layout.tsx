@@ -70,6 +70,9 @@ export const metadata: Metadata = {
         images: ['/favicon.png'],
         title: 'Badgical',
     },
+    verification: {
+        google: 'U0MZAhyxx3hG4euT-pHfkimkVmT8oOu0dAlgD0OFoaQ',
+    },
 };
 
 export const viewport: Viewport = {
