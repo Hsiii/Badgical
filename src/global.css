@@ -379,7 +379,7 @@ textarea {
     align-content: center;
     justify-items: center;
     min-height: 128px;
-    padding: var(--space-8) var(--space-12);
+    padding: 0;
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
     background: var(--clr-card);
@@ -408,7 +408,7 @@ textarea {
 }
 
 .brand-result span {
-    margin-top: var(--space-4);
+    margin-top: var(--space-12);
     margin-bottom: 0;
     font: var(--font-ui-caption);
 }
