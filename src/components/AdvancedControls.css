@@ -275,7 +275,9 @@
 
 .color-control__rgb-group {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns:
+        minmax(0, 1fr) max-content minmax(0, 1fr) max-content
+        minmax(0, 1fr);
     gap: 0;
     align-items: center;
     min-width: 0;
@@ -289,23 +291,23 @@
 .color-control__rgb-row > span,
 .color-control__hex-row > span,
 .color-control__hue-row > span,
-.color-control__rgb-slot > span {
+.color-control__rgb-separator {
     color: var(--clr-text-muted);
     font: var(--font-ui-label);
     white-space: nowrap;
 }
 
 .color-control__rgb-slot {
-    display: inline-grid;
-    grid-template-columns: minmax(0, max-content) max-content;
-    gap: 0;
+    display: grid;
     align-items: center;
     justify-content: center;
     min-width: 0;
 }
 
-.color-control__rgb-slot:last-child {
-    grid-template-columns: minmax(0, max-content);
+.color-control__rgb-separator {
+    display: grid;
+    place-items: center;
+    width: var(--space-12);
 }
 
 .field .color-control__rgb-group input:not([type='color']):not([type='range']) {

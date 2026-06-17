@@ -309,7 +309,12 @@ export function AdvancedControls({
                                                     draftPrimaryRgb?.red ?? 0
                                                 }
                                             />
-                                            <span>,</span>
+                                        </span>
+                                        <span
+                                            aria-hidden='true'
+                                            className='color-control__rgb-separator'
+                                        >
+                                            ,
                                         </span>
                                         <span className='color-control__rgb-slot'>
                                             <input
@@ -335,7 +340,12 @@ export function AdvancedControls({
                                                     draftPrimaryRgb?.green ?? 0
                                                 }
                                             />
-                                            <span>,</span>
+                                        </span>
+                                        <span
+                                            aria-hidden='true'
+                                            className='color-control__rgb-separator'
+                                        >
+                                            ,
                                         </span>
                                         <span className='color-control__rgb-slot'>
                                             <input
