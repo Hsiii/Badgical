@@ -318,10 +318,11 @@ export const buildBadgeSvg = (
                     ? state.badgeColor
                     : undefined;
             const displayName = getDisplayName(state);
+            const textWidth = getEstimatedTextWidth(state);
             const contentWidth = getBadgeContentWidth(state);
             const contentX = (width - contentWidth) / 2;
             const textX = contentX + logoSize + logoTextGap;
-            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preservesArtwork, smartRecolorBadgeColor, contentX)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${compactNumber(textX)}" y="18" text-anchor="start"${textAttributes}>${escapeXml(displayName)}</text>`;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preservesArtwork, smartRecolorBadgeColor, contentX)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${compactNumber(textX)}" y="18" text-anchor="start" textLength="${textWidth}" lengthAdjust="spacing"${textAttributes}>${escapeXml(displayName)}</text>`;
 
             if (visibleStates.length === 1) {
                 return content;
