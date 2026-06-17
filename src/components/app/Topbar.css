@@ -135,18 +135,20 @@
 
 .github-star-bubble {
     position: relative;
-    display: inline-flex;
+    display: inline-grid;
+    grid-template-columns: auto auto;
     gap: var(--space-4);
     align-items: center;
     justify-content: center;
     min-width: var(--space-48);
-    min-height: var(--space-32);
+    height: var(--space-32);
     padding: 0 var(--space-8);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
     color: var(--clr-text);
     font: var(--font-ui-label);
+    line-height: 1;
     white-space: nowrap;
 }
 
