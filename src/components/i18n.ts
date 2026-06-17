@@ -1,4 +1,5 @@
 import type {
+    AnimationType,
     LanguagePreference,
     ThemePreference,
 } from '@/components/badge-builder/types';
@@ -8,6 +9,8 @@ export interface UiCopy {
     readonly advancedControlsLabel: string;
     readonly animationDelay: string;
     readonly animationDelaySeconds: string;
+    readonly animationLabels: Record<AnimationType, string>;
+    readonly animationType: string;
     readonly badgePreviewTitle: string;
     readonly badgeText: string;
     readonly badgeVariantsLabel: string;
@@ -80,6 +83,11 @@ export const uiCopy = {
         advancedControlsLabel: 'Advanced badge controls',
         animationDelay: 'Animation delay',
         animationDelaySeconds: 'Animation delay seconds',
+        animationLabels: {
+            slot: 'Slot',
+            carousel: 'Carousel',
+        },
+        animationType: 'Animation type',
         badgePreviewTitle: 'Badge Preview',
         badgeText: 'Badge text',
         badgeVariantsLabel: 'Badge variants',
@@ -154,6 +162,11 @@ export const uiCopy = {
         advancedControlsLabel: '\u9032\u968E\u5FBD\u7AE0\u63A7\u5236',
         animationDelay: '\u52D5\u756B\u5EF6\u9072',
         animationDelaySeconds: '\u52D5\u756B\u5EF6\u9072\u79D2\u6578',
+        animationLabels: {
+            slot: '\u5377\u52D5',
+            carousel: '\u8F2A\u64AD',
+        },
+        animationType: '\u52D5\u756B\u985E\u578B',
         badgePreviewTitle: '\u5FBD\u7AE0\u9810\u89BD',
         badgeText: '\u5FBD\u7AE0\u6587\u5B57',
         badgeVariantsLabel: '\u5FBD\u7AE0\u6A23\u5F0F',

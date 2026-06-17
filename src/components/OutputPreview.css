@@ -35,6 +35,10 @@
     object-fit: contain;
 }
 
+.output-animation-menu {
+    min-width: calc(var(--space-48) * 2 + var(--space-24));
+}
+
 .preview span {
     width: min(220px, 100%);
     color: var(--clr-text-muted);

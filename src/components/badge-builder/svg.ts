@@ -15,7 +15,10 @@ import {
     textSize,
     textStart,
 } from '@/components/badge-builder/constants';
-import type { BadgeState } from '@/components/badge-builder/types';
+import type {
+    AnimationType,
+    BadgeState,
+} from '@/components/badge-builder/types';
 
 export const escapeXml = (value: string): string =>
     value
@@ -383,7 +386,10 @@ export const getBadgeWidth = (states: readonly BadgeState[]): number => {
     );
 };
 
-export const buildAnimationSteps = (stateCount: number): string => {
+export const buildAnimationSteps = (
+    stateCount: number,
+    distance: number
+): string => {
     if (stateCount < 2) {
         return '0%,100%{transform:translateY(0)}';
     }
@@ -395,16 +401,38 @@ export const buildAnimationSteps = (stateCount: number): string => {
         const frameStart = (index / totalFrames) * 100;
         const frameHoldEnd = ((index + holdShare) / totalFrames) * 100;
         const frameEnd = ((index + 1) / totalFrames) * 100;
-        const offset = index * badgeHeight;
+        const offset = index * distance;
 
-        return `${compactNumber(frameStart)}%,${compactNumber(frameHoldEnd)}%{transform:translateY(-${offset}px)}${compactNumber(frameEnd)}%{transform:translateY(-${offset + badgeHeight}px)}`;
+        return `${compactNumber(frameStart)}%,${compactNumber(frameHoldEnd)}%{transform:translateY(-${offset}px)}${compactNumber(frameEnd)}%{transform:translateY(-${offset + distance}px)}`;
+    }).join('');
+};
+
+export const buildCarouselAnimationSteps = (
+    stateCount: number,
+    distance: number
+): string => {
+    if (stateCount < 2) {
+        return '0%,100%{transform:translateX(0)}';
+    }
+
+    const totalFrames = stateCount;
+    const holdShare = 0.72;
+
+    return Array.from({ length: stateCount }, (_value, index) => {
+        const frameStart = (index / totalFrames) * 100;
+        const frameHoldEnd = ((index + holdShare) / totalFrames) * 100;
+        const frameEnd = ((index + 1) / totalFrames) * 100;
+        const offset = index * distance;
+
+        return `${compactNumber(frameStart)}%,${compactNumber(frameHoldEnd)}%{transform:translateX(-${offset}px)}${compactNumber(frameEnd)}%{transform:translateX(-${offset + distance}px)}`;
     }).join('');
 };
 
 export const buildBadgeSvg = (
     states: readonly BadgeState[],
     frameDelaySeconds = frameSeconds,
-    preserveOriginalArtwork = false
+    preserveOriginalArtwork = false,
+    animationType: AnimationType = 'slot'
 ): string => {
     const visibleStates = normalizeStates(states);
 
@@ -424,7 +452,9 @@ export const buildBadgeSvg = (
     );
     const slots = animatedStates
         .map((state, index) => {
-            const slotY = index * badgeHeight;
+            const slotX = animationType === 'carousel' ? index * width : 0;
+            const slotY =
+                animationType === 'carousel' ? 0 : index * badgeHeight;
             const textAttributes =
                 visibleStates.length === 1
                     ? ` font-size="${textSize}" font-weight="700"`
@@ -448,12 +478,21 @@ export const buildBadgeSvg = (
                 return content;
             }
 
-            return `<g class="f"${slotY === 0 ? '' : ` transform="translate(0 ${slotY})"`}>${content}</g>`;
+            const transform =
+                slotX === 0 && slotY === 0
+                    ? ''
+                    : ` transform="translate(${compactNumber(slotX)} ${compactNumber(slotY)})"`;
+
+            return `<g class="f"${transform}>${content}</g>`;
         })
         .join('');
+    const animationSteps =
+        animationType === 'carousel'
+            ? buildCarouselAnimationSteps(visibleStates.length, width)
+            : buildAnimationSteps(visibleStates.length, badgeHeight);
     const animationStyle =
         visibleStates.length > 1
-            ? `.s{animation:a ${duration}s ease-in-out 1.2s infinite}@keyframes a{${buildAnimationSteps(visibleStates.length)}}@media (prefers-reduced-motion:reduce){.s{animation:none}.f:nth-child(n+2){display:none}}`
+            ? `.s{animation:a ${duration}s ease-in-out 1.2s infinite}@keyframes a{${animationSteps}}@media (prefers-reduced-motion:reduce){.s{animation:none}.f:nth-child(n+2){display:none}}`
             : '';
     const body = visibleStates.length > 1 ? `<g class="s">${slots}</g>` : slots;
     const style =

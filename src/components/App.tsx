@@ -46,6 +46,7 @@ import {
     sortSvglResults,
 } from '@/components/badge-builder/svgl';
 import type {
+    AnimationType,
     BadgeState,
     ColorMode,
     EditorDraft,
@@ -128,6 +129,7 @@ export function App({
         PreferenceMenu | undefined
     >(undefined);
     const [frameDelaySeconds, setFrameDelaySeconds] = useState(frameSeconds);
+    const [animationType, setAnimationType] = useState<AnimationType>('slot');
     const [frameSettingsOpen, setFrameSettingsOpen] = useState(false);
     const [deleteCandidateId, setDeleteCandidateId] = useState<
         string | undefined
@@ -141,8 +143,8 @@ export function App({
     );
     const resultsReference = useRef<HTMLDivElement | undefined>(undefined);
     const badgeSvg = useMemo(
-        () => buildBadgeSvg(states, frameDelaySeconds),
-        [frameDelaySeconds, states]
+        () => buildBadgeSvg(states, frameDelaySeconds, false, animationType),
+        [animationType, frameDelaySeconds, states]
     );
     const previewSource = useMemo(
         () => (badgeSvg === '' ? '' : toDataUri(badgeSvg)),
@@ -925,10 +927,14 @@ export function App({
                             />
 
                             <OutputPreview
+                                animationType={animationType}
                                 badgeSvg={badgeSvg}
                                 copy={copy}
+                                openPreferenceMenu={openPreferenceMenu}
                                 previewSource={previewSource}
+                                setAnimationType={setAnimationType}
                                 setExportDialogOpen={setExportDialogOpen}
+                                setOpenPreferenceMenu={setOpenPreferenceMenu}
                             />
                         </aside>
                     </section>

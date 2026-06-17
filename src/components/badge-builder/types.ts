@@ -43,7 +43,8 @@ export type VariantMode = Exclude<ColorMode, 'custom'>;
 export type SelectionStatus = 'idle' | 'loading' | 'ready';
 export type LanguagePreference = 'en' | 'zh-Hant';
 export type ThemePreference = 'light' | 'dark' | 'system';
-export type PreferenceMenu = 'language' | 'theme';
+export type AnimationType = 'slot' | 'carousel';
+export type PreferenceMenu = 'animation' | 'language' | 'theme';
 
 export interface RgbColor {
     readonly blue: number;
