@@ -372,13 +372,14 @@ textarea {
 }
 
 .preference-trigger {
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: var(--space-16) minmax(0, 1fr) var(--space-16);
     gap: var(--space-8);
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     width: 100%;
     min-height: var(--space-32);
-    padding: 0 var(--space-8);
+    padding: 0 var(--space-12);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
@@ -388,8 +389,14 @@ textarea {
 }
 
 .preference-trigger svg {
-    flex: 0 0 auto;
     color: var(--clr-text-muted);
+}
+
+.preference-trigger span {
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .preference-options {
