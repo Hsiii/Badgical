@@ -4,7 +4,6 @@ import './App.css';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
-import { Copy, Download } from 'lucide-react';
 
 import { AdvancedControls } from '@/components/AdvancedControls';
 import {
@@ -58,6 +57,7 @@ import type {
     VariantMode,
 } from '@/components/badge-builder/types';
 import { BrandSearchPanel } from '@/components/BrandSearchPanel';
+import { BuilderDialogs } from '@/components/BuilderDialogs';
 import { FrameRail } from '@/components/FrameRail';
 import { OutputPreview } from '@/components/OutputPreview';
 import { Topbar } from '@/components/Topbar';
@@ -858,165 +858,29 @@ export function App(): JSX.Element {
                 </div>
             </section>
 
-            {deleteCandidateId === undefined ? undefined : (
-                <div className='confirm-backdrop' role='presentation'>
-                    <section
-                        aria-labelledby='delete-frame-title'
-                        aria-modal='true'
-                        className='confirm-dialog'
-                        role='dialog'
-                    >
-                        <div className='panel-heading'>
-                            <h2 id='delete-frame-title'>Delete Frame</h2>
-                        </div>
-                        <p>This removes the frame from the badge animation.</p>
-                        <div className='confirm-dialog__actions'>
-                            <button
-                                className='button button--secondary'
-                                onClick={() => {
-                                    setDeleteCandidateId(undefined);
-                                }}
-                                type='button'
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className='button button--primary'
-                                onClick={confirmDeleteState}
-                                type='button'
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </section>
-                </div>
-            )}
-
-            {sourceDialogOpen ? (
-                <div className='confirm-backdrop' role='presentation'>
-                    <section
-                        aria-labelledby='source-dialog-title'
-                        aria-modal='true'
-                        className='confirm-dialog source-dialog'
-                        role='dialog'
-                    >
-                        <div className='panel-heading'>
-                            <h2 id='source-dialog-title'>SVG Source</h2>
-                        </div>
-                        <label className='field source-dialog__field'>
-                            <span>Logo SVG</span>
-                            <textarea
-                                onChange={(event) => {
-                                    setSourceDraft(event.target.value);
-                                }}
-                                value={sourceDraft}
-                            />
-                        </label>
-                        <div className='confirm-dialog__actions'>
-                            <button
-                                className='button button--secondary'
-                                onClick={() => {
-                                    setSourceDialogOpen(false);
-                                }}
-                                type='button'
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className='button button--primary'
-                                onClick={saveSourceDialog}
-                                type='button'
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </section>
-                </div>
-            ) : undefined}
-
-            {exportDialogOpen ? (
-                <div className='confirm-backdrop' role='presentation'>
-                    <section
-                        aria-labelledby='export-dialog-title'
-                        aria-modal='true'
-                        className='confirm-dialog export-dialog'
-                        role='dialog'
-                    >
-                        <div className='panel-heading'>
-                            <h2 id='export-dialog-title'>Export Badge</h2>
-                        </div>
-
-                        <div className='export-guide'>
-                            <p>
-                                Download the SVG, place it at{' '}
-                                <code>{exportPath}</code> in{' '}
-                                <code>{normalizedExportRepo}</code>, then paste
-                                the README Markdown below.
-                            </p>
-                        </div>
-
-                        <div className='export-fields'>
-                            <label className='field'>
-                                <span>Repository</span>
-                                <input
-                                    onChange={(event) => {
-                                        setExportRepo(event.target.value);
-                                        setExportCopyState('idle');
-                                    }}
-                                    placeholder='username/repo'
-                                    value={exportRepo}
-                                />
-                            </label>
-                            <label className='field'>
-                                <span>Folder</span>
-                                <input
-                                    onChange={(event) => {
-                                        setExportFolder(event.target.value);
-                                        setExportCopyState('idle');
-                                    }}
-                                    placeholder={defaultExportFolder}
-                                    value={exportFolder}
-                                />
-                            </label>
-                        </div>
-
-                        <label className='field export-field'>
-                            <span>README Markdown</span>
-                            <textarea readOnly value={readmeMarkdown} />
-                        </label>
-
-                        <div className='confirm-dialog__actions export-dialog__actions'>
-                            <button
-                                className='button button--secondary'
-                                onClick={() => {
-                                    setExportDialogOpen(false);
-                                }}
-                                type='button'
-                            >
-                                Close
-                            </button>
-                            <button
-                                className='button button--primary'
-                                onClick={copyReadmeMarkdown}
-                                type='button'
-                            >
-                                <Copy aria-hidden='true' size={16} />
-                                {exportCopyState === 'markdown'
-                                    ? 'Copied'
-                                    : 'Copy Markdown'}
-                            </button>
-                            <button
-                                className='button button--primary'
-                                onClick={downloadSvg}
-                                type='button'
-                            >
-                                <Download aria-hidden='true' size={16} />
-                                Download SVG
-                            </button>
-                        </div>
-                    </section>
-                </div>
-            ) : undefined}
+            <BuilderDialogs
+                confirmDeleteState={confirmDeleteState}
+                copyReadmeMarkdown={copyReadmeMarkdown}
+                deleteCandidateId={deleteCandidateId}
+                downloadSvg={downloadSvg}
+                exportCopyState={exportCopyState}
+                exportDialogOpen={exportDialogOpen}
+                exportFolder={exportFolder}
+                exportPath={exportPath}
+                exportRepo={exportRepo}
+                normalizedExportRepo={normalizedExportRepo}
+                readmeMarkdown={readmeMarkdown}
+                saveSourceDialog={saveSourceDialog}
+                setDeleteCandidateId={setDeleteCandidateId}
+                setExportCopyState={setExportCopyState}
+                setExportDialogOpen={setExportDialogOpen}
+                setExportFolder={setExportFolder}
+                setExportRepo={setExportRepo}
+                setSourceDialogOpen={setSourceDialogOpen}
+                setSourceDraft={setSourceDraft}
+                sourceDialogOpen={sourceDialogOpen}
+                sourceDraft={sourceDraft}
+            />
         </main>
     );
 }

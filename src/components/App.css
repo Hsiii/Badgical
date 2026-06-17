@@ -197,93 +197,6 @@
     border: 0;
 }
 
-.confirm-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    display: grid;
-    place-items: center;
-    padding: var(--space-16);
-    background: var(--clr-backdrop);
-}
-
-.confirm-dialog {
-    display: grid;
-    gap: var(--space-16);
-    width: min(100%, 360px);
-    padding: var(--space-16);
-    border: 1px solid var(--clr-border);
-    border-radius: var(--space-8);
-    background: var(--clr-surface);
-}
-
-.source-dialog {
-    width: min(100%, calc(var(--space-48) * 14));
-}
-
-.export-dialog {
-    width: min(100%, calc(var(--space-48) * 16));
-}
-
-.export-guide {
-    padding: var(--space-12);
-    border-radius: var(--space-8);
-    background: var(--clr-control);
-    color: var(--clr-text);
-    font: var(--font-ui-caption);
-}
-
-.export-guide code {
-    font: var(--font-ui-code);
-}
-
-.export-fields {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-12);
-}
-
-.export-copy-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content;
-    gap: var(--space-8);
-}
-
-.export-field textarea,
-.source-dialog__field textarea {
-    width: 100%;
-    padding: var(--space-12);
-    border: 1px solid var(--clr-border);
-    border-radius: var(--space-4);
-    background: var(--clr-surface-raised);
-    color: var(--clr-text);
-    font: var(--font-ui-code);
-}
-
-.source-dialog__field textarea {
-    min-height: calc(var(--space-48) * 7);
-}
-
-.export-field textarea {
-    min-height: calc(var(--space-48) * 2);
-    resize: none;
-}
-
-.confirm-dialog p {
-    color: var(--clr-text);
-    font: var(--font-ui-caption);
-}
-
-.confirm-dialog__actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-8);
-}
-
-.export-dialog__actions {
-    grid-template-columns: 1fr 1fr 1fr;
-}
-
 @media (max-width: 920px) {
     .builder__workspace {
         padding: var(--space-16);
@@ -309,12 +222,4 @@
 }
 
 @media (max-width: 640px) {
-    .export-dialog__actions,
-    .export-fields {
-        grid-template-columns: 1fr;
-    }
-
-    .export-copy-row {
-        grid-template-columns: 1fr;
-    }
 }
