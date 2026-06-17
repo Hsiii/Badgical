@@ -35,7 +35,6 @@ export const logoX = 6;
 export const logoY = 6;
 export const textStart = 30;
 export const minBadgeWidth = 90;
-export const textPadding = 16;
 export const textSize = 10;
 export const frameSeconds = 2.4;
 export const minFrameDelaySeconds = 0.4;

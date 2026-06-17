@@ -12,7 +12,6 @@ import {
     logoX,
     logoY,
     minBadgeWidth,
-    textPadding,
     textSize,
     textStart,
 } from '@/components/badge-builder/constants';
@@ -60,7 +59,119 @@ export const compactColor = (color: string): string =>
     color.replace(/^#([\dA-Fa-f])\1([\dA-Fa-f])\2([\dA-Fa-f])\3$/, '#$1$2$3');
 
 export const logoTextGap = textStart - logoX - logoSize;
-export const estimatedCharacterWidth = 7;
+export const estimatedCharacterWidth = 5.9;
+export const estimatedChWidth = 6.4;
+export const badgeInlinePadding = estimatedChWidth * 2;
+
+const estimatedGlyphWidths = {
+    ' ': 3,
+    '!': 3.2,
+    '"': 4,
+    '#': 6.4,
+    '$': 6.4,
+    '%': 9.2,
+    '&': 7.4,
+    "'": 2.4,
+    '(': 3.8,
+    ')': 3.8,
+    '*': 4.8,
+    '+': 6.8,
+    ',': 3,
+    '-': 3.8,
+    '.': 3,
+    '/': 3.6,
+    '0': estimatedChWidth,
+    '1': estimatedChWidth,
+    '2': estimatedChWidth,
+    '3': estimatedChWidth,
+    '4': estimatedChWidth,
+    '5': estimatedChWidth,
+    '6': estimatedChWidth,
+    '7': estimatedChWidth,
+    '8': estimatedChWidth,
+    '9': estimatedChWidth,
+    ':': 3.2,
+    ';': 3.2,
+    '<': 6.8,
+    '=': 6.8,
+    '>': 6.8,
+    '?': 5.8,
+    '@': 10.2,
+    'A': 7.2,
+    'B': 7,
+    'C': 7.2,
+    'D': 7.4,
+    'E': 6.6,
+    'F': 6.1,
+    'G': 7.8,
+    'H': 7.4,
+    'I': 3.2,
+    'J': 5.4,
+    'K': 7,
+    'L': 5.9,
+    'M': 8.6,
+    'N': 7.4,
+    'O': 7.8,
+    'P': 6.6,
+    'Q': 7.8,
+    'R': 7.2,
+    'S': 6.6,
+    'T': 6.2,
+    'U': 7.4,
+    'V': 7.1,
+    'W': 9.4,
+    'X': 7,
+    'Y': 7,
+    'Z': 6.6,
+    '[': 3.4,
+    '\\': 3.6,
+    ']': 3.4,
+    '^': 5.6,
+    '_': 5.6,
+    '`': 3.6,
+    'a': 6,
+    'b': 6.2,
+    'c': 5.7,
+    'd': 6.2,
+    'e': 5.8,
+    'f': 3.9,
+    'g': 6.2,
+    'h': 6.2,
+    'i': 2.8,
+    'j': 3.1,
+    'k': 5.9,
+    'l': 2.8,
+    'm': 8.8,
+    'n': 6.2,
+    'o': 6.1,
+    'p': 6.2,
+    'q': 6.2,
+    'r': 4.2,
+    's': 5.2,
+    't': 4,
+    'u': 6.2,
+    'v': 5.8,
+    'w': 8.2,
+    'x': 5.8,
+    'y': 5.8,
+    'z': 5.2,
+    '{': 3.8,
+    '|': 2.8,
+    '}': 3.8,
+    '~': 6.8,
+} as const;
+
+export const getEstimatedGlyphWidth = (character: string): number => {
+    if (character in estimatedGlyphWidths) {
+        return estimatedGlyphWidths[
+            character as keyof typeof estimatedGlyphWidths
+        ];
+    }
+
+    return /[\u2E80-\u9FFF]/u.test(character)
+        ? textSize
+        : estimatedCharacterWidth;
+};
 
 export const colorizeSvgContent = (content: string, color: string): string =>
     content
@@ -230,8 +341,15 @@ export const materializeState = (
 export const getDisplayName = (state: BadgeState): string =>
     state.allCaps === true ? state.name.toUpperCase() : state.name;
 
-export const getEstimatedTextWidth = (state: BadgeState): number =>
-    Math.ceil(getDisplayName(state).length * estimatedCharacterWidth);
+export const getEstimatedTextWidth = (state: BadgeState): number => {
+    let width = 0;
+
+    for (const character of getDisplayName(state)) {
+        width += getEstimatedGlyphWidth(character);
+    }
+
+    return Math.ceil(width);
+};
 
 export const getBadgeContentWidth = (state: BadgeState): number =>
     logoSize + logoTextGap + getEstimatedTextWidth(state);
@@ -260,7 +378,9 @@ export const getBadgeWidth = (states: readonly BadgeState[]): number => {
         );
     }
 
-    return Math.max(minBadgeWidth, longestContentWidth + textPadding);
+    return Math.ceil(
+        Math.max(minBadgeWidth, longestContentWidth + badgeInlinePadding)
+    );
 };
 
 export const buildAnimationSteps = (stateCount: number): string => {
@@ -320,8 +440,9 @@ export const buildBadgeSvg = (
             const displayName = getDisplayName(state);
             const contentWidth = getBadgeContentWidth(state);
             const contentX = (width - contentWidth) / 2;
-            const textX = contentX + logoSize + logoTextGap;
-            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${inlineSvgArtwork(state.source, state.logoColor, preservesArtwork, smartRecolorBadgeColor, contentX)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${compactNumber(textX)}" y="18" text-anchor="start"${textAttributes}>${escapeXml(displayName)}</text>`;
+            const textX = logoSize + logoTextGap;
+            const centeredContent = `<g transform="translate(${compactNumber(contentX)} 0)">${inlineSvgArtwork(state.source, state.logoColor, preservesArtwork, smartRecolorBadgeColor, 0)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${compactNumber(textX)}" y="18" text-anchor="start"${textAttributes}>${escapeXml(displayName)}</text></g>`;
+            const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${centeredContent}`;
 
             if (visibleStates.length === 1) {
                 return content;
