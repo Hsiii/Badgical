@@ -102,12 +102,32 @@ export function Topbar({
 
     return (
         <header className='topbar'>
-            <a aria-label='Badgical' className='brand-badge' href='/'>
-                <span aria-hidden='true' className='brand-badge__icon'>
-                    <img alt='' src='/badgical-spark.svg' />
-                </span>
-                <span className='brand-badge__word'>Badgical</span>
-            </a>
+            <div className='brand-cluster'>
+                <a aria-label='Badgical' className='brand-badge' href='/'>
+                    <span aria-hidden='true' className='brand-badge__icon'>
+                        <img alt='' src='/badgical-spark.svg' />
+                    </span>
+                    <span className='brand-badge__word'>Badgical</span>
+                </a>
+                <a
+                    aria-label={
+                        formattedStarCount === undefined
+                            ? 'Open Badgical on GitHub'
+                            : `Open Badgical on GitHub, ${formattedStarCount} stars`
+                    }
+                    className='icon-button github-link'
+                    href={githubUrl}
+                    rel='noreferrer'
+                    target='_blank'
+                    title='GitHub'
+                >
+                    <GitHubMark />
+                    <span aria-hidden='true' className='github-star-bubble'>
+                        <Star fill='currentColor' size={14} />
+                        {formattedStarCount ?? '--'}
+                    </span>
+                </a>
+            </div>
             <h1 className='visually-hidden' id='builder-title'>
                 Badgical badge builder
             </h1>
@@ -204,24 +224,6 @@ export function Topbar({
                         </div>
                     ) : undefined}
                 </div>
-                <a
-                    aria-label={
-                        formattedStarCount === undefined
-                            ? 'Open Badgical on GitHub'
-                            : `Open Badgical on GitHub, ${formattedStarCount} stars`
-                    }
-                    className='icon-button github-link'
-                    href={githubUrl}
-                    rel='noreferrer'
-                    target='_blank'
-                    title='GitHub'
-                >
-                    <span aria-hidden='true' className='github-star-bubble'>
-                        <Star fill='currentColor' size={14} />
-                        {formattedStarCount ?? '--'}
-                    </span>
-                    <GitHubMark />
-                </a>
             </div>
         </header>
     );
