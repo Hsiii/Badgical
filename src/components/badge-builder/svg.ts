@@ -355,7 +355,11 @@ export const getEstimatedTextWidth = (state: BadgeState): number => {
 };
 
 export const getBadgeContentWidth = (state: BadgeState): number =>
-    logoSize + logoTextGap + getEstimatedTextWidth(state);
+    (state.source.trim() === '' ? 0 : logoSize) +
+    (state.source.trim() === '' || getDisplayName(state) === ''
+        ? 0
+        : logoTextGap) +
+    getEstimatedTextWidth(state);
 
 export const normalizeStates = (
     states: readonly BadgeState[]
@@ -364,10 +368,8 @@ export const normalizeStates = (
         .map((state, index) => materializeState(state, index))
         .filter(
             (state) =>
-                state.name !== '' &&
                 state.badgeColor !== '' &&
                 state.logoColor !== '' &&
-                state.source !== '' &&
                 state.textColor !== ''
         );
 
@@ -470,8 +472,25 @@ export const buildBadgeSvg = (
             const displayName = getDisplayName(state);
             const contentWidth = getBadgeContentWidth(state);
             const contentX = (width - contentWidth) / 2;
-            const textX = logoSize + logoTextGap;
-            const centeredContent = `<g transform="translate(${compactNumber(contentX)} 0)">${inlineSvgArtwork(state.source, state.logoColor, preservesArtwork, smartRecolorBadgeColor, 0)}<text fill="${escapeXml(compactColor(state.textColor))}" x="${compactNumber(textX)}" y="18" text-anchor="start"${textAttributes}>${escapeXml(displayName)}</text></g>`;
+            const hasLogo = state.source !== '';
+            const hasText = displayName !== '';
+            const textX = hasLogo ? logoSize + logoTextGap : 0;
+            const logoMarkup = hasLogo
+                ? inlineSvgArtwork(
+                      state.source,
+                      state.logoColor,
+                      preservesArtwork,
+                      smartRecolorBadgeColor,
+                      0
+                  )
+                : '';
+            const textMarkup = hasText
+                ? `<text fill="${escapeXml(compactColor(state.textColor))}" x="${compactNumber(textX)}" y="18" text-anchor="start"${textAttributes}>${escapeXml(displayName)}</text>`
+                : '';
+            const centeredContent =
+                contentWidth === 0
+                    ? ''
+                    : `<g transform="translate(${compactNumber(contentX)} 0)">${logoMarkup}${textMarkup}</g>`;
             const content = `<rect width="${width}" height="${badgeHeight}" fill="${escapeXml(compactColor(state.badgeColor))}"/>${centeredContent}`;
 
             if (visibleStates.length === 1) {

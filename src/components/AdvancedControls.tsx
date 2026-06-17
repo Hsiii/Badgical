@@ -15,8 +15,6 @@ import type {
     EditorDraft,
     HsvColor,
     RgbColor,
-    SelectionStatus,
-    SvglResult,
     VariantMode,
 } from '@/components/badge-builder/types';
 import type { UiCopy } from '@/components/i18n';
@@ -38,11 +36,8 @@ interface AdvancedControlsProps {
     readonly draftPrimaryHsv: HsvColor;
     readonly draftPrimaryRgb: RgbColor | undefined;
     readonly editingFrameId: string | undefined;
-    readonly hasActiveDraft: boolean;
     readonly openSourceDialog: () => void;
     readonly selectColorMode: (mode: VariantMode) => void;
-    readonly selectedResult: SvglResult | undefined;
-    readonly selectionStatus: SelectionStatus;
     readonly setDraft: Dispatch<SetStateAction<EditorDraft>>;
     readonly statesLength: number;
     readonly updateColorPadFromPoint: (
@@ -99,11 +94,8 @@ export function AdvancedControls({
     draftPrimaryHsv,
     draftPrimaryRgb,
     editingFrameId,
-    hasActiveDraft,
     openSourceDialog,
     selectColorMode,
-    selectedResult,
-    selectionStatus,
     setDraft,
     statesLength,
     updateColorPadFromPoint,
@@ -424,40 +416,30 @@ export function AdvancedControls({
                             aria-label={copy.badgeVariantsLabel}
                             className='variant-options'
                         >
-                            {hasActiveDraft ? (
-                                variantPreviews.map((variant) => (
-                                    <button
-                                        aria-label={copy.selectVariant(
-                                            variant.label
-                                        )}
-                                        aria-pressed={
-                                            colorMode === variant.mode
-                                        }
-                                        className='variant-card'
-                                        key={variant.mode}
-                                        onClick={() => {
-                                            selectColorMode(variant.mode);
-                                        }}
-                                        type='button'
-                                    >
-                                        <img alt='' src={variant.source} />
-                                        <span>{variant.label}</span>
-                                    </button>
-                                ))
-                            ) : (
-                                <div className='empty-state advanced-preview-empty'>
-                                    <p>{copy.noVariantPreview}</p>
-                                </div>
-                            )}
+                            {variantPreviews.map((variant) => (
+                                <button
+                                    aria-label={copy.selectVariant(
+                                        variant.label
+                                    )}
+                                    aria-pressed={colorMode === variant.mode}
+                                    className='variant-card'
+                                    key={variant.mode}
+                                    onClick={() => {
+                                        selectColorMode(variant.mode);
+                                    }}
+                                    type='button'
+                                >
+                                    <img alt='' src={variant.source} />
+                                    <span>{variant.label}</span>
+                                </button>
+                            ))}
                         </div>
 
                         <button
                             className='button button--primary add-frame'
                             disabled={
                                 editingFrameId === undefined &&
-                                (selectedResult === undefined ||
-                                    selectionStatus !== 'ready' ||
-                                    statesLength >= maxFrames)
+                                statesLength >= maxFrames
                             }
                             onClick={addDraftFrame}
                             type='button'

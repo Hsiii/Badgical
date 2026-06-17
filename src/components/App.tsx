@@ -108,8 +108,7 @@ export function App({
     const [selectedResult, setSelectedResult] = useState<
         SvglResult | undefined
     >(undefined);
-    const [selectionStatus, setSelectionStatus] =
-        useState<SelectionStatus>('idle');
+    const [, setSelectionStatus] = useState<SelectionStatus>('idle');
     const [draft, setDraft] = useState(defaultBadgeDraft);
     const [brandColor, setBrandColor] = useState(defaultBadgeDraft.badgeColor);
     const [colorMode, setColorMode] = useState<ColorMode>('brand');
@@ -157,13 +156,9 @@ export function App({
         },
         0
     );
-    const hasActiveDraft =
-        editingFrameId !== undefined ||
-        (selectedResult !== undefined && selectionStatus === 'ready');
-    const draftLogoSource =
-        hasActiveDraft && isSvgSource(materializedDraft.source)
-            ? toDataUri(materializedDraft.source)
-            : undefined;
+    const draftLogoSource = isSvgSource(materializedDraft.source)
+        ? toDataUri(materializedDraft.source)
+        : undefined;
     useEffect(() => {
         const systemThemeQuery = globalThis.matchMedia(
             '(prefers-color-scheme: dark)'
@@ -655,10 +650,7 @@ export function App({
     };
 
     const addDraftFrame = (): void => {
-        if (
-            editingFrameId === undefined &&
-            (selectedResult === undefined || states.length >= maxFrames)
-        ) {
+        if (editingFrameId === undefined && states.length >= maxFrames) {
             return;
         }
 
@@ -885,11 +877,8 @@ export function App({
                                     draftPrimaryHsv={draftPrimaryHsv}
                                     draftPrimaryRgb={draftPrimaryRgb}
                                     editingFrameId={editingFrameId}
-                                    hasActiveDraft={hasActiveDraft}
                                     openSourceDialog={openSourceDialog}
                                     selectColorMode={selectColorMode}
-                                    selectedResult={selectedResult}
-                                    selectionStatus={selectionStatus}
                                     setDraft={setDraft}
                                     statesLength={states.length}
                                     updateColorPadFromPoint={
