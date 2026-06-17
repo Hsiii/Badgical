@@ -225,47 +225,59 @@ export function AdvancedControls({
                                 <div className='color-control__rgb-row'>
                                     <span>RGB</span>
                                     <div className='color-control__rgb-group'>
-                                        <input
-                                            aria-label='Primary red'
-                                            max='255'
-                                            min='0'
-                                            onChange={(event) => {
-                                                updateDraftColorChannel(
-                                                    'red',
-                                                    event.target.value
-                                                );
-                                            }}
-                                            type='number'
-                                            value={draftPrimaryRgb?.red ?? 0}
-                                        />
-                                        <span>,</span>
-                                        <input
-                                            aria-label='Primary green'
-                                            max='255'
-                                            min='0'
-                                            onChange={(event) => {
-                                                updateDraftColorChannel(
-                                                    'green',
-                                                    event.target.value
-                                                );
-                                            }}
-                                            type='number'
-                                            value={draftPrimaryRgb?.green ?? 0}
-                                        />
-                                        <span>,</span>
-                                        <input
-                                            aria-label='Primary blue'
-                                            max='255'
-                                            min='0'
-                                            onChange={(event) => {
-                                                updateDraftColorChannel(
-                                                    'blue',
-                                                    event.target.value
-                                                );
-                                            }}
-                                            type='number'
-                                            value={draftPrimaryRgb?.blue ?? 0}
-                                        />
+                                        <span className='color-control__rgb-slot'>
+                                            <input
+                                                aria-label='Primary red'
+                                                max='255'
+                                                min='0'
+                                                onChange={(event) => {
+                                                    updateDraftColorChannel(
+                                                        'red',
+                                                        event.target.value
+                                                    );
+                                                }}
+                                                type='number'
+                                                value={
+                                                    draftPrimaryRgb?.red ?? 0
+                                                }
+                                            />
+                                            <span>,</span>
+                                        </span>
+                                        <span className='color-control__rgb-slot'>
+                                            <input
+                                                aria-label='Primary green'
+                                                max='255'
+                                                min='0'
+                                                onChange={(event) => {
+                                                    updateDraftColorChannel(
+                                                        'green',
+                                                        event.target.value
+                                                    );
+                                                }}
+                                                type='number'
+                                                value={
+                                                    draftPrimaryRgb?.green ?? 0
+                                                }
+                                            />
+                                            <span>,</span>
+                                        </span>
+                                        <span className='color-control__rgb-slot'>
+                                            <input
+                                                aria-label='Primary blue'
+                                                max='255'
+                                                min='0'
+                                                onChange={(event) => {
+                                                    updateDraftColorChannel(
+                                                        'blue',
+                                                        event.target.value
+                                                    );
+                                                }}
+                                                type='number'
+                                                value={
+                                                    draftPrimaryRgb?.blue ?? 0
+                                                }
+                                            />
+                                        </span>
                                     </div>
                                 </div>
 

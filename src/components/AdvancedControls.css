@@ -275,8 +275,8 @@
 
 .color-control__rgb-group {
     display: grid;
-    grid-template-columns: 1fr max-content 1fr max-content 1fr;
-    gap: var(--space-4);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
     align-items: center;
     min-width: 0;
     min-height: var(--space-40);
@@ -289,21 +289,34 @@
 .color-control__rgb-row > span,
 .color-control__hex-row > span,
 .color-control__hue-row > span,
-.color-control__rgb-group span {
+.color-control__rgb-slot > span {
     color: var(--clr-text-muted);
     font: var(--font-ui-label);
     white-space: nowrap;
 }
 
+.color-control__rgb-slot {
+    display: inline-grid;
+    grid-template-columns: minmax(0, max-content) max-content;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+}
+
+.color-control__rgb-slot:last-child {
+    grid-template-columns: minmax(0, max-content);
+}
+
 .field .color-control__rgb-group input:not([type='color']):not([type='range']) {
-    width: 100%;
+    width: calc(var(--space-48) - var(--space-16));
     min-width: 0;
     min-height: calc(var(--space-32) + var(--space-4));
     padding: 0;
     border: 0;
     background: transparent;
     color: var(--clr-text);
-    text-align: center;
+    text-align: right;
 }
 
 .variant-options {
