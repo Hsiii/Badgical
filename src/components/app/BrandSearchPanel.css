@@ -7,7 +7,7 @@
 .search-panel {
     grid-template-rows: auto minmax(0, 1fr);
     gap: var(--space-8);
-    padding: var(--space-16) 0 0;
+    padding: var(--space-16) var(--space-16) 0;
 }
 
 .search-shell {
@@ -16,7 +16,6 @@
     gap: var(--space-12);
     align-items: center;
     min-height: var(--space-48);
-    margin: 0 var(--space-16);
     padding: 0 var(--space-12);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
@@ -95,13 +94,13 @@
     gap: var(--space-8);
     align-content: start;
     min-height: 100%;
-    padding: 0 var(--space-16) var(--space-16);
+    padding-bottom: var(--space-16);
 }
 
 .brand-result {
     display: grid;
     grid-template-rows: var(--space-48) auto auto;
-    gap: var(--space-4);
+    gap: var(--space-16);
     align-content: center;
     justify-items: center;
     min-height: 128px;
@@ -134,8 +133,6 @@
 }
 
 .brand-result span {
-    margin-top: var(--space-12);
-    margin-bottom: 0;
     font: var(--font-ui-caption);
 }
 
