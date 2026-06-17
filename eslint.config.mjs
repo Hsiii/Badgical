@@ -5,6 +5,7 @@ export default [
 
     {
         ignores: [
+            '.next/**',
             'dist/**',
             'node_modules/**',
             'packages/create-hsi-app/**',
@@ -27,6 +28,14 @@ export default [
                     allow: ['**/*.css'],
                 },
             ],
+        },
+    },
+
+    {
+        files: ['src/app/**/*.tsx'],
+        rules: {
+            'import-x/no-default-export': 'off',
+            'n/file-extension-in-import': 'off',
         },
     },
 ];

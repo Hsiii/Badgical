@@ -4,7 +4,7 @@
 
 # Badgical
 
-Created from the frontend template and ready to be turned into the animated badge builder.
+Animated SVG badge builder built with Next.js App Router.
 
 ## Install
 

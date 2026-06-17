@@ -4,7 +4,7 @@
         sans-serif;
     --ff-display:
         'Google Sans', 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
-    --ff-logo: 'Mansalva', var(--ff-display);
+    --ff-logo: var(--font-mansalva), var(--ff-display);
     --ff-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 
     --fs-small: 0.875rem;
