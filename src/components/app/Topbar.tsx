@@ -1,7 +1,8 @@
 import './Topbar.css';
 
+import { useEffect, useState } from 'react';
 import type { Dispatch, JSX, SetStateAction } from 'react';
-import { ChevronDown, Languages, SunMoon } from 'lucide-react';
+import { ChevronDown, Languages, Star, SunMoon } from 'lucide-react';
 
 import { GitHubMark } from '@/components/app/GitHubMark';
 import {
@@ -28,6 +29,27 @@ interface TopbarProps {
     readonly themePreference: ThemePreference;
 }
 
+const githubRepositoryApiUrl = 'https://api.github.com/repos/Hsiii/Badgical';
+
+interface GitHubRepositoryPayload {
+    readonly stargazers_count: number;
+}
+
+function isGitHubRepositoryPayload(
+    payload: unknown
+): payload is GitHubRepositoryPayload {
+    return (
+        typeof payload === 'object' &&
+        payload !== null &&
+        'stargazers_count' in payload &&
+        typeof payload.stargazers_count === 'number'
+    );
+}
+
+function formatStarCount(starCount: number): string {
+    return new Intl.NumberFormat('en-US').format(starCount);
+}
+
 export function Topbar({
     languagePreference,
     openPreferenceMenu,
@@ -36,6 +58,48 @@ export function Topbar({
     setThemePreference,
     themePreference,
 }: TopbarProps): JSX.Element {
+    const [starCount, setStarCount] = useState<number | undefined>(undefined);
+
+    useEffect(() => {
+        const abortController = new AbortController();
+
+        fetch(githubRepositoryApiUrl, {
+            headers: {
+                Accept: 'application/vnd.github+json',
+            },
+            signal: abortController.signal,
+        })
+            .then(async (response) => {
+                const payload = (await response.json()) as unknown;
+
+                if (!response.ok || !isGitHubRepositoryPayload(payload)) {
+                    throw new Error('GitHub repository payload invalid');
+                }
+
+                return payload.stargazers_count;
+            })
+            .then((nextStarCount) => {
+                setStarCount(nextStarCount);
+            })
+            .catch((error: unknown) => {
+                if (
+                    error instanceof DOMException &&
+                    error.name === 'AbortError'
+                ) {
+                    return;
+                }
+
+                setStarCount(undefined);
+            });
+
+        return (): void => {
+            abortController.abort();
+        };
+    }, []);
+
+    const formattedStarCount =
+        starCount === undefined ? undefined : formatStarCount(starCount);
+
     return (
         <header className='topbar'>
             <a aria-label='Badgical' className='brand-badge' href='/'>
@@ -141,13 +205,21 @@ export function Topbar({
                     ) : undefined}
                 </div>
                 <a
-                    aria-label='Open Badgical on GitHub'
-                    className='icon-button'
+                    aria-label={
+                        formattedStarCount === undefined
+                            ? 'Open Badgical on GitHub'
+                            : `Open Badgical on GitHub, ${formattedStarCount} stars`
+                    }
+                    className='icon-button github-link'
                     href={githubUrl}
                     rel='noreferrer'
                     target='_blank'
                     title='GitHub'
                 >
+                    <span aria-hidden='true' className='github-star-bubble'>
+                        <Star fill='currentColor' size={14} />
+                        {formattedStarCount ?? '--'}
+                    </span>
                     <GitHubMark />
                 </a>
             </div>
