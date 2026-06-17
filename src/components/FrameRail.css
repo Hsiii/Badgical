@@ -111,7 +111,6 @@
     border: 1px solid transparent;
     border-radius: var(--space-8);
     animation: slide-frame 180ms ease both;
-    cursor: pointer;
 }
 
 .frame-card[aria-current='true'] {
@@ -119,7 +118,16 @@
     background: var(--clr-accent-soft);
 }
 
-.frame-card > img {
+.frame-card__edit {
+    display: grid;
+    min-width: 0;
+    min-height: var(--space-32);
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.frame-card__edit img {
     justify-self: start;
     max-width: 100%;
     height: 28px;

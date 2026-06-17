@@ -15,12 +15,12 @@ export function OutputPreview({
     setExportDialogOpen,
 }: OutputPreviewProps): JSX.Element {
     return (
-        <section aria-label='Preview' className='output'>
+        <section aria-labelledby='output-title' className='output'>
             <div className='panel-heading'>
-                <h2>The Badgic</h2>
+                <h2 id='output-title'>Badge Preview</h2>
             </div>
             <div className='output__showcase'>
-                <div className='preview'>
+                <div aria-live='polite' className='preview'>
                     {previewSource === '' ? (
                         <span>Add frames to preview the animated badge.</span>
                     ) : (

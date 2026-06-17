@@ -83,6 +83,7 @@ export function BrandSearchPanel({
 
             <div
                 aria-busy={resultsAreLoading}
+                aria-live='polite'
                 className='brand-results'
                 ref={(element) => {
                     setResultsElement(element ?? undefined);
@@ -109,7 +110,10 @@ export function BrandSearchPanel({
                                 }}
                                 type='button'
                             >
-                                <img alt='' src={getSvglRoute(result.route)} />
+                                <img
+                                    alt={`${result.title} logo`}
+                                    src={getSvglRoute(result.route)}
+                                />
                                 <span>{result.title}</span>
                             </button>
                         ))}

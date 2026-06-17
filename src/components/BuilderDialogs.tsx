@@ -57,6 +57,7 @@ export function BuilderDialogs({
             {deleteCandidateId === undefined ? undefined : (
                 <div className='confirm-backdrop' role='presentation'>
                     <section
+                        aria-describedby='delete-frame-description'
                         aria-labelledby='delete-frame-title'
                         aria-modal='true'
                         className='confirm-dialog'
@@ -65,7 +66,9 @@ export function BuilderDialogs({
                         <div className='panel-heading'>
                             <h2 id='delete-frame-title'>Delete Frame</h2>
                         </div>
-                        <p>This removes the frame from the badge animation.</p>
+                        <p id='delete-frame-description'>
+                            This removes the frame from the badge animation.
+                        </p>
                         <div className='confirm-dialog__actions'>
                             <button
                                 className='button button--secondary'
@@ -91,6 +94,7 @@ export function BuilderDialogs({
             {sourceDialogOpen ? (
                 <div className='confirm-backdrop' role='presentation'>
                     <section
+                        aria-describedby='source-dialog-description'
                         aria-labelledby='source-dialog-title'
                         aria-modal='true'
                         className='confirm-dialog source-dialog'
@@ -99,6 +103,12 @@ export function BuilderDialogs({
                         <div className='panel-heading'>
                             <h2 id='source-dialog-title'>Edit SVG Source</h2>
                         </div>
+                        <p
+                            className='visually-hidden'
+                            id='source-dialog-description'
+                        >
+                            Edit the raw SVG source used for this badge frame.
+                        </p>
                         <label className='field source-dialog__field'>
                             <textarea
                                 aria-label='Logo SVG'
@@ -133,6 +143,7 @@ export function BuilderDialogs({
             {exportDialogOpen ? (
                 <div className='confirm-backdrop' role='presentation'>
                     <section
+                        aria-describedby='export-dialog-description'
                         aria-labelledby='export-dialog-title'
                         aria-modal='true'
                         className='confirm-dialog export-dialog'
@@ -167,7 +178,10 @@ export function BuilderDialogs({
                             </label>
                         </div>
 
-                        <p className='export-guide'>
+                        <p
+                            className='export-guide'
+                            id='export-dialog-description'
+                        >
                             Download the SVG and put it in{' '}
                             <code>{exportPath}</code> in{' '}
                             <code>{normalizedExportRepo}</code>. Then put the

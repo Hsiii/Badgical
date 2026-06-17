@@ -143,38 +143,28 @@ export function FrameRail({
                             aria-current={
                                 editingFrameId === state.id ? 'true' : undefined
                             }
-                            aria-label={`Edit ${materializedState.name}`}
                             className='frame-card'
                             key={state.id}
-                            onClick={() => {
-                                editFrame(state);
-                            }}
-                            onKeyDown={(
-                                event: KeyboardEvent<HTMLDivElement>
-                            ) => {
-                                if (
-                                    event.key !== 'Enter' &&
-                                    event.key !== ' '
-                                ) {
-                                    return;
-                                }
-
-                                event.preventDefault();
-                                editFrame(state);
-                            }}
-                            role='button'
-                            tabIndex={0}
                         >
-                            <img
-                                alt={`${materializedState.name} badge`}
-                                src={frameBadge}
-                            />
+                            <button
+                                aria-label={`Edit ${materializedState.name}`}
+                                className='frame-card__edit'
+                                onClick={() => {
+                                    editFrame(state);
+                                }}
+                                type='button'
+                            >
+                                <img
+                                    alt=''
+                                    aria-hidden='true'
+                                    src={frameBadge}
+                                />
+                            </button>
                             <div className='frame-card__actions'>
                                 <button
                                     aria-label={`Delete ${materializedState.name}`}
                                     className='frame-card__button'
-                                    onClick={(event) => {
-                                        event.stopPropagation();
+                                    onClick={() => {
                                         setDeleteCandidateId(state.id);
                                     }}
                                     title='Delete frame'
