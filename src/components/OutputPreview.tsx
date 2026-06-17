@@ -4,7 +4,6 @@ import type { Dispatch, JSX, KeyboardEvent, SetStateAction } from 'react';
 import { ChevronDown, Download, Timer, WandSparkles } from 'lucide-react';
 
 import {
-    exportFileName,
     maxAnimationStartDelaySeconds,
     maxFrameDelaySeconds,
     maxTransitionSeconds,
@@ -23,6 +22,7 @@ interface OutputPreviewProps {
     readonly animationType: AnimationType;
     readonly badgeSvg: string;
     readonly copy: UiCopy;
+    readonly downloadFileName: string;
     readonly frameLengthSeconds: number;
     readonly frameSettingsOpen: boolean;
     readonly downloadSvg: () => void;
@@ -46,6 +46,7 @@ export function OutputPreview({
     animationType,
     badgeSvg,
     copy,
+    downloadFileName,
     frameLengthSeconds,
     frameSettingsOpen,
     downloadSvg,
@@ -269,11 +270,11 @@ export function OutputPreview({
 
                 <div className='output__actions'>
                     <button
-                        aria-label={copy.downloadFile(exportFileName)}
+                        aria-label={copy.downloadFile(downloadFileName)}
                         className='button button--primary'
                         disabled={badgeSvg === ''}
                         onClick={downloadSvg}
-                        title={copy.downloadFile(exportFileName)}
+                        title={copy.downloadFile(downloadFileName)}
                         type='button'
                     >
                         <Download aria-hidden='true' size={16} />

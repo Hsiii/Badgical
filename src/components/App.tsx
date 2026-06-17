@@ -97,6 +97,27 @@ interface AppProps {
 const serializeSvgElement = (element: SVGSVGElement): string =>
     ensureSvgNamespace(new XMLSerializer().serializeToString(element));
 
+const getCombinationFileName = (states: readonly BadgeState[]): string => {
+    const combinationSlug = states
+        .map((state) => materializeState(state, 0).name)
+        .map((name) =>
+            name
+                .normalize('NFKD')
+                .toLowerCase()
+                .replaceAll(/[\u0027\u2019]/gu, '')
+                .replaceAll(/[^\p{Letter}\p{Number}]+/gu, '-')
+                .replaceAll(/^-|-$/gu, '')
+        )
+        .filter((name) => name !== '')
+        .join('-')
+        .slice(0, 80)
+        .replaceAll(/-$/gu, '');
+
+    return combinationSlug === ''
+        ? exportFileName
+        : `${combinationSlug}-animated-badge.svg`;
+};
+
 export function App({
     initialLanguagePreference,
     initialLanguageResolved,
@@ -174,6 +195,10 @@ export function App({
     const previewSource = useMemo(
         () => (badgeSvg === '' ? '' : toDataUri(badgeSvg)),
         [badgeSvg]
+    );
+    const downloadFileName = useMemo(
+        () => getCombinationFileName(states),
+        [states]
     );
     const materializedDraft = materializeState(
         {
@@ -893,7 +918,7 @@ export function App({
         const link = document.createElement('a');
 
         link.href = url;
-        link.download = exportFileName;
+        link.download = downloadFileName;
         document.body.append(link);
         link.click();
         link.remove();
@@ -1058,6 +1083,7 @@ export function App({
                                 animationType={animationType}
                                 badgeSvg={badgeSvg}
                                 copy={copy}
+                                downloadFileName={downloadFileName}
                                 downloadSvg={downloadSvg}
                                 frameLengthSeconds={frameLengthSeconds}
                                 frameSettingsOpen={frameSettingsOpen}
