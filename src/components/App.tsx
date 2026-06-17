@@ -4,7 +4,7 @@ import './App.css';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
-import { Copy, Download, MoreHorizontal, Pencil, Plus, X } from 'lucide-react';
+import { Copy, Download, Pencil, Plus } from 'lucide-react';
 
 import {
     clampUnit,
@@ -57,6 +57,7 @@ import type {
     VariantMode,
 } from '@/components/badge-builder/types';
 import { BrandSearchPanel } from '@/components/BrandSearchPanel';
+import { FrameRail } from '@/components/FrameRail';
 import { OutputPreview } from '@/components/OutputPreview';
 import { Topbar } from '@/components/Topbar';
 
@@ -1153,160 +1154,18 @@ export function App(): JSX.Element {
                             aria-labelledby='frames-title'
                             className='frame-rail'
                         >
-                            <section className='frames'>
-                                <div className='panel-heading'>
-                                    <div className='panel-title-row'>
-                                        <h2 id='frames-title'>Frames</h2>
-                                        <span className='panel-meta'>
-                                            {states.length}/{maxFrames}
-                                        </span>
-                                    </div>
-                                    <div className='panel-menu'>
-                                        <button
-                                            aria-expanded={frameSettingsOpen}
-                                            aria-label='Frame settings'
-                                            className='icon-button panel-menu__button'
-                                            onClick={() => {
-                                                setFrameSettingsOpen(
-                                                    (isOpen) => !isOpen
-                                                );
-                                            }}
-                                            title='Frame settings'
-                                            type='button'
-                                        >
-                                            <MoreHorizontal
-                                                aria-hidden='true'
-                                                size={20}
-                                            />
-                                        </button>
-                                        {frameSettingsOpen ? (
-                                            <div className='settings-popover'>
-                                                <label className='field'>
-                                                    <span>Animation delay</span>
-                                                    <input
-                                                        max={
-                                                            maxFrameDelaySeconds
-                                                        }
-                                                        min={
-                                                            minFrameDelaySeconds
-                                                        }
-                                                        onChange={(event) => {
-                                                            updateFrameDelaySeconds(
-                                                                event.target
-                                                                    .value
-                                                            );
-                                                        }}
-                                                        step='0.2'
-                                                        type='range'
-                                                        value={
-                                                            frameDelaySeconds
-                                                        }
-                                                    />
-                                                </label>
-                                                <label className='settings-value-row'>
-                                                    <input
-                                                        aria-label='Animation delay seconds'
-                                                        max={
-                                                            maxFrameDelaySeconds
-                                                        }
-                                                        min={
-                                                            minFrameDelaySeconds
-                                                        }
-                                                        onChange={(event) => {
-                                                            updateFrameDelaySeconds(
-                                                                event.target
-                                                                    .value
-                                                            );
-                                                        }}
-                                                        step='0.2'
-                                                        type='number'
-                                                        value={
-                                                            frameDelaySeconds
-                                                        }
-                                                    />
-                                                    <span>Sec</span>
-                                                </label>
-                                            </div>
-                                        ) : undefined}
-                                    </div>
-                                </div>
-
-                                <div
-                                    className={
-                                        states.length === 0
-                                            ? 'frame-list frame-list--empty'
-                                            : 'frame-list'
-                                    }
-                                >
-                                    {states.length === 0 ? (
-                                        <div className='empty-state frame-list__empty'>
-                                            <p>
-                                                Pick a brand and add the first
-                                                frame.
-                                            </p>
-                                        </div>
-                                    ) : undefined}
-                                    {states.map((state, index) => {
-                                        const materializedState =
-                                            materializeState(state, index);
-                                        const frameBadge = toDataUri(
-                                            buildSingleBadgeSvg(
-                                                materializedState,
-                                                index
-                                            )
-                                        );
-
-                                        return (
-                                            <div
-                                                aria-current={
-                                                    editingFrameId === state.id
-                                                        ? 'true'
-                                                        : undefined
-                                                }
-                                                className='frame-card'
-                                                key={state.id}
-                                            >
-                                                <img
-                                                    alt={`${materializedState.name} badge`}
-                                                    src={frameBadge}
-                                                />
-                                                <div className='frame-card__actions'>
-                                                    <button
-                                                        aria-label={`Edit ${materializedState.name}`}
-                                                        className='frame-card__button'
-                                                        onClick={() => {
-                                                            editFrame(state);
-                                                        }}
-                                                        title='Edit frame'
-                                                        type='button'
-                                                    >
-                                                        <Pencil
-                                                            aria-hidden='true'
-                                                            size={16}
-                                                        />
-                                                    </button>
-                                                    <button
-                                                        aria-label={`Delete ${materializedState.name}`}
-                                                        className='frame-card__button'
-                                                        onClick={() => {
-                                                            setDeleteCandidateId(
-                                                                state.id
-                                                            );
-                                                        }}
-                                                        title='Delete frame'
-                                                        type='button'
-                                                    >
-                                                        <X
-                                                            aria-hidden='true'
-                                                            size={16}
-                                                        />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </section>
+                            <FrameRail
+                                editFrame={editFrame}
+                                editingFrameId={editingFrameId}
+                                frameDelaySeconds={frameDelaySeconds}
+                                frameSettingsOpen={frameSettingsOpen}
+                                setDeleteCandidateId={setDeleteCandidateId}
+                                setFrameSettingsOpen={setFrameSettingsOpen}
+                                states={states}
+                                updateFrameDelaySeconds={
+                                    updateFrameDelaySeconds
+                                }
+                            />
 
                             <OutputPreview
                                 badgeSvg={badgeSvg}
