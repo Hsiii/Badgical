@@ -163,7 +163,7 @@
     }
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1120px) {
     .frame-list {
         max-height: calc(var(--space-48) * 8);
     }
