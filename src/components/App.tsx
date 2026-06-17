@@ -736,7 +736,11 @@ export function App({
         );
     };
 
-    const moveFrame = (draggedFrameId: string, targetFrameId: string): void => {
+    const moveFrame = (
+        draggedFrameId: string,
+        targetFrameId: string,
+        dropPosition: 'before' | 'after' = 'before'
+    ): void => {
         if (draggedFrameId === targetFrameId) {
             return;
         }
@@ -755,8 +759,21 @@ export function App({
 
             const nextStates = [...currentStates];
             const [draggedState] = nextStates.splice(draggedIndex, 1);
+            const targetInsertionIndex = nextStates.findIndex(
+                (state) => state.id === targetFrameId
+            );
 
-            nextStates.splice(targetIndex, 0, draggedState);
+            if (targetInsertionIndex === -1) {
+                return currentStates;
+            }
+
+            nextStates.splice(
+                dropPosition === 'after'
+                    ? targetInsertionIndex + 1
+                    : targetInsertionIndex,
+                0,
+                draggedState
+            );
 
             return nextStates;
         });

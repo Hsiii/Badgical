@@ -17,10 +17,16 @@ interface FrameRailProps {
     readonly copy: UiCopy;
     readonly editFrame: (state: BadgeState) => void;
     readonly editingFrameId: string | undefined;
-    readonly moveFrame: (draggedFrameId: string, targetFrameId: string) => void;
+    readonly moveFrame: (
+        draggedFrameId: string,
+        targetFrameId: string,
+        dropPosition?: DropPosition
+    ) => void;
     readonly setDeleteCandidateId: (id: string | undefined) => void;
     readonly states: readonly BadgeState[];
 }
+
+type DropPosition = 'before' | 'after';
 
 const getFrameIdFromPoint = (
     clientX: number,
@@ -31,6 +37,23 @@ const getFrameIdFromPoint = (
         ?.closest<HTMLElement>('[data-frame-id]');
 
     return frameElement?.dataset.frameId;
+};
+
+const getFrameDropPositionFromPoint = (
+    clientX: number,
+    clientY: number
+): DropPosition | undefined => {
+    const frameElement = document
+        .elementFromPoint(clientX, clientY)
+        ?.closest<HTMLElement>('[data-frame-id]');
+
+    if (frameElement === undefined || frameElement === null) {
+        return undefined;
+    }
+
+    const frameRect = frameElement.getBoundingClientRect();
+
+    return clientY < frameRect.top + frameRect.height / 2 ? 'before' : 'after';
 };
 
 export function FrameRail({
@@ -48,11 +71,15 @@ export function FrameRail({
     const [dropTargetFrameId, setDropTargetFrameId] = useState<
         string | undefined
     >(undefined);
+    const [dropPosition, setDropPosition] = useState<DropPosition | undefined>(
+        undefined
+    );
 
     const clearDragState = (): void => {
         draggedFrameIdReference.current = undefined;
         setDraggedFrameId(undefined);
         setDropTargetFrameId(undefined);
+        setDropPosition(undefined);
     };
 
     const updateDropTargetFromPoint = (
@@ -68,22 +95,30 @@ export function FrameRail({
             targetFrameId === currentDraggedFrameId
         ) {
             setDropTargetFrameId(undefined);
+            setDropPosition(undefined);
             return;
         }
 
         setDropTargetFrameId(targetFrameId);
+        setDropPosition(getFrameDropPositionFromPoint(clientX, clientY));
     };
 
     const commitDropFromPoint = (clientX: number, clientY: number): void => {
         const targetFrameId = getFrameIdFromPoint(clientX, clientY);
         const currentDraggedFrameId = draggedFrameIdReference.current;
+        const currentDropPosition =
+            getFrameDropPositionFromPoint(clientX, clientY) ?? dropPosition;
 
         if (
             currentDraggedFrameId !== undefined &&
             targetFrameId !== undefined &&
             targetFrameId !== currentDraggedFrameId
         ) {
-            moveFrame(currentDraggedFrameId, targetFrameId);
+            moveFrame(
+                currentDraggedFrameId,
+                targetFrameId,
+                currentDropPosition
+            );
         }
 
         clearDragState();
@@ -178,6 +213,11 @@ export function FrameRail({
                                     : undefined
                             }
                             data-frame-id={state.id}
+                            data-insert-position={
+                                dropTargetFrameId === state.id
+                                    ? dropPosition
+                                    : undefined
+                            }
                             key={state.id}
                         >
                             <button
