@@ -111,6 +111,14 @@ textarea {
     margin-top: calc(var(--space-4) * -1);
 }
 
+.topbar-actions {
+    display: inline-flex;
+    gap: var(--space-8);
+    align-items: center;
+    justify-content: end;
+    min-width: 0;
+}
+
 .builder__workspace {
     min-height: 0;
     padding: 0 var(--space-16) var(--space-16);
@@ -340,9 +348,31 @@ textarea {
     text-decoration: underline;
 }
 
+.select-control {
+    position: relative;
+    display: inline-grid;
+    align-items: center;
+    min-width: 0;
+}
+
+.select-control svg {
+    position: absolute;
+    pointer-events: none;
+    color: var(--clr-text-muted);
+}
+
+.select-control__icon {
+    left: var(--space-8);
+}
+
+.select-control__chevron {
+    right: var(--space-8);
+}
+
 .toolbar-select {
+    appearance: none;
     min-height: var(--space-32);
-    padding: 0 var(--space-8);
+    padding: 0 var(--space-32);
     border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
@@ -952,8 +982,6 @@ textarea {
     }
 
     .search-actions {
-        display: grid;
-        grid-template-columns: repeat(3, max-content);
         justify-content: end;
     }
 

@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import {
+    ChevronDown,
     Copy,
     Download,
+    Languages,
     MoreHorizontal,
     Pencil,
     Plus,
     Search,
+    SunMoon,
     X,
 } from 'lucide-react';
 
@@ -1447,16 +1450,69 @@ export function App(): JSX.Element {
                     <h1 className='visually-hidden' id='builder-title'>
                         Badgical badge builder
                     </h1>
-                    <a
-                        aria-label='Open Badgical on GitHub'
-                        className='icon-button'
-                        href={githubUrl}
-                        rel='noreferrer'
-                        target='_blank'
-                        title='GitHub'
-                    >
-                        <GitHubMark />
-                    </a>
+                    <div className='topbar-actions'>
+                        <label className='select-control'>
+                            <Languages
+                                aria-hidden='true'
+                                className='select-control__icon'
+                                size={16}
+                            />
+                            <select
+                                aria-label='Language'
+                                className='toolbar-select'
+                                onChange={(event) => {
+                                    setLanguagePreference(
+                                        event.target.value as LanguagePreference
+                                    );
+                                }}
+                                value={languagePreference}
+                            >
+                                <option value='en'>EN</option>
+                                <option value='zh-Hant'>ZH-TW</option>
+                            </select>
+                            <ChevronDown
+                                aria-hidden='true'
+                                className='select-control__chevron'
+                                size={16}
+                            />
+                        </label>
+                        <label className='select-control'>
+                            <SunMoon
+                                aria-hidden='true'
+                                className='select-control__icon'
+                                size={16}
+                            />
+                            <select
+                                aria-label='Theme'
+                                className='toolbar-select'
+                                onChange={(event) => {
+                                    setThemePreference(
+                                        event.target.value as ThemePreference
+                                    );
+                                }}
+                                value={themePreference}
+                            >
+                                <option value='light'>Light</option>
+                                <option value='dark'>Dark</option>
+                                <option value='system'>System</option>
+                            </select>
+                            <ChevronDown
+                                aria-hidden='true'
+                                className='select-control__chevron'
+                                size={16}
+                            />
+                        </label>
+                        <a
+                            aria-label='Open Badgical on GitHub'
+                            className='icon-button'
+                            href={githubUrl}
+                            rel='noreferrer'
+                            target='_blank'
+                            title='GitHub'
+                        >
+                            <GitHubMark />
+                        </a>
+                    </div>
                 </header>
 
                 <div className='builder__workspace'>
@@ -1519,43 +1575,6 @@ export function App(): JSX.Element {
                                             >
                                                 Powered by <span>Svgl</span>
                                             </a>
-                                            <select
-                                                aria-label='Language'
-                                                className='toolbar-select'
-                                                onChange={(event) => {
-                                                    setLanguagePreference(
-                                                        event.target
-                                                            .value as LanguagePreference
-                                                    );
-                                                }}
-                                                value={languagePreference}
-                                            >
-                                                <option value='en'>EN</option>
-                                                <option value='zh-Hant'>
-                                                    ZH-TW
-                                                </option>
-                                            </select>
-                                            <select
-                                                aria-label='Theme'
-                                                className='toolbar-select'
-                                                onChange={(event) => {
-                                                    setThemePreference(
-                                                        event.target
-                                                            .value as ThemePreference
-                                                    );
-                                                }}
-                                                value={themePreference}
-                                            >
-                                                <option value='light'>
-                                                    Light
-                                                </option>
-                                                <option value='dark'>
-                                                    Dark
-                                                </option>
-                                                <option value='system'>
-                                                    System
-                                                </option>
-                                            </select>
                                         </div>
                                     </div>
 
