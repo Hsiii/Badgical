@@ -367,7 +367,7 @@ textarea {
 
 .preference-menu {
     position: relative;
-    width: calc(var(--space-48) * 2);
+    width: calc(var(--space-48) * 2 + var(--space-24));
     min-width: 0;
 }
 
@@ -388,6 +388,7 @@ textarea {
 }
 
 .preference-trigger svg {
+    flex: 0 0 auto;
     color: var(--clr-text-muted);
 }
 
