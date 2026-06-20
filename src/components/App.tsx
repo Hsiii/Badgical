@@ -160,6 +160,7 @@ export function App({
     const [frameLengthSeconds, setFrameLengthSeconds] = useState(frameSeconds);
     const [animationType, setAnimationType] = useState<AnimationType>('slot');
     const [frameSettingsOpen, setFrameSettingsOpen] = useState(false);
+    const [smartRecolorEnabled, setSmartRecolorEnabled] = useState(true);
     const [deleteCandidateId, setDeleteCandidateId] = useState<
         string | undefined
     >(undefined);
@@ -406,7 +407,7 @@ export function App({
     }, [query]);
 
     useEffect(() => {
-        if (!draft.preserveOriginalArtwork) {
+        if (!smartRecolorEnabled || !draft.preserveOriginalArtwork) {
             setDraft((currentDraft) =>
                 currentDraft.smartRecolor
                     ? { ...currentDraft, smartRecolor: false }
@@ -448,7 +449,12 @@ export function App({
         return (): void => {
             isCurrent = false;
         };
-    }, [draft.badgeColor, draft.preserveOriginalArtwork, draft.source]);
+    }, [
+        draft.badgeColor,
+        draft.preserveOriginalArtwork,
+        draft.source,
+        smartRecolorEnabled,
+    ]);
 
     const applyColorMode = (
         nextBrandColor: string,
@@ -630,9 +636,10 @@ export function App({
                 );
 
                 return {
-                    smartRecolor: modeDraft.preserveOriginalArtwork
-                        ? smartRecolor
-                        : false,
+                    smartRecolor:
+                        smartRecolorEnabled && modeDraft.preserveOriginalArtwork
+                            ? smartRecolor
+                            : false,
                     extractedBrandColor,
                     modeDraft,
                     source,
@@ -1098,6 +1105,10 @@ export function App({
                                     openSourceDialog={openSourceDialog}
                                     selectColorMode={selectColorMode}
                                     setDraft={setDraft}
+                                    setSmartRecolorEnabled={
+                                        setSmartRecolorEnabled
+                                    }
+                                    smartRecolorEnabled={smartRecolorEnabled}
                                     statesLength={states.length}
                                     updateColorPadFromPoint={
                                         updateColorPadFromPoint

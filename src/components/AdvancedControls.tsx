@@ -41,6 +41,8 @@ interface AdvancedControlsProps {
     readonly openSourceDialog: () => void;
     readonly selectColorMode: (mode: VariantMode) => void;
     readonly setDraft: Dispatch<SetStateAction<EditorDraft>>;
+    readonly setSmartRecolorEnabled: (enabled: boolean) => void;
+    readonly smartRecolorEnabled: boolean;
     readonly statesLength: number;
     readonly updateColorPadFromPoint: (
         clientX: number,
@@ -143,6 +145,8 @@ export function AdvancedControls({
     openSourceDialog,
     selectColorMode,
     setDraft,
+    setSmartRecolorEnabled,
+    smartRecolorEnabled,
     statesLength,
     updateColorPadFromPoint,
     updateDraftColor,
@@ -263,7 +267,21 @@ export function AdvancedControls({
             className='advanced-panel'
         >
             <div className='advanced-controls'>
-                <h2 className='advanced-controls__title'>{copy.customEdits}</h2>
+                <div className='advanced-controls__header'>
+                    <h2 className='advanced-controls__title'>
+                        {copy.customEdits}
+                    </h2>
+                    <label className='advanced-controls__smart-recolor'>
+                        <input
+                            checked={smartRecolorEnabled}
+                            onChange={(event) => {
+                                setSmartRecolorEnabled(event.target.checked);
+                            }}
+                            type='checkbox'
+                        />
+                        <span>{copy.smartRecolor}</span>
+                    </label>
+                </div>
                 <div className='advanced-controls__body'>
                     <div className='advanced-controls__left'>
                         <div className='advanced-top-row'>

@@ -54,6 +54,7 @@ export interface UiCopy {
     readonly searchPlaceholder: string;
     readonly secondsUnit: string;
     readonly selectVariant: (label: string) => string;
+    readonly smartRecolor: string;
     readonly svglLogos: string;
     readonly theme: string;
     readonly themeLabels: Record<ThemePreference, string>;
@@ -125,6 +126,7 @@ export const uiCopy = {
         searchPlaceholder: 'Search...',
         secondsUnit: 'Sec',
         selectVariant: (label) => `Select ${label} badge variant`,
+        smartRecolor: 'smart recolor',
         svglLogos: 'SVGL logos',
         theme: 'Theme',
         themeLabels: {
@@ -205,6 +207,7 @@ export const uiCopy = {
         secondsUnit: '\u79D2',
         selectVariant: (label) =>
             `\u9078\u64C7${label}\u5FBD\u7AE0\u6A23\u5F0F`,
+        smartRecolor: '\u667A\u6167\u91CD\u65B0\u8457\u8272',
         svglLogos: 'SVGL \u6A19\u8A8C',
         theme: '\u4E3B\u984C',
         themeLabels: {
