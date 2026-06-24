@@ -109,6 +109,13 @@
     color: var(--clr-text);
     cursor: pointer;
     text-align: center;
+    transition-duration: var(--motion-duration-fast);
+    transition-property: background-color, box-shadow, scale;
+    transition-timing-function: var(--motion-ease-out);
+}
+
+.brand-result:active {
+    scale: var(--motion-press-scale);
 }
 
 .brand-result[aria-current='true'] {

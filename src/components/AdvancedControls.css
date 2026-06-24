@@ -30,6 +30,13 @@
     color: var(--clr-text-muted);
     cursor: pointer;
     font: var(--font-ui-label);
+    transition-duration: var(--motion-duration-fast);
+    transition-property: background-color, box-shadow, scale;
+    transition-timing-function: var(--motion-ease-out);
+}
+
+.advanced-logo-preview:active {
+    scale: var(--motion-press-scale);
 }
 
 .advanced-logo-preview img {
@@ -387,6 +394,7 @@
     border: 0;
     background: transparent;
     color: var(--clr-text);
+    font-variant-numeric: tabular-nums;
     text-align: right;
 }
 
@@ -429,6 +437,13 @@
     color: var(--clr-text);
     cursor: pointer;
     font: var(--font-ui-label);
+    transition-duration: var(--motion-duration-fast);
+    transition-property: background-color, box-shadow, scale;
+    transition-timing-function: var(--motion-ease-out);
+}
+
+.variant-card:active {
+    scale: var(--motion-press-scale);
 }
 
 .variant-card[aria-pressed='true'] {

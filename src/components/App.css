@@ -90,6 +90,7 @@
     overflow: hidden;
     color: var(--clr-text-muted);
     font: var(--font-ui-heading);
+    font-variant-numeric: tabular-nums;
     letter-spacing: 0;
     text-overflow: ellipsis;
     text-transform: none;
@@ -150,10 +151,22 @@
     color: var(--clr-text);
     cursor: pointer;
     font: var(--font-ui-caption);
+    transition-duration: var(--motion-duration-fast);
+    transition-property: background-color, box-shadow, color, opacity, scale;
+    transition-timing-function: var(--motion-ease-out);
 }
 
 .button {
     padding: 0 var(--space-12);
+}
+
+.button:has(svg) {
+    padding-left: var(--space-8);
+}
+
+.button:active:not(:disabled),
+.icon-button:active:not(:disabled) {
+    scale: var(--motion-press-scale);
 }
 
 .button--primary {

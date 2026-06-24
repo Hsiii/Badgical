@@ -80,6 +80,7 @@
     background: var(--clr-surface-raised);
     color: var(--clr-text);
     font: var(--font-ui-control);
+    font-variant-numeric: tabular-nums;
 }
 
 .settings-value-row span {

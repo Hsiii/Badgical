@@ -84,6 +84,13 @@
     color: var(--clr-text);
     cursor: pointer;
     font: var(--font-ui-label);
+    transition-duration: var(--motion-duration-fast);
+    transition-property: background-color, box-shadow, color, scale;
+    transition-timing-function: var(--motion-ease-out);
+}
+
+.preference-trigger:active {
+    scale: var(--motion-press-scale);
 }
 
 .preference-trigger svg {
@@ -111,7 +118,7 @@
 }
 
 .preference-option {
-    min-height: var(--space-32);
+    min-height: var(--space-40);
     padding: 0 var(--space-12);
     border-radius: var(--space-4);
     background: transparent;
@@ -120,6 +127,13 @@
     font: var(--font-ui-label);
     text-align: left;
     white-space: nowrap;
+    transition-duration: var(--motion-duration-fast);
+    transition-property: background-color, color, scale;
+    transition-timing-function: var(--motion-ease-out);
+}
+
+.preference-option:active {
+    scale: var(--motion-press-scale);
 }
 
 .preference-option:hover,
@@ -153,6 +167,7 @@
     background: var(--clr-surface-raised);
     color: var(--clr-text);
     font: var(--font-ui-label);
+    font-variant-numeric: tabular-nums;
     line-height: 1;
     white-space: nowrap;
 }
