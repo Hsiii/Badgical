@@ -37,9 +37,9 @@
 
 .compose-panel,
 .frame-rail {
-    border: 1px solid var(--clr-border);
     border-radius: var(--space-8);
     background: var(--clr-surface);
+    box-shadow: var(--shadow-surface);
 }
 
 .compose-panel {
@@ -145,15 +145,21 @@
     align-items: center;
     justify-content: center;
     min-height: calc(var(--space-40) + var(--space-4));
-    border: 1px solid var(--clr-border);
+    border: 0;
     border-radius: var(--space-8);
     background: var(--clr-surface);
+    box-shadow: var(--shadow-surface);
     color: var(--clr-text);
     cursor: pointer;
     font: var(--font-ui-caption);
     transition-duration: var(--motion-duration-fast);
     transition-property: background-color, box-shadow, color, opacity, scale;
     transition-timing-function: var(--motion-ease-out);
+}
+
+.button:hover:not(:disabled),
+.icon-button:hover:not(:disabled) {
+    box-shadow: var(--shadow-surface-hover);
 }
 
 .button {
@@ -170,7 +176,6 @@
 }
 
 .button--primary {
-    border-color: var(--clr-accent);
     background: var(--clr-accent);
     color: var(--clr-text-on-primary);
 }
@@ -188,8 +193,8 @@
 .icon-button {
     width: calc(var(--space-40) + var(--space-4));
     height: calc(var(--space-40) + var(--space-4));
-    border: 0;
     background: transparent;
+    box-shadow: none;
     color: var(--clr-text);
 }
 
@@ -202,9 +207,9 @@
     width: var(--space-32);
     height: var(--space-32);
     min-height: var(--space-32);
-    border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
+    box-shadow: var(--shadow-surface);
 }
 
 .icon-button.panel-menu__button svg {

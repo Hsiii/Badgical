@@ -40,6 +40,21 @@
     --clr-hue-magenta: #ff00ff;
     --clr-picker-light: #ffffff;
     --clr-picker-dark: #000000;
+    --clr-image-outline: rgb(0 0 0 / 10%);
+
+    --shadow-surface:
+        0 0 0 1px rgb(0 0 0 / 6%), 0 1px 2px -1px rgb(0 0 0 / 6%),
+        0 2px 4px 0 rgb(0 0 0 / 4%);
+    --shadow-surface-hover:
+        0 0 0 1px rgb(0 0 0 / 8%), 0 1px 2px -1px rgb(0 0 0 / 8%),
+        0 2px 4px 0 rgb(0 0 0 / 6%);
+    --shadow-surface-selected:
+        0 0 0 1px var(--clr-border-strong), 0 1px 2px -1px rgb(0 0 0 / 8%),
+        0 2px 4px 0 rgb(0 0 0 / 6%);
+    --shadow-popover:
+        0 0 0 1px rgb(0 0 0 / 6%),
+        0 var(--space-8) var(--space-24) var(--clr-edge-shadow);
+    --shadow-notch-outline: -1px 1px 0 rgb(0 0 0 / 6%);
 }
 
 :root[data-theme='dark'] {
@@ -69,4 +84,13 @@
     --clr-scrollbar-thumb: rgb(130 144 240 / 44%);
     --clr-scrollbar-thumb-hover: rgb(130 144 240 / 64%);
     --clr-scrollbar-track: rgb(37 39 68 / 72%);
+    --clr-image-outline: rgb(255 255 255 / 10%);
+
+    --shadow-surface: 0 0 0 1px rgb(255 255 255 / 8%);
+    --shadow-surface-hover: 0 0 0 1px rgb(255 255 255 / 13%);
+    --shadow-surface-selected: 0 0 0 1px var(--clr-border-strong);
+    --shadow-popover:
+        0 0 0 1px rgb(255 255 255 / 10%),
+        0 var(--space-8) var(--space-24) var(--clr-edge-shadow);
+    --shadow-notch-outline: -1px 1px 0 rgb(255 255 255 / 8%);
 }

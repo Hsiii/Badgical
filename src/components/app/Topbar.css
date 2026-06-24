@@ -20,7 +20,7 @@
     gap: var(--space-12);
     align-items: center;
     justify-self: start;
-    min-height: var(--space-32);
+    min-height: var(--space-40);
     color: var(--clr-text);
     font: var(--font-ui-heading);
 }
@@ -76,17 +76,22 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    min-height: var(--space-32);
+    min-height: var(--space-40);
     padding: 0 var(--space-12);
-    border: 1px solid var(--clr-border);
+    border: 0;
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
+    box-shadow: var(--shadow-surface);
     color: var(--clr-text);
     cursor: pointer;
     font: var(--font-ui-label);
     transition-duration: var(--motion-duration-fast);
     transition-property: background-color, box-shadow, color, scale;
     transition-timing-function: var(--motion-ease-out);
+}
+
+.preference-trigger:hover {
+    box-shadow: var(--shadow-surface-hover);
 }
 
 .preference-trigger:active {
@@ -111,10 +116,10 @@
     gap: var(--space-4);
     width: 100%;
     padding: var(--space-4);
-    border: 1px solid var(--clr-border);
+    border: 0;
     border-radius: var(--space-8);
     background: var(--clr-surface);
-    box-shadow: 0 var(--space-8) var(--space-24) var(--clr-edge-shadow);
+    box-shadow: var(--shadow-popover);
 }
 
 .preference-option {
@@ -147,7 +152,7 @@
     gap: var(--space-8);
     width: auto;
     min-width: 0;
-    min-height: var(--space-32);
+    min-height: var(--space-40);
     padding: 0 var(--space-8);
     overflow: visible;
 }
@@ -162,9 +167,9 @@
     min-width: var(--space-48);
     height: var(--space-32);
     padding: 0 var(--space-8);
-    border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
+    box-shadow: var(--shadow-surface);
     color: var(--clr-text);
     font: var(--font-ui-label);
     font-variant-numeric: tabular-nums;
@@ -178,9 +183,8 @@
     left: calc(var(--space-4) * -1);
     width: var(--space-8);
     height: var(--space-8);
-    border-bottom: 1px solid var(--clr-border);
-    border-left: 1px solid var(--clr-border);
     background: var(--clr-surface-raised);
+    box-shadow: var(--shadow-notch-outline);
     content: '';
     transform: translateY(-50%) rotate(45deg);
 }

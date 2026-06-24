@@ -24,15 +24,20 @@
     width: var(--space-48);
     height: var(--space-48);
     place-items: center;
-    border: 1px solid var(--clr-border);
+    border: 0;
     border-radius: var(--space-8);
     background: var(--clr-card);
+    box-shadow: var(--shadow-surface);
     color: var(--clr-text-muted);
     cursor: pointer;
     font: var(--font-ui-label);
     transition-duration: var(--motion-duration-fast);
     transition-property: background-color, box-shadow, scale;
     transition-timing-function: var(--motion-ease-out);
+}
+
+.advanced-logo-preview:hover {
+    box-shadow: var(--shadow-surface-hover);
 }
 
 .advanced-logo-preview:active {
@@ -43,6 +48,8 @@
     width: var(--space-32);
     height: var(--space-32);
     object-fit: contain;
+    outline: 1px solid var(--clr-image-outline);
+    outline-offset: -1px;
 }
 
 .logo-placeholder {
@@ -353,9 +360,9 @@
     width: var(--space-40);
     height: var(--space-40);
     min-height: var(--space-40);
-    border: 1px solid var(--clr-border);
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
+    box-shadow: var(--shadow-surface);
 }
 
 .color-control__eyedropper svg {
@@ -431,9 +438,10 @@
     min-width: 0;
     min-height: calc(var(--space-48) + var(--space-24));
     padding: var(--space-8);
-    border: 1px solid var(--clr-border);
+    border: 0;
     border-radius: var(--space-8);
     background: var(--clr-card);
+    box-shadow: var(--shadow-surface);
     color: var(--clr-text);
     cursor: pointer;
     font: var(--font-ui-label);
@@ -442,13 +450,17 @@
     transition-timing-function: var(--motion-ease-out);
 }
 
+.variant-card:hover {
+    box-shadow: var(--shadow-surface-hover);
+}
+
 .variant-card:active {
     scale: var(--motion-press-scale);
 }
 
 .variant-card[aria-pressed='true'] {
-    border-color: var(--clr-border-strong);
     background: var(--clr-accent-soft);
+    box-shadow: var(--shadow-surface-selected);
 }
 
 .variant-card img {
@@ -457,6 +469,8 @@
     align-self: center;
     grid-row: 2;
     object-fit: contain;
+    outline: 1px solid var(--clr-image-outline);
+    outline-offset: -1px;
 }
 
 .variant-card span {
