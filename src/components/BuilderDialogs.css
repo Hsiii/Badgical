@@ -24,10 +24,21 @@
 }
 
 .dialog-close-button {
+    position: relative;
     width: var(--space-32);
     height: var(--space-32);
     min-height: var(--space-32);
     justify-self: end;
+}
+
+.dialog-close-button::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--space-40);
+    height: var(--space-40);
+    content: '';
+    transform: translate(-50%, -50%);
 }
 
 .source-dialog__field textarea {

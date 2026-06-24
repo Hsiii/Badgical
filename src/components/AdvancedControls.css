@@ -115,6 +115,7 @@
     display: inline-flex;
     gap: var(--space-8);
     align-items: center;
+    min-height: var(--space-40);
     min-width: max-content;
     color: var(--clr-text-muted);
     cursor: pointer;
@@ -236,7 +237,7 @@
     appearance: none;
     width: 100%;
     min-width: 0;
-    height: var(--space-20);
+    height: var(--space-40);
     border-radius: var(--space-8);
     accent-color: var(--clr-accent);
     background: transparent;

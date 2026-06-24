@@ -204,12 +204,23 @@
 }
 
 .icon-button.panel-menu__button {
+    position: relative;
     width: var(--space-32);
     height: var(--space-32);
     min-height: var(--space-32);
     border-radius: var(--space-4);
     background: var(--clr-surface-raised);
     box-shadow: var(--shadow-surface);
+}
+
+.icon-button.panel-menu__button::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--space-40);
+    height: var(--space-40);
+    content: '';
+    transform: translate(-50%, -50%);
 }
 
 .icon-button.panel-menu__button svg {

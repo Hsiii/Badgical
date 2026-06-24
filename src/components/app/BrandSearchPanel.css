@@ -64,8 +64,11 @@
 }
 
 .powered-by {
-    font: var(--font-ui-control);
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--space-40);
     color: var(--clr-text-muted);
+    font: var(--font-ui-control);
     white-space: nowrap;
     text-decoration: none;
 }
