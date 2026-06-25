@@ -465,8 +465,7 @@
     align-self: center;
     grid-row: 2;
     object-fit: contain;
-    outline: 1px solid var(--clr-image-outline);
-    outline-offset: -1px;
+    outline: 0;
 }
 
 .variant-card span {
